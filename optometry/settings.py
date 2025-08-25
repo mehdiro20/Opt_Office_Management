@@ -31,12 +31,14 @@ ALLOWED_HOSTS = []
 # Application definition
 
 INSTALLED_APPS = [
-    "django.contrib.admin",
-    "django.contrib.auth",
-    "django.contrib.contenttypes",
-    "django.contrib.sessions",
-    "django.contrib.messages",
-    "django.contrib.staticfiles",
+    "django.contrib.admin",        # Admin interface
+    "django.contrib.auth",         # User authentication (login, passwords, permissions)
+    "django.contrib.contenttypes", # Database structure tracking
+    "django.contrib.sessions",     # Store user sessions
+    "django.contrib.messages",     # Flash messages (like "Saved successfully")
+    "django.contrib.staticfiles",  # CSS, JS, images
+    "secretary",      
+    "doctor"# 👈 your custom app
 ]
 
 MIDDLEWARE = [

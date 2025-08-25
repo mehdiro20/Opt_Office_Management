@@ -1,0 +1,74 @@
+
+<!-- Register Patient Modal -->
+<div id="registerModal" class="modal" aria-hidden="true">
+    <div class="modal-content" role="dialog" aria-modal="true" aria-labelledby="registerTitle">
+        <span class="close-btn" onclick="closeRegisterModal()" aria-label="Close">&times;</span>
+        <h2 id="registerTitle">Register New Patient</h2>
+
+        <form id="registerForm" method="POST" action="{% url 'secretary:register_patient' %}">
+            {% csrf_token %}
+
+            <label for="rp_name">Name:</label>
+            <input id="rp_name" type="text" name="name" required>
+
+            <label for="rp_family">Family Name:</label>
+            <input id="rp_family" type="text" name="family_name" required>
+
+            <label for="rp_phone">Phone:</label>
+            <input id="rp_phone" type="text" name="phone" inputmode="numeric" maxlength="15" placeholder="09123456789">
+
+            <label for="rp_age">Age:</label>
+            <input id="rp_age" type="number" name="age" min="0" max="130" required>
+
+            <label for="rp_gender">Gender:</label>
+            <select id="rp_gender" name="gender" required>
+                <option value="">Select</option>
+                <option value="M">Male</option>
+                <option value="F">Female</option>
+            </select>
+
+            <label for="rp_melli">Melli Code:</label>
+            <input id="rp_melli" type="text" name="melli_code" maxlength="10" inputmode="numeric" placeholder="10-digit ID">
+
+            <label for="rp_reason">Reason for Visit:</label>
+            <textarea id="rp_reason" name="reason" rows="3" required></textarea>
+
+            <button type="submit">Register</button>
+            <div id="formError" class="error-message"></div>
+        </form>
+    </div>
+</div>
+
+<style>
+    /* Modal Styles */
+    .modal {
+        display: none; position: fixed; z-index: 1000; inset: 0;
+        background-color: rgba(0,0,0,0.5); justify-content: center; align-items: center;
+        animation: fadeIn 0.25s ease;
+    }
+    .modal-content {
+        background: #fff; padding: 22px; width: 520px; max-width: 95%;
+        border-radius: 12px; position: relative; box-shadow: 0 10px 30px rgba(0,0,0,0.25);
+        animation: slideDown 0.25s ease;
+    }
+    .close-btn {
+        position: absolute; right: 14px; top: 10px; font-size: 22px; font-weight: bold; cursor: pointer; color: #666;
+    }
+    .close-btn:hover { color: #000; }
+    .modal-content h2 { margin: 0 0 14px 0; color: #2c3e50; }
+    .modal-content label { display: block; margin-top: 10px; font-weight: bold; color: #34495e; }
+    .modal-content input, .modal-content select, .modal-content textarea {
+        width: 100%; padding: 8px; margin-top: 6px; border-radius: 6px; border: 1px solid #ccc; box-sizing: border-box;
+    }
+    .modal-content textarea { resize: vertical; }
+    .modal-content button[type="submit"] {
+        margin-top: 16px; background-color: #3498db; color: white; border: none; padding: 10px 15px;
+        border-radius: 8px; cursor: pointer; width: 100%; font-size: 16px;
+    }
+    .modal-content button[type="submit"]:hover { background-color: #2980b9; }
+
+    .error-message { color: #e74c3c; margin-top: 10px; font-size: 14px; display: none; }
+
+    @keyframes fadeIn { from {opacity: 0;} to {opacity: 1;} }
+    @keyframes slideDown { from {transform: translateY(-16px); opacity: 0;} to {transform: translateY(0); opacity: 1;} }
+</style>

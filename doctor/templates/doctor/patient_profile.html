@@ -1,0 +1,289 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <title>Patient Profile</title>
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.0/css/all.min.css" />
+    <style>
+        body {
+            font-family: Arial, sans-serif;
+            margin: 0;
+            display: flex;
+            background-color: #f4f7f8;
+            min-height: 100vh;
+            position: relative;
+        }
+
+        /* Sidebar */
+        .sidebar {
+            width: 200px;
+            background-color: #2c3e50;
+            color: white;
+            padding-top: 20px;
+            height: 100vh;
+        }
+        .sidebar h2 { text-align: center; margin-bottom: 20px; }
+        .sidebar ul { list-style: none; padding: 0; }
+        .sidebar ul li {
+            padding: 12px 20px;
+            cursor: pointer;
+        }
+        .sidebar ul li:hover,
+        .sidebar ul li.active { background-color: #1abc9c; }
+
+        /* Main content */
+        .main-content {
+            flex-grow: 1;
+            padding: 20px;
+            display: flex;
+            justify-content: center;
+            box-sizing: border-box;
+            min-width: 750px; /* ensures enough width for widest section (tables, forms) */
+            min-height: 550px; /* ensures enough vertical space for tallest section */
+        }
+        
+        /* Section boxes */
+        .section {
+            display: none;
+            background: white;
+            padding: 30px;
+            border-radius: 8px;
+            box-shadow: 0 0 10px rgba(0,0,0,0.1);
+            width: 100%;       /* fills main-content width */
+            max-width: 800px;  /* readable max width */
+            min-width: 700px;  /* ensures enough width for forms/tables */
+            min-height: 450px; /* enough height for content without scrolling */
+            margin-bottom: 40px;
+            text-align: left;
+            box-sizing: border-box;
+        }
+        .section h3 { margin-top: 0; text-align: center; }
+
+        .section input[type="text"], 
+        .section input[type="number"], 
+        .section input[type="date"] {
+            width: 100px; /* fixed width */
+            padding: 6px 8px;
+            font-size: 14px;
+            border-radius: 4px;
+            border: 1px solid #ccc;
+            box-sizing: border-box;
+        }
+        
+        /* Submit button */
+        .section input[type="submit"] {
+            width: auto; /* button adjusts to text */
+            padding: 8px 16px;
+        }
+        .section input[type="submit"]:hover { background-color: #1c5980; }
+
+        /* Table styling */
+        table {
+            width: 100%;
+            border-collapse: collapse;
+            margin-top: 20px;
+        }
+        table th, table td {
+            padding: 8px 12px;
+            border: 1px solid #ccc;
+            text-align: left;
+        }
+        table th {
+            background-color: #2980b9;
+            color: white;
+        }
+
+        /* Bottom-right floating buttons */
+        .bottom-buttons {
+            position: fixed;
+            bottom: 20px;
+            right: 20px;
+            display: flex;
+            gap: 12px;
+        }
+        .bottom-buttons button,
+        .bottom-buttons a {
+            width: 55px;
+            height: 55px;
+            border-radius: 50%;
+            border: none;
+            background-color: #2980b9;
+            color: white;
+            font-size: 22px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            cursor: pointer;
+            text-decoration: none;
+            box-shadow: 0 3px 6px rgba(0,0,0,0.2);
+            transition: all 0.2s ease;
+        }
+        .bottom-buttons button.done-btn { background-color: #28a745; }
+        .bottom-buttons button.done-btn:hover { background-color: #218838; }
+        .bottom-buttons a:hover { background-color: #1c5980; }
+
+    </style>
+</head>
+<body>
+
+    <div class="sidebar">
+        <h2>Patient Menu</h2>
+        <ul>
+            <li data-target="general">General Info</li>
+            <li data-target="refraction">Refraction</li>
+            <li data-target="past-refractions" class="active">Past Refractions</li>
+            <li data-target="sub1">Sub1</li>
+            <li data-target="sub2">Sub2</li>
+            <li data-target="sub3">Sub3</li>
+        </ul>
+    </div>
+
+    <div class="main-content">
+
+        <!-- General Info -->
+        <div id="general" class="section">
+            <h3>General Information</h3>
+            <p><strong>Name:</strong> {{ patient.name }}</p>
+            <p><strong>Age:</strong> {{ patient.age }}</p>
+            <p><strong>Phone:</strong> {{ patient.phone }}</p>
+            <p><strong>Email:</strong> {{ patient.email }}</p>
+            <p><strong>Reason:</strong> {{ patient.reason }}</p>
+        </div>
+
+        <!-- Refraction Section -->
+        <div id="refraction" class="section" style="max-width: 400px; margin: auto;">
+            <h3>Refraction</h3>
+            <form method="POST" action="{% url 'submit_refraction' patient.patient_id %}" style="display: flex; flex-direction: column; gap: 10px;">
+                {% csrf_token %}
+        
+                <div style="display: flex; align-items: center; gap: 10px;">
+                    <label for="od" style="width:60px;">OD:</label>
+                    <input type="text" name="od" id="od" required style="width: 300px; flex: none; padding: 4px 6px; font-size: 14px;">
+                </div>
+        
+                <div style="display: flex; align-items: center; gap: 10px;">
+                    <label for="os" style="width: 60px;">OS:</label>
+                    <input type="text" name="os" id="os" required style="width: 300px; flex: none; padding: 4px 6px; font-size: 14px;">
+                </div>
+        
+                <div style="display: flex; align-items: center; gap: 10px;">
+                    <label for="axis" style="width: 60px;">Addition:</label>
+                    <input type="text" name="axis" id="axis" required style="width: 60px; flex: none; padding: 4px 6px; font-size: 14px;">
+                </div>
+        
+                <div style="display: flex; align-items: center; gap: 10px;">
+                    <label for="pd" style="width: 60px;">PD:</label>
+                    <input type="text" name="pd" id="pd" required style="width: 50px; flex: none; padding: 4px 6px; font-size: 14px;">
+                </div>
+        
+                <div>
+                    <input type="submit" value="Submit" style="
+                        background: #2980b9;
+                        color: white;
+                        border: none;
+                        padding: 6px 14px;
+                        border-radius: 4px;
+                        cursor: pointer;
+                        font-size: 14px;
+                    ">
+                </div>
+            </form>
+        </div>
+
+        <!-- Past Refractions Section -->
+        <div id="past-refractions" class="section centered" style="display:block; max-width: 800px; margin: auto;">
+            <h3>Past Refractions</h3>
+        
+            <!-- Date filter (smaller boxes) -->
+            <form method="GET" action="{% url 'patient_profile' patient.patient_id %}" style="display: flex; align-items: center; gap: 8px; margin-bottom: 15px; flex-wrap: wrap;">
+                <input type="date" name="start_date" value="{{ request.GET.start_date }}" style="padding: 4px 6px; font-size: 13px; width: 130px;">
+                <input type="date" name="end_date" value="{{ request.GET.end_date }}" style="padding: 4px 6px; font-size: 13px; width: 130px;">
+                <input type="submit" value="Filter" style="
+                    background: #2980b9;
+                    color: white;
+                    border: none;
+                    padding: 4px 10px;
+                    border-radius: 4px;
+                    cursor: pointer;
+                    font-size: 13px;
+                    height: 30px;
+                ">
+            </form>
+        
+            <!-- Refractions table -->
+            <table style="width: 100%; border-collapse: collapse; background: #fff; border: 1px solid #ddd;">
+                <thead>
+                    <tr style="background: #2980b9; color: white;">
+                        <th style="padding: 8px; text-align: left;">Date/Time</th>
+                        <th style="padding: 8px; text-align: left;">OD</th>
+                        <th style="padding: 8px; text-align: left;">OS</th>
+                        <th style="padding: 8px; text-align: left;">Axis</th>
+                        <th style="padding: 8px; text-align: left;">PD</th>
+                    </tr>
+                </thead>
+                <tbody>
+                    {% for refraction in past_refractions %}
+                    <tr>
+                        <td style="padding: 8px; border-bottom: 1px solid #ddd;">{{ refraction.created_at }}</td>
+                        <td style="padding: 8px; border-bottom: 1px solid #ddd;">{{ refraction.od }}</td>
+                        <td style="padding: 8px; border-bottom: 1px solid #ddd;">{{ refraction.os }}</td>
+                        <td style="padding: 8px; border-bottom: 1px solid #ddd;">{{ refraction.axis }}</td>
+                        <td style="padding: 8px; border-bottom: 1px solid #ddd;">{{ refraction.pd }}</td>
+                    </tr>
+                    {% empty %}
+                    <tr>
+                        <td colspan="5" style="padding: 8px; text-align: center;">No past refractions available.</td>
+                    </tr>
+                    {% endfor %}
+                </tbody>
+            </table>
+        </div>
+
+
+        <!-- Other sections -->
+        <div id="sub1" class="section"><h3>Sub1</h3><p>Content here</p></div>
+        <div id="sub2" class="section"><h3>Sub2</h3><p>Content here</p></div>
+        <div id="sub3" class="section"><h3>Sub3</h3><p>Content here</p></div>
+
+        <!-- Bottom-right buttons -->
+        <div class="bottom-buttons">
+            <form method="POST" action="{% url 'remove_from_accepted_profile' patient.patient_id %}" id="done-form">
+                {% csrf_token %}
+                <button type="submit" id="done-btn" class="done-btn"><i class="fa fa-check"></i></button>
+            </form>
+            <a href="{% url 'doctor_dashboard' %}"><i class="fa fa-user-doctor"></i></a>
+        </div>
+
+    </div>
+
+    <script>
+        const menuItems = document.querySelectorAll('.sidebar ul li');
+        const sections = document.querySelectorAll('.section');
+
+        menuItems.forEach(item => {
+            item.addEventListener('click', () => {
+                const target = item.getAttribute('data-target');
+                sections.forEach(sec => sec.style.display = 'none');
+                document.getElementById(target).style.display = 'block';
+                menuItems.forEach(i => i.classList.remove('active'));
+                item.classList.add('active');
+            });
+        });
+
+        const patientId = "{{ patient.patient_id }}";
+        document.getElementById('done-btn').addEventListener('click', function(event){
+            event.preventDefault();
+            document.getElementById('done-form').submit();
+        });
+
+        // Keep Past Refractions active if filtering
+        {% if request.GET.start_date or request.GET.end_date %}
+            sections.forEach(sec => sec.style.display = 'none');
+            document.getElementById('past-refractions').style.display = 'block';
+            menuItems.forEach(i => i.classList.remove('active'));
+            document.querySelector('[data-target="past-refractions"]').classList.add('active');
+        {% endif %}
+    </script>
+
+</body>
+</html>

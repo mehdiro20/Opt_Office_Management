@@ -1,0 +1,43 @@
+# -*- coding: utf-8 -*-
+"""
+Created on Thu Aug 21 12:23:43 2025
+
+@author: Mehdi
+"""
+
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <title>Get Patient Last Refraction</title>
+    <style>
+        body { font-family: Arial, sans-serif; margin: 20px; background: #f5f7fa; }
+        .card { background: white; padding: 20px; border-radius: 8px; max-width: 500px; margin: auto; }
+        .btn { padding: 10px 15px; border: none; border-radius: 6px; background: #3498db; color: white; cursor: pointer; }
+        .btn:hover { background: #2980b9; }
+        .result { margin-top: 20px; padding: 10px; background: #ecf0f1; border-radius: 6px; }
+    </style>
+</head>
+<body>
+    <div class="card">
+        <h2>🔍 Get Patient Last Refraction</h2>
+        <form method="post">
+            {% csrf_token %}
+            <label>Enter Patient ID:</label><br>
+            <input type="text" name="patient_id" required>
+            <button type="submit" class="btn">Search</button>
+        </form>
+
+        {% if refraction %}
+            <div class="result">
+                <h3>Last Refraction for {{ patient.name }} ({{ patient.patient_id }})</h3>
+                <p><strong>Right Eye (OD):</strong> {{ refraction.od }}</p>
+                <p><strong>Left Eye (OS):</strong> {{ refraction.os }}</p>
+                <p><strong>Added on:</strong> {{ refraction.created_at }}</p>
+            </div>
+        {% elif not_found %}
+            <p style="color: red;">⚠ Patient or Refraction not found.</p>
+        {% endif %}
+    </div>
+</body>
+</html>

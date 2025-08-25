@@ -1,0 +1,47 @@
+<!-- past_refractions.html -->
+<div id="past-refractions" class="section">
+    <h3>Past Refractions</h3>
+
+    <!-- Date filter (simple horizontal) -->
+    <form method="GET" action="" style="display: flex; align-items: center; gap: 10px; margin-bottom: 15px;">
+        <input type="date" id="start_date" name="start_date" value="{{ request.GET.start_date }}" style="padding: 6px 10px; font-size: 14px;">
+        <input type="date" id="end_date" name="end_date" value="{{ request.GET.end_date }}" style="padding: 6px 10px; font-size: 14px;">
+        <button type="submit" style="
+            background: #2980b9;
+            color: white;
+            border: none;
+            padding: 6px 14px;
+            border-radius: 4px;
+            cursor: pointer;
+            font-size: 14px;
+        ">
+            Filter
+        </button>
+    </form>
+
+    <!-- Refractions table -->
+    <table style="width: 100%; border-collapse: collapse; background: #fff;">
+        <thead>
+            <tr style="background: #2980b9; color: white;">
+                <th style="padding: 8px; text-align: left;">Date</th>
+                <th style="padding: 8px; text-align: left;">OD</th>
+                <th style="padding: 8px; text-align: left;">OS</th>
+                <th style="padding: 8px; text-align: left;">PD</th>
+            </tr>
+        </thead>
+        <tbody>
+            {% for refraction in past_refractions %}
+                <tr>
+                    <td style="padding: 8px; border-bottom: 1px solid #ddd;">{{ refraction.date }}</td>
+                    <td style="padding: 8px; border-bottom: 1px solid #ddd;">{{ refraction.od }}</td>
+                    <td style="padding: 8px; border-bottom: 1px solid #ddd;">{{ refraction.os }}</td>
+                    <td style="padding: 8px; border-bottom: 1px solid #ddd;">{{ refraction.pd }}</td>
+                </tr>
+            {% empty %}
+                <tr>
+                    <td colspan="4" style="padding: 8px; text-align: center;">No past refractions available.</td>
+                </tr>
+            {% endfor %}
+        </tbody>
+    </table>
+</div>

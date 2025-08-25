@@ -1,0 +1,52 @@
+<table>
+    <thead>
+        <tr>
+            <th>Name</th>
+            <th>ID</th>
+            <th>Age</th>
+            <th>Phone</th>
+            <th>Reason</th>
+            <th>Status</th>
+            <th>Action</th>
+        </tr>
+    </thead>
+    <tbody>
+        {% for patient in patients %}
+        <tr id="patient-{{ patient.id }}">
+            <td>{{ patient.name }}</td>
+            <td>{{ patient.patient_id }}</td>
+            <td>{{ patient.age }}</td>
+            <td>{{ patient.phone }}</td>
+            <td>{{ patient.reason }}</td>
+            <td class="
+                {% if patient.status == 'waiting' %}status-waiting{% elif patient.status == 'accepted' %}status-accepted{% elif patient.status == 'done' %}status-done{% endif %}
+            ">{{ patient.status|capfirst }}</td>
+            <td>
+                {% if patient.status == "waiting" %}
+                <form method="POST" action="{% url 'secretary:accept_patient' patient.id %}" style="display:inline;">
+                    {% csrf_token %}
+                    <button type="submit" class="accept-button">Accept</button>
+                </form>
+                {% endif %}
+
+                <!-- Dismiss button always present -->
+                <button type="button" class="remove-button dismiss-button" data-patient-id="{{ patient.id }}">
+                    Dismiss
+                </button>
+
+                {% if patient.status == "done" %}
+                <!-- Get Last Refraction -->
+                <form method="POST" action="{% url 'secretary:get_patient_last_refraction' patient.patient_id %}" style="display:inline;">
+                    {% csrf_token %}
+                    <button type="submit" class="get-lr-button">Get Last Record</button>
+                </form>
+                {% endif %}
+            </td>
+        </tr>
+        {% empty %}
+        <tr>
+            <td colspan="7" style="text-align:center;">No patients available.</td>
+        </tr>
+        {% endfor %}
+    </tbody>
+</table>
