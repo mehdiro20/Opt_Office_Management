@@ -21,7 +21,7 @@ Created on Thu Aug 21 12:23:43 2025
 <body>
     <div class="card">
         <h2>🔍 Get Patient Last Refraction</h2>
-        <form method="post">
+        <form method="post", action="{% url 'secretary:get_patient_last_refraction_t3'%}" >
             {% csrf_token %}
             <label>Enter Patient ID:</label><br>
             <input type="text" name="patient_id" required>

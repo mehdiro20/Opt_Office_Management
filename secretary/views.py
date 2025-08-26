@@ -6,6 +6,7 @@ from datetime import datetime
 # Secretary dashboard: shows only waiting patients
 from django.contrib import messages
 from django.views.decorators.http import require_POST
+from django.http import JsonResponse
 def dashboard(request):
     """
     Secretary dashboard with optional filters by date and status.
@@ -94,10 +95,12 @@ def register_patient(request):
             melli_code=melli_code,
             reason=reason
         )
-        messages.success(request, f"Patient {name} {family_name} registered successfully.")
-        return redirect('secretary:secretary_dashboard')
-
-
+  
+        if request.headers.get('x-requested-with') == 'XMLHttpRequest':
+            return JsonResponse({'success': True, 'message': f'Patient {name} registered successfully.'})
+        else:
+            messages.success(request, f"Patient {name} registered successfully.")
+            return redirect('secretary:secretary_dashboard')
 
 def remove_patient(request, patient_id):
     patient = get_object_or_404(Patient, id=patient_id)
@@ -131,15 +134,21 @@ def get_patient_last_refraction(request, patient_id):
     except Patient.DoesNotExist:
         return render(request, "secretary/get_last_refraction.html", {"not_found": True})
 def get_patient_last_refraction_t2(request):
-    if request.method == "POST":
-        patient_id = request.POST.get("patient_id")
-        try:
-            patient = Patient.objects.get(patient_id=patient_id) 
-            refraction = Refraction.objects.filter(patient=patient).order_by('-created_at').first()
-            if refraction: 
-                return render(request, "secretary/get_last_refraction.html", { "patient": patient, "refraction": refraction })
-            else:
-                return render(request, "secretary/get_last_refraction.html", {"not_found": True}) 
-        except Patient.DoesNotExist: 
-            return render(request, "secretary/get_last_refraction.html", {"not_found": True}) 
+   
         return render(request, "secretary/get_last_refraction.html")
+    
+def get_patient_last_refraction_t3(request):
+   if request.method == 'POST':
+       patient_id = request.POST.get('patient_id')
+       try:
+           patient = Patient.objects.get(patient_id=patient_id)  # or patient_id if that's your unique field
+           refraction = Refraction.objects.filter(patient=patient).order_by('-created_at').first()
+           if refraction:
+               return render(request, "secretary/get_last_refraction.html", {
+                   "patient": patient,
+                   "refraction": refraction
+               })
+           else:
+               return render(request, "secretary/get_last_refraction.html", {"patient": patient, "not_found": True})
+       except Patient.DoesNotExist:
+           return render(request, "secretary/get_last_refraction.html", {"not_found": True})
