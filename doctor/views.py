@@ -3,7 +3,7 @@ from django.shortcuts import render, get_object_or_404, redirect
 from django.db.models import Q
 from doctor.models import Refraction  # model to store refraction data
 from django.utils.dateparse import parse_date
-
+from django.http import JsonResponse
 # Doctor dashboard: show only accepted patients
 def doctor_dashboard(request):
     patients = Patient.objects.filter(status="accepted").order_by('-id')
@@ -38,16 +38,22 @@ def submit_refraction(request, patient_id):
     if request.method == "POST":
         od = request.POST.get('od')
         os = request.POST.get('os')
-        
+        axis = request.POST.get('axis')  # you had this in form
         pd = request.POST.get('pd')
 
         Refraction.objects.create(
             patient=patient,
             od=od,
             os=os,
-            
+            axis=axis,
             pd=pd
         )
+
+        # If AJAX → return JSON
+        if request.headers.get("X-Requested-With") == "XMLHttpRequest":
+            return JsonResponse({"status": "success", "message": "Refraction saved!"})
+
+        # If normal form submit → redirect
         return redirect('patient_profile', patient_id=patient.patient_id)
 
     return redirect('patient_profile', patient_id=patient.patient_id)

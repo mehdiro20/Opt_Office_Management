@@ -1,0 +1,61 @@
+<!-- General Information Section -->
+<div id="general" class="section" style="display:block;">
+    <h3>General Information</h3>
+    <div class="info-card">
+        <p><span class="label">Name:</span> {{ patient.name }}</p>
+        <p><span class="label">Age:</span> {{ patient.age }}</p>
+        <p><span class="label">Phone:</span> {{ patient.phone }}</p>
+        <p><span class="label">Email:</span> {{ patient.email }}</p>
+        <p><span class="label">Reason:</span> {{ patient.reason }}</p>
+    </div>
+</div>
+
+<!-- CSS -->
+<style>
+    
+    /* General section container */
+    #general {
+        background: #ffffff;
+        border-radius: 10px;
+        padding: 25px;
+        box-shadow: 0 4px 12px rgba(0,0,0,0.08);
+    
+     
+        font-family: "Segoe UI", Arial, sans-serif;
+    }
+
+    /* Title */
+    #general h3 {
+        text-align: center;
+        margin-bottom: 20px;
+        color: #2c3e50;
+        font-size: 1.4rem;
+        border-bottom: 2px solid #16a085;
+        display: inline-block;
+        padding-bottom: 5px;
+    }
+
+    /* Info card background */
+    .info-card {
+        background: #f9f9f9;
+        border: 1px solid #e0e0e0;
+        border-radius: 8px;
+        padding: 15px 20px;
+    }
+
+    /* Each row of info */
+    .info-card p {
+        margin: 12px 0;
+        font-size: 1rem;
+        color: #333;
+    }
+
+    /* Labels (left side) */
+    .info-card .label {
+        font-weight: bold;
+        color: #16a085;
+        margin-right: 8px;
+        display: inline-block;
+        min-width: 90px; /* keeps alignment neat */
+    }
+</style>

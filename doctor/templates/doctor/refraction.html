@@ -1,0 +1,224 @@
+<!-- Refraction Section -->
+<div id="refraction" class="section">
+  <h3>Refraction</h3>
+  <div class="refraction-card">
+    <form method="POST"  action="{% url 'submit_refraction' patient.patient_id %}" style="display: flex; flex-direction: column; gap: 12px;">
+      {% csrf_token %}
+
+      <!-- OD -->
+      <div class="form-row">
+        <label for="od">OD:</label>
+        <input type="text" id="od" name="od" value="       /        ×   ">
+      </div>
+
+      <!-- OS -->
+      <div class="form-row">
+        <label for="os">OS:</label>
+        <input type="text" id="os" name="os" value="       /        ×   ">
+      </div>
+       <div class="form-row">
+         <label for="pd">Addition:</label>
+         <input type="text" name="axis" class="addition" maxlength="5" required>
+       </div>  
+      <div class="form-row">
+        <label for="pd">PD:</label>
+        <input type="text" name="pd" class="pd" maxlength="5" required>
+      </div>
+
+      <input type="submit" value="Submit">
+    </form>
+  </div>
+  <div id="success-message" style="display:none; color:green; margin-top:10px;">
+    Refraction submitted successfully!
+</div>
+</div>
+
+<style>
+.refraction-card {
+  background: #f9f9f9;
+  border: 1px solid #e0e0e0;
+  border-radius: 8px;
+  padding: 20px;
+  display: flex;
+  flex-direction: column;
+  gap: 12px;
+ 
+}
+
+.form-row {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  
+   
+}
+
+label {
+  width: 50px;
+  font-weight: bold;
+  color: #16a085;
+  margin-right:20px;
+}
+
+input[type="text"] {
+  width: 400px;
+  padding: 4px 6px;
+  border-radius: 4px;
+  border: 1px solid #ccc;
+  
+}
+
+input.pd {
+  width: 40px;
+}
+
+input.addition {
+  width: 80px;
+}
+
+
+input[type="submit"] {
+  width: 100px;
+  background: #2980b9;
+  color: white;
+  border: none;
+  border-radius: 4px;
+  padding: 6px 0;
+  cursor: pointer;
+  margin-top: 8px;
+}
+input[type="submit"]:hover {
+  background: #1c5980;
+}
+
+
+#od, #os {
+  
+    font-size: 16px;   /* bigger symbols */
+    
+}
+</style>
+
+<script>
+// Maximum expected lengths for each part
+const MAX_SPH = 6;   // SPH digits
+const MAX_CYL = 6;   // CYL digits
+const MAX_AXIS = 3;  // AXIS digits
+
+function enforceFormatAndJump(e) {
+    const input = e.target;
+    let value = input.value;
+
+    // Split input by / and × symbols
+    let parts = value.split(/[/×]/).map(p => p.trim());
+
+    // Ensure all three parts exist
+    while(parts.length < 3) parts.push('');
+
+    // Clean each part
+   
+
+    // Auto-jump cursor forward
+    let pos = input.selectionStart;
+
+    const sphEnd = parts[0].length;
+    const cylEnd = sphEnd + 3 + parts[1].length; // " / "
+    const axisEnd = cylEnd + 3 + parts[2].length; // " × "
+
+    if(pos <= sphEnd && parts[0].length >= MAX_SPH) pos = sphEnd + 3;
+    else if(pos > sphEnd && pos <= cylEnd && parts[1].length >= MAX_CYL) pos = cylEnd + 3;
+
+    input.value = `${parts[0]} / ${parts[1]} × ${parts[2]}`;
+    input.setSelectionRange(pos, pos);
+}
+
+// Handle Tab key to move to start of next section
+function handleTabJump(e) {
+    const input = e.target;
+    let pos = input.selectionStart;
+
+    const sphStart = 0;
+    const cylStart = MAX_SPH + 3;
+    const axisStart = cylStart + MAX_CYL + 3;
+
+    if(e.key === "Tab") {
+        if(pos <= MAX_SPH) {
+            e.preventDefault();
+            input.setSelectionRange(cylStart, cylStart);
+        }
+        else if(pos > MAX_SPH && pos <= MAX_SPH + 3 + MAX_CYL) {
+            e.preventDefault();
+            input.setSelectionRange(axisStart, axisStart);
+        }
+    }
+}
+
+// Attach to both OD and OS
+['od', 'os'].forEach(id => {
+    const input = document.getElementById(id);
+    input.addEventListener('input', enforceFormatAndJump);
+    input.addEventListener('keydown', handleTabJump);
+
+    // Prevent deleting / or ×
+    input.addEventListener('keydown', (e) => {
+        const pos = input.selectionStart;
+        if((pos === MAX_SPH + 1 || pos === MAX_SPH + 3 + MAX_CYL + 1) && (e.key === "Delete")) {
+            e.preventDefault();
+        }
+    });
+
+    // Cursor snapping on click (only if still empty template)
+    input.addEventListener("click", () => {
+        const val = input.value.trim();
+        if (!/[0-9+\-]/.test(val)) {
+            let pos = input.selectionStart;
+
+            const sphStart = 0;
+            const sphEnd = MAX_SPH;
+            const cylStart = MAX_SPH + 3;
+            const cylEnd = cylStart + MAX_CYL;
+            const axisStart = cylEnd + 3;
+
+            if (pos <= sphEnd) {
+                input.setSelectionRange(sphStart, sphStart);
+            } else if (pos > sphEnd && pos <= cylEnd) {
+                input.setSelectionRange(cylStart, cylStart);
+            } else {
+                input.setSelectionRange(axisStart, axisStart);
+            }
+        }
+    });
+});
+
+// AJAX form submission
+document.querySelector("#refraction form").addEventListener("submit", function(e) {
+    e.preventDefault();
+
+    const form = e.target;
+    const formData = new FormData(form);
+
+    fetch(form.action, {
+        method: "POST",
+        body: formData,
+        headers: { "X-Requested-With": "XMLHttpRequest" }
+    })
+    .then(response => {
+        if(!response.ok) throw new Error("Network error");
+        return response.json();
+    })
+    .then(data => {
+        document.getElementById("success-message").style.display = "block";
+        form.reset();
+    })
+    .catch(error => {
+        console.error("Error:", error);
+        alert("Something went wrong!");
+    });
+});
+
+
+
+
+
+
+</script>
