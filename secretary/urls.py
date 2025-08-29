@@ -14,4 +14,8 @@ urlpatterns = [
     path("get_last_refraction/<str:patient_id>/", views.get_patient_last_refraction, name="get_patient_last_refraction"),
 
     path("patients/table/", views.patients_table_partial, name="patients_table_partial"),
+
+    path("accept_existing_patient/", views.accept_existing_patient, name="accept_existing_patient"),
+    # ... other urls
+
 ]

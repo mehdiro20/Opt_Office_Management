@@ -100,7 +100,7 @@
 
 <div class="actions">
     <a onclick="openRegisterModal()">➕ Register New Patient</a>
-    <a href="{% url 'secretary:accept_existing_patient' %}">✅ Accept Existing Patient by ID</a>
+    <a onclick="openAcceptModal()">✅ Accept Existing Patient</a>
     <a href="{% url 'secretary:get_patient_last_refraction_t2' %}">👁 Get Patient Last Refraction</a>
 </div>
 
@@ -131,6 +131,7 @@
 
 <!-- Register Patient Modal -->
 {% include "secretary/register_patient_modal.html" %}
+{% include "secretary/accept_existing_patient_modal.html" %}
 <!-- Success toast -->
 {% if messages %}
   {% for message in messages %}
@@ -273,7 +274,95 @@
             setTimeout(() => t.style.display = 'none', 3000);
         });
     });
+    
+    
+        // ---- Accept Existing Patient Modal ----
+    function openAcceptModal() {
+        document.getElementById("acceptModal").style.display = "flex";
+        document.getElementById("acceptModal").setAttribute("aria-hidden", "false");
+        document.getElementById("accept_melli").focus();
+    }
+    function closeAcceptModal() {
+        document.getElementById("acceptModal").style.display = "none";
+        document.getElementById("acceptModal").setAttribute("aria-hidden", "true");
+        const err = document.getElementById("acceptError");
+        err.textContent = ""; err.style.display = "none";
+        document.getElementById("acceptForm").reset();
+    }
+    window.addEventListener("keydown", (e) => {
+        if (e.key === "Escape") closeAcceptModal();
+    });
+    window.addEventListener("click", (event) => {
+        const modal = document.getElementById("acceptModal");
+        if (event.target === modal) closeAcceptModal();
+    });
+    
+    // ---- AJAX Accept Form ----
+    document.getElementById("acceptForm").addEventListener("submit", function(e) {
+        e.preventDefault();
+        const form = this;
+        const errorBox = document.getElementById("acceptError");
+        errorBox.textContent = ""; errorBox.style.display = "none";
+    
+        const formData = new FormData(form);
+    
+        fetch(form.action, {
+            method: "POST",
+            body: formData,
+            headers: {
+                "X-Requested-With": "XMLHttpRequest",
+                "X-CSRFToken": csrftoken
+            }
+        })
+        .then(async res => {
+            const ct = res.headers.get("content-type") || "";
+            if (!ct.includes("application/json")) {
+                const text = await res.text();
+                throw new Error("Unexpected response from server.");
+            }
+            return res.json();
+        })
+        .then(data => {
+            if (data.success) {
+                removeFromDismissed(data.patient_id);
+                closeAcceptModal();
+                showToast(); // reuse your toast
+                
+                refreshPatientsTable();
+                
+            } else {
+                errorBox.textContent = data.error || "Patient not found.";
+                errorBox.style.display = "block";
+            }
+        })
+        .catch(err => {
+            errorBox.textContent = err.message || "Server error. Please try again.";
+            errorBox.style.display = "block";
+        });
+    }); 
+    function removeFromDismissed(patientId) {
+    const dismissed = JSON.parse(localStorage.getItem("dismissedPatients") || "[]");
+    const index = dismissed.indexOf(patientId.toString()); // convert to string
+    if (index > -1) {
+        dismissed.splice(index, 1);
+        localStorage.setItem("dismissedPatients", JSON.stringify(dismissed));
+    }
+}
 
+// ---- Refresh the patients table via AJAX ----
+function refreshPatientsTable() {
+    const params = new URLSearchParams(new FormData(document.getElementById('filter-form'))).toString();
+    fetch("{% url 'secretary:patients_table_partial' %}?" + params, {
+        headers: { "X-Requested-With": "XMLHttpRequest" }
+    })
+    .then(res => res.text())
+    .then(html => {
+        document.getElementById("patients-table").innerHTML = html;
+        attachDismissHandlers();
+        hideDismissedRows();
+    })
+    .catch(() => {});
+}
 </script>
 </body>
 </html>

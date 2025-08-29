@@ -73,19 +73,33 @@ def register_patient(request):
         gender = request.POST.get('gender')
         melli_code = request.POST.get('melli_code')
         reason = request.POST.get('reason')
-    
+
+        is_ajax = request.headers.get('x-requested-with') == 'XMLHttpRequest'
+
+        def ajax_error(msg, status=400):
+            return JsonResponse({'success': False, 'error': msg}, status=status)
+
+        # Required fields
         if not all([name, family_name, age, gender, reason]):
-            messages.error(request, "All required fields must be filled!")
-            return redirect('secretary:secretary_dashboard')
-    
-        # Optional: validate phone and melli_code
+            msg = "All required fields must be filled!"
+            return ajax_error(msg) if is_ajax else _redirect_with_message(request, msg, error=True)
+
+        # Format checks
         if phone and not phone.isdigit():
-            messages.error(request, "Phone number must contain digits only.")
-            return redirect('secretary:secretary_dashboard')
+            msg = "Phone number must contain digits only."
+            return ajax_error(msg) if is_ajax else _redirect_with_message(request, msg, error=True)
+
         if melli_code and not melli_code.isdigit():
-            messages.error(request, "Melli code must contain digits only.")
-            return redirect('secretary:secretary_dashboard')
-    
+            msg = "Melli code must contain digits only."
+            return ajax_error(msg) if is_ajax else _redirect_with_message(request, msg, error=True)
+
+        # Duplicate Melli code
+        if melli_code and Patient.objects.filter(melli_code=melli_code).exists():
+            msg = "This Melli code is already registered."
+            # 409 Conflict is a good semantic status for duplicates
+            return ajax_error(msg, status=409) if is_ajax else _redirect_with_message(request, msg, error=True)
+
+        # Create
         patient = Patient.objects.create(
             name=name,
             family_name=family_name,
@@ -95,12 +109,20 @@ def register_patient(request):
             melli_code=melli_code,
             reason=reason
         )
-  
-        if request.headers.get('x-requested-with') == 'XMLHttpRequest':
-            return JsonResponse({'success': True, 'message': f'Patient {name} registered successfully.'})
-        else:
-            messages.success(request, f"Patient {name} registered successfully.")
-            return redirect('secretary:secretary_dashboard')
+
+        msg = f"Patient {name} registered successfully."
+        return JsonResponse({'success': True, 'message': msg}) if is_ajax else _redirect_with_message(request, msg)
+
+    # For non-POST:
+    return redirect('secretary:secretary_dashboard')
+
+
+def _redirect_with_message(request, msg, error=False):
+    if error:
+        messages.error(request, msg)
+    else:
+        messages.success(request, msg)
+    return redirect('secretary:secretary_dashboard')
 
 def remove_patient(request, patient_id):
     patient = get_object_or_404(Patient, id=patient_id)
@@ -110,9 +132,6 @@ def remove_patient(request, patient_id):
     return redirect('secretary:secretary_dashboard')
 
 
-def accept_existing_patient(request):
-    # Your code to handle accepting existing patient
-    return render(request, 'secretary/accept_existing.html')
 
 # View patient profile (works for both secretary and doctor)
 def patient_profile(request, patient_id):
@@ -152,3 +171,23 @@ def get_patient_last_refraction_t3(request):
                return render(request, "secretary/get_last_refraction.html", {"patient": patient, "not_found": True})
        except Patient.DoesNotExist:
            return render(request, "secretary/get_last_refraction.html", {"not_found": True})
+       
+        
+@require_POST
+def accept_existing_patient(request):
+    melli_code = request.POST.get("melli_code")
+    if not melli_code:
+        return JsonResponse({"success": False, "error": "Please provide Patient ID or Melli Code."})
+
+    try:
+        # Try to find patient by ID or Melli Code
+        patient = Patient.objects.filter(melli_code=melli_code).first() or Patient.objects.filter(patient_id=melli_code).first()
+        if not patient:
+            return JsonResponse({"success": False, "error": "No patient found."})
+
+        patient.status = "waiting"
+        patient.save()
+
+        return JsonResponse({"success": True, 'patient_id': patient.id})
+    except Exception as e:
+        return JsonResponse({"success": False, "error": str(e)})       

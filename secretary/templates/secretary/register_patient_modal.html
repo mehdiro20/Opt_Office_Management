@@ -70,72 +70,54 @@
 </style>
 
 <script>
-    // ---- Modal open/close ----
-    function openRegisterModal() {
-        document.getElementById("registerModal").style.display = "flex";
-        document.getElementById("registerModal").setAttribute("aria-hidden", "false");
-        document.getElementById("rp_name").focus();
-    }
-    function closeRegisterModal() {
-        document.getElementById("registerModal").style.display = "none";
-        document.getElementById("registerModal").setAttribute("aria-hidden", "true");
-        document.getElementById("registerForm").reset();
-        const err = document.getElementById("formError");
-        err.textContent = ""; err.style.display = "none";
-    }
+  document.getElementById("registerForm").addEventListener("submit", function(e){
+    e.preventDefault();
+    const form = this;
+    const errorBox = document.getElementById("formError");
+    errorBox.textContent = ""; errorBox.style.display = "none";
 
-    // Close modal on ESC or click outside
-    window.addEventListener("keydown", e => { if(e.key==="Escape") closeRegisterModal(); });
-    window.addEventListener("click", e => { if(e.target===document.getElementById("registerModal")) closeRegisterModal(); });
+    const formData = new FormData(form);
 
-    // ---- CSRF helper ----
-    function getCookie(name) {
-        const value = `; ${document.cookie}`;
-        const parts = value.split(`; ${name}=`);
-        if (parts.length === 2) return parts.pop().split(';').shift();
-    }
-
-    // ---- AJAX form submission ----
-    document.getElementById("registerForm").addEventListener("submit", function(e){
-        e.preventDefault();
-        const form = this;
-        const errorBox = document.getElementById("formError");
-        errorBox.textContent = ""; errorBox.style.display = "none";
-
-        const formData = new FormData(form);
-
-        fetch(form.action, {
-            method: "POST",
-            body: formData,
-            headers: {
-                "X-Requested-With": "XMLHttpRequest",
-                "X-CSRFToken": getCookie('csrftoken')
-            }
-        })
-        .then(async res => {
-            const ct = res.headers.get("content-type") || "";
-            if (!ct.includes("application/json")) throw new Error("Unexpected response from server.");
-            return res.json();
-        })
-        .then(data => {
-            if(data.success){
-                closeRegisterModal();
-                showToast();
-                if(typeof refreshPatientsTable === "function") refreshPatientsTable();
-            } else {
-                errorBox.textContent = data.error || "Unexpected server error.";
-                errorBox.style.display = "block";
-            }
-        })
-        .catch(err => {
-            errorBox.textContent = err.message || "Server error. Please try again.";
-            errorBox.style.display = "block";
-        });
+    fetch(form.action, {
+      method: "POST",
+      body: formData,
+      headers: {
+        "X-Requested-With": "XMLHttpRequest",
+        "X-CSRFToken": getCookie('csrftoken')
+      }
+    })
+    .then(async res => {
+      const ct = res.headers.get("content-type") || "";
+      if (ct.includes("application/json")) {
+        const data = await res.json();
+        if (!res.ok || data.success === false) {
+          // Use server-provided error if available
+          throw new Error(data.error || "Validation failed.");
+        }
+        return data; // success JSON
+      } else {
+        // Probably an HTML error page (e.g., CSRF failure/redirect)
+        const text = await res.text();
+        // Try to give a helpful hint on CSRF
+        if (/csrf/i.test(text)) throw new Error("CSRF verification failed. Reload the page and try again.");
+        throw new Error("Unexpected response from server.");
+      }
+    })
+    .then(data => {
+      // success path
+      closeRegisterModal();
+      showToast();
+      if (typeof refreshPatientsTable === "function") refreshPatientsTable();
+    })
+    .catch(err => {
+      errorBox.textContent = err.message || "Server error. Please try again.";
+      errorBox.style.display = "block";
     });
+  });
 
-    function showToast(){
-        const t = document.getElementById("successToast");
-        t.style.display = "block";
-        setTimeout(()=> t.style.display = "none", 2200);
-    }
+  function getCookie(name) {
+    const value = `; ${document.cookie}`;
+    const parts = value.split(`; ${name}=`);
+    if (parts.length === 2) return parts.pop().split(';').shift();
+  }
 </script>

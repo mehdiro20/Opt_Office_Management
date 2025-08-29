@@ -1,0 +1,23 @@
+# -*- coding: utf-8 -*-
+"""
+Created on Wed Aug 27 11:39:19 2025
+
+@author: Mehdi
+"""
+
+<div id="acceptModal" class="modal" aria-hidden="true">
+  <div class="modal-content">
+    <span class="close-btn" onclick="closeAcceptModal()">&times;</span>
+    <h2>Accept Existing Patient</h2>
+
+    <form id="acceptForm" method="POST" action="{% url 'secretary:accept_existing_patient' %}">
+      {% csrf_token %}
+      <label for="accept_melli">Patient ID or Melli Code:</label>
+      <input type="text" id="accept_melli" name="melli_code" required placeholder="Enter Patient ID or Melli Code">
+
+      <div id="acceptError" class="error-message"></div>
+
+      <button type="submit">Accept Patient</button>
+    </form>
+  </div>
+</div>

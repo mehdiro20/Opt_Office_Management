@@ -4,144 +4,235 @@
     <meta charset="UTF-8">
     <title>Patient Profile</title>
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.0/css/all.min.css" />
-    <style>
-        body {
-            font-family: Arial, sans-serif;
-            margin: 0;
-            display: flex;
-            background-color: #f4f7f8;
-            min-height: 100vh;
-            position: relative;
-        }
+<style>
+body {
+    font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+    margin: 0;
+    display: flex;
+    background-color: #eef2f5;
+    min-height: 100vh;
+}
 
-        /* Sidebar */
-        .sidebar {
-            width: 200px;
-            background-color: #2c3e50;
-            color: white;
-            padding-top: 20px;
-            height: 100vh;
-        }
-        .sidebar h2 { text-align: center; margin-bottom: 20px; }
-        .sidebar ul { list-style: none; padding: 0; }
-        .sidebar ul li {
-            padding: 12px 20px;
-            cursor: pointer;
-        }
-        .sidebar ul li:hover,
-        .sidebar ul li.active { background-color: #1abc9c; }
+/* Sidebar */
+.sidebar {
+    width: 240px;
+    background-color: #1f2a38;
+    color: white;
+    padding-top: 25px;
+    height: 100vh;
+    box-shadow: 3px 0 8px rgba(0,0,0,0.1);
+    position: relative;
+}
+.sidebar h2 {
+    text-align: center;
+    margin-bottom: 25px;
+    font-size: 20px;
+    color: #1abc9c;
+    letter-spacing: 1px;
+    text-transform: uppercase;
+}
+.sidebar ul {
+    list-style: none;
+    padding: 0;
+    margin: 0;
+    
+}
+.sidebar ul li {
+    padding: 14px 20px;
+    cursor: pointer;
+    position: relative;
+    font-size: 15px;
+    border-radius: 6px;
+    transition: all 0.2s ease;
+    
+}
+.sidebar ul li:hover {
+    background-color: #149174;
+    color: #fff;
+}
 
-        /* Main content */
-        .main-content {
-            flex-grow: 1;
-            padding: 20px;
-            display: flex;
-            justify-content: center;
-            box-sizing: border-box;
-            min-width: 750px; /* ensures enough width for widest section (tables, forms) */
-            min-height: 550px; /* ensures enough vertical space for tallest section */
-        }
-        
-        /* Section boxes */
-        .section {
-            display: none;
-            background: white;
-            padding: 30px;
-            border-radius: 8px;
-            box-shadow: 0 0 10px rgba(0,0,0,0.1);
-            width: 100%;       /* fills main-content width */
-            max-width: 800px;  /* readable max width */
-            min-width: 700px;  /* ensures enough width for forms/tables */
-            min-height: 450px; /* enough height for content without scrolling */
-            margin-bottom: 40px;
-            text-align: left;
-            box-sizing: border-box;
-        }
-        .section h3 { margin-top: 0; text-align: center; }
 
-        .section input[type="text"], 
-        .section input[type="number"], 
-        .section input[type="date"] {
-            width: 100px; /* fixed width */
-            padding: 6px 8px;
-            font-size: 14px;
-            border-radius: 4px;
-            border: 1px solid #ccc;
-            box-sizing: border-box;
-        }
-        
-        /* Submit button */
-        .section input[type="submit"] {
-            width: auto; /* button adjusts to text */
-            padding: 8px 16px;
-        }
-        .section input[type="submit"]:hover { background-color: #1c5980; }
+.sidebar ul li:active {
+    background-color: #12876f;
+    color: #fff;
+}  
+.sidebar ul.active {
+    background-color: #16a085;
+    color: white;
+    font-weight: 600;
+}
 
-        /* Table styling */
-        table {
-            width: 100%;
-            border-collapse: collapse;
-            margin-top: 20px;
-        }
-        table th, table td {
-            padding: 8px 12px;
-            border: 1px solid #ccc;
-            text-align: left;
-        }
-        table th {
-            background-color: #2980b9;
-            color: white;
-        }
+.sidebar ul li.active {
+    background-color: #1abc9c;
+    color: white;
+    font-weight: 600;
+}
 
-        /* Bottom-right floating buttons */
-        .bottom-buttons {
-            position: fixed;
-            bottom: 20px;
-            right: 20px;
-            display: flex;
-            gap: 12px;
-        }
-        .bottom-buttons button,
-        .bottom-buttons a {
-            width: 55px;
-            height: 55px;
-            border-radius: 50%;
-            border: none;
-            background-color: #2980b9;
-            color: white;
-            font-size: 22px;
-            display: flex;
-            align-items: center;
-            justify-content: center;
-            cursor: pointer;
-            text-decoration: none;
-            box-shadow: 0 3px 6px rgba(0,0,0,0.2);
-            transition: all 0.2s ease;
-        }
-        .bottom-buttons button.done-btn { background-color: #28a745; }
-        .bottom-buttons button.done-btn:hover { background-color: #218838; }
-        .bottom-buttons a:hover { background-color: #1c5980; }
+.sidebar ul li ul {
+    display: none;
+    list-style: none;
+    padding-left: 20px;
+    margin-top: 5px;
+}
+.sidebar ul li.open > ul {
+    display: block;
+}
+.sidebar ul li ul li {
+    padding: 10px 18px;
+    background: #2c3e50;
+    color: #ecf0f1;
+    font-size: 14px;
+    border-radius: 2px;
+    margin-bottom: 0px;
+    transition: all 0.2s ease;
+}
+.sidebar ul li ul li:hover {
+    background-color: #16a085;
+    color: #fff;
+}
+.sidebar ul li ul li.active {
+    background-color: #12876f;
+    color: white;
+    font-weight: 600;
+}
 
-    </style>
+/* Add arrows to submenu parents */
+.sidebar ul li.has-submenu::after {
+    content: "\f105";
+    font-family: "Font Awesome 6 Free";
+    font-weight: 900;
+    position: absolute;
+    right: 20px;
+    transition: transform 0.3s ease;
+}
+.sidebar ul li.open.has-submenu::after {
+    transform: rotate(90deg);
+}
+
+/* Main content */
+.main-content {
+    flex-grow: 1;
+    padding: 25px;
+    display: flex;
+    justify-content: center;
+    box-sizing: border-box;
+    min-width: 750px;
+    min-height: 550px;
+}
+
+/* Section boxes */
+.section {
+    display: none;
+    background: white;
+    padding: 35px;
+    border-radius: 12px;
+    box-shadow: 0 4px 15px rgba(0,0,0,0.1);
+    width: 100%;
+    max-width: 850px;
+    text-align: left;
+    transition: all 0.3s ease;
+}
+.section h3 {
+    margin-top: 0;
+    text-align: center;
+    color: #2980b9;
+    font-size: 22px;
+}
+
+/* Table styling */
+table {
+    width: 100%;
+    border-collapse: collapse;
+    margin-top: 20px;
+    border-radius: 8px;
+    overflow: hidden;
+    box-shadow: 0 2px 5px rgba(0,0,0,0.05);
+}
+table th, table td {
+    padding: 10px 15px;
+    border-bottom: 1px solid #ddd;
+    text-align: left;
+}
+table th {
+    background-color: #3498db;
+    color: white;
+    font-weight: 600;
+}
+
+/* Bottom-right floating buttons */
+.bottom-buttons {
+    position: fixed;
+    bottom: 20px;
+    right: 20px;
+    display: flex;
+    gap: 14px;
+}
+.bottom-buttons button,
+.bottom-buttons a {
+    width: 55px;
+    height: 55px;
+    border-radius: 50%;
+    border: none;
+    background-color: #2980b9;
+    color: white;
+    font-size: 22px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    cursor: pointer;
+    text-decoration: none;
+    box-shadow: 0 4px 8px rgba(0,0,0,0.15);
+    transition: all 0.2s ease;
+}
+.bottom-buttons button.done-btn { background-color: #27ae60; }
+.bottom-buttons button.done-btn:hover { background-color: #1e8449; }
+.bottom-buttons a:hover { background-color: #1c5980; }
+</style>
+
 </head>
 <body>
 
     <div class="sidebar">
         <h2>Patient Menu</h2>
         <ul>
-            <li data-target="general">General Info</li>
-            <li data-target="refraction">Refraction</li>
-            <li data-target="past-refractions" class="active">Past Refractions</li>
-            <li data-target="sub1">Sub1</li>
-            <li data-target="sub2">Sub2</li>
-            <li data-target="sub3">Sub3</li>
+            <li>General
+            
+                 <ul>
+                     <li data-target="general">General info</li>
+
+                 </ul>
+            
+            
+            </li>
+
+            <li>New Records
+                <ul> 
+                    <li data-target="general_health">General Health</li>
+                    <li data-target="previous_examination">Previous Examination / Illness</li>
+                    <li data-target="refraction">VA & Refraction</li>
+                    <li data-target="acc_bin">Acc & Binocular Examination</li>
+                    <li data-target="amblyopia">amblyopia</li>
+                    <li data-target="referrals">Referrals</li>
+                    
+                    
+                    
+                    
+                </ul>
+            </li>
+
+            <li>Past Records
+                <ul>
+                    <li data-target="past-refractions">Past Refractions</li>
+                    <li data-target="past-refractions">Past Refractions</li>
+                </ul>
+            </li>
         </ul>
     </div>
 
     <div class="main-content">
 
         <!-- General Info -->
-        <div id="general" class="section">
+        <div id="general" class="section" style="display:block;">
             <h3>General Information</h3>
             <p><strong>Name:</strong> {{ patient.name }}</p>
             <p><strong>Age:</strong> {{ patient.age }}</p>
@@ -151,99 +242,79 @@
         </div>
 
         <!-- Refraction Section -->
-        <div id="refraction" class="section" style="max-width: 400px; margin: auto;">
-            <h3>Refraction</h3>
-            <form method="POST" action="{% url 'submit_refraction' patient.patient_id %}" style="display: flex; flex-direction: column; gap: 10px;">
-                {% csrf_token %}
-        
-                <div style="display: flex; align-items: center; gap: 10px;">
-                    <label for="od" style="width:60px;">OD:</label>
-                    <input type="text" name="od" id="od" required style="width: 300px; flex: none; padding: 4px 6px; font-size: 14px;">
-                </div>
-        
-                <div style="display: flex; align-items: center; gap: 10px;">
-                    <label for="os" style="width: 60px;">OS:</label>
-                    <input type="text" name="os" id="os" required style="width: 300px; flex: none; padding: 4px 6px; font-size: 14px;">
-                </div>
-        
-                <div style="display: flex; align-items: center; gap: 10px;">
-                    <label for="axis" style="width: 60px;">Addition:</label>
-                    <input type="text" name="axis" id="axis" required style="width: 60px; flex: none; padding: 4px 6px; font-size: 14px;">
-                </div>
-        
-                <div style="display: flex; align-items: center; gap: 10px;">
-                    <label for="pd" style="width: 60px;">PD:</label>
-                    <input type="text" name="pd" id="pd" required style="width: 50px; flex: none; padding: 4px 6px; font-size: 14px;">
-                </div>
-        
-                <div>
-                    <input type="submit" value="Submit" style="
-                        background: #2980b9;
-                        color: white;
-                        border: none;
-                        padding: 6px 14px;
-                        border-radius: 4px;
-                        cursor: pointer;
-                        font-size: 14px;
-                    ">
-                </div>
-            </form>
-        </div>
+      <div id="refraction" class="section">
+        <h3>Refraction</h3>
+        <form method="POST" action="{% url 'submit_refraction' patient.patient_id %}" style="display: flex; flex-direction: column; gap: 12px;">
+            {% csrf_token %}
+            
+            <div style="display: flex; gap: 10px; align-items: center;">
+                <label for="od" style="width:60px;">OD:</label>
+                <input type="text" name="od" id="od" required style="width: 150px;">
+            </div>
+    
+            <div style="display: flex; gap: 10px; align-items: center;">
+                <label for="os" style="width:60px;">OS:</label>
+                <input type="text" name="os" id="os" required style="width: 150px;">
+            </div>
+    
+            <div style="display: flex; gap: 10px; align-items: center;">
+                <label for="axis" style="width:60px;">Addition:</label>
+                <input type="text" name="axis" id="axis" required style="width: 80px;">
+            </div>
+    
+            <div style="display: flex; gap: 10px; align-items: center;">
+                <label for="pd" style="width:60px;">PD:</label>
+                <input type="text" name="pd" id="pd" required style="width: 70px;">
+            </div>
+    
+            <input type="submit" value="Submit"  style="
+           background:#2980b9;
+           color:white;
+           border:none;
+           padding:4px 10px;
+           border-radius:4px;
+           cursor:pointer;
+           width:100px;      
+           font-size:14px;"
+       >
+        </form>
+    </div>
 
         <!-- Past Refractions Section -->
-        <div id="past-refractions" class="section centered" style="display:block; max-width: 800px; margin: auto;">
+        <div id="past-refractions" class="section">
             <h3>Past Refractions</h3>
-        
-            <!-- Date filter (smaller boxes) -->
-            <form method="GET" action="{% url 'patient_profile' patient.patient_id %}" style="display: flex; align-items: center; gap: 8px; margin-bottom: 15px; flex-wrap: wrap;">
-                <input type="date" name="start_date" value="{{ request.GET.start_date }}" style="padding: 4px 6px; font-size: 13px; width: 130px;">
-                <input type="date" name="end_date" value="{{ request.GET.end_date }}" style="padding: 4px 6px; font-size: 13px; width: 130px;">
-                <input type="submit" value="Filter" style="
-                    background: #2980b9;
-                    color: white;
-                    border: none;
-                    padding: 4px 10px;
-                    border-radius: 4px;
-                    cursor: pointer;
-                    font-size: 13px;
-                    height: 30px;
-                ">
+            <form method="GET" action="{% url 'patient_profile' patient.patient_id %}" style="display:flex; gap:8px; margin-bottom:15px; flex-wrap: wrap;">
+                <input type="date" name="start_date" value="{{ request.GET.start_date }}">
+                <input type="date" name="end_date" value="{{ request.GET.end_date }}">
+                <input type="submit" value="Filter" style="background:#2980b9;color:white;border:none;padding:4px 10px;border-radius:4px;cursor:pointer;">
             </form>
-        
-            <!-- Refractions table -->
-            <table style="width: 100%; border-collapse: collapse; background: #fff; border: 1px solid #ddd;">
+            <table>
                 <thead>
-                    <tr style="background: #2980b9; color: white;">
-                        <th style="padding: 8px; text-align: left;">Date/Time</th>
-                        <th style="padding: 8px; text-align: left;">OD</th>
-                        <th style="padding: 8px; text-align: left;">OS</th>
-                        <th style="padding: 8px; text-align: left;">Axis</th>
-                        <th style="padding: 8px; text-align: left;">PD</th>
+                    <tr>
+                        <th>Date/Time</th>
+                        <th>OD</th>
+                        <th>OS</th>
+                        <th>Axis</th>
+                        <th>PD</th>
                     </tr>
                 </thead>
                 <tbody>
                     {% for refraction in past_refractions %}
                     <tr>
-                        <td style="padding: 8px; border-bottom: 1px solid #ddd;">{{ refraction.created_at }}</td>
-                        <td style="padding: 8px; border-bottom: 1px solid #ddd;">{{ refraction.od }}</td>
-                        <td style="padding: 8px; border-bottom: 1px solid #ddd;">{{ refraction.os }}</td>
-                        <td style="padding: 8px; border-bottom: 1px solid #ddd;">{{ refraction.axis }}</td>
-                        <td style="padding: 8px; border-bottom: 1px solid #ddd;">{{ refraction.pd }}</td>
+                        <td>{{ refraction.created_at }}</td>
+                        <td>{{ refraction.od }}</td>
+                        <td>{{ refraction.os }}</td>
+                        <td>{{ refraction.axis }}</td>
+                        <td>{{ refraction.pd }}</td>
                     </tr>
                     {% empty %}
                     <tr>
-                        <td colspan="5" style="padding: 8px; text-align: center;">No past refractions available.</td>
+                        <td colspan="5" style="text-align:center;">No past refractions available.</td>
                     </tr>
                     {% endfor %}
                 </tbody>
             </table>
         </div>
-
-
-        <!-- Other sections -->
-        <div id="sub1" class="section"><h3>Sub1</h3><p>Content here</p></div>
-        <div id="sub2" class="section"><h3>Sub2</h3><p>Content here</p></div>
-        <div id="sub3" class="section"><h3>Sub3</h3><p>Content here</p></div>
 
         <!-- Bottom-right buttons -->
         <div class="bottom-buttons">
@@ -253,35 +324,162 @@
             </form>
             <a href="{% url 'doctor_dashboard' %}"><i class="fa fa-user-doctor"></i></a>
         </div>
-
     </div>
 
     <script>
-        const menuItems = document.querySelectorAll('.sidebar ul li');
         const sections = document.querySelectorAll('.section');
-
-        menuItems.forEach(item => {
+        const menuItems = document.querySelectorAll('.sidebar ul li[data-target]');
+        const menuItems_bar = document.querySelectorAll('.sidebar ul li');
+        
+        
+        
+        
+        
+        function hideAllSections() {
+            sections.forEach(sec => sec.style.display = 'none');
+        }
+        
+        
+        
+    
+    
+    
+        menuItems_bar.forEach(item => {
             item.addEventListener('click', () => {
-                const target = item.getAttribute('data-target');
-                sections.forEach(sec => sec.style.display = 'none');
-                document.getElementById(target).style.display = 'block';
-                menuItems.forEach(i => i.classList.remove('active'));
-                item.classList.add('active');
+                // Reset all menu items back to normal
+                menuItems_bar.forEach(li => li.style.backgroundColor = "");
+        
+                // Change background color of the clicked one
+                item.style.backgroundColor = "#1abc9c";  // greenish color
             });
         });
 
-        const patientId = "{{ patient.patient_id }}";
-        document.getElementById('done-btn').addEventListener('click', function(event){
-            event.preventDefault();
+
+    
+        // Handle submenu parents (toggle open only)
+        document.querySelectorAll('.sidebar ul li:not([data-target])').forEach(parent => {
+            parent.addEventListener('click', (e) => {
+                e.stopPropagation();
+                parent.classList.toggle('open');
+            });
+        });
+        
+        
+
+        menuItems_bar.forEach(item => {
+            item.addEventListener('click', (e) => {
+                e.stopPropagation();
+    
+                // Hide all sections first
+                hideAllSections();
+    
+                // Remove active from all items
+                menuItems.forEach(i => i.classList.remove('active'));
+    
+                // Show clicked section
+                const target = item.getAttribute('data-target');
+                if (target) {
+                    document.getElementById(target).style.display = 'block';
+                    item.classList.add('active');
+                }
+    
+                // Ensure parent submenu stays open
+                let parentLi = item.closest('ul').parentElement;
+                while (parentLi && parentLi.tagName === 'LI') {
+                    parentLi.classList.add('open');
+                    parentLi.style.backgroundColor="#1abc9c"
+                    parentLi = parentLi.closest('ul').parentElement;
+                }
+            });
+        });
+    
+    
+    
+    
+        // Handle clickable items with data-target
+        menuItems.forEach(item => {
+            item.addEventListener('click', (e) => {
+                e.stopPropagation();
+    
+                // Hide all sections first
+                hideAllSections();
+    
+                // Remove active from all items
+                menuItems.forEach(i => i.classList.remove('active'));
+    
+                // Show clicked section
+                const target = item.getAttribute('data-target');
+                if (target) {
+                    document.getElementById(target).style.display = 'block';
+     
+                    item.classList.add('active');
+                }
+    
+                // Ensure parent submenu stays open
+                let parentLi = item.closest('ul').parentElement;
+                while (parentLi && parentLi.tagName === 'LI') {
+                    parentLi.classList.add('open');
+                    parentLi = parentLi.closest('ul').parentElement;
+                }
+            });
+        });
+        
+        
+        
+                menuItems_bar.forEach(item => {
+                item.addEventListener('click', (e) => {
+                    e.stopPropagation(); // prevent parent clicks from interfering
+            
+                    const submenu = item.querySelector('ul'); // get child ul
+                    if (submenu) {
+                    
+            
+                        const firstLi = submenu.querySelector('li[data-target]');
+                        if (firstLi) {
+                            const target = firstLi.getAttribute('data-target');
+                            
+                            if (target) {
+                                const sections = document.querySelectorAll('.section');
+                                sections.forEach(sec => sec.style.display = 'none');
+                                document.getElementById(target).style.display = 'block';
+                                firstLi.classList.add('active'); // make it active
+                            }
+                        }
+                    }
+                });
+            });
+        // Default: show general
+       
+        // Done button
+        document.getElementById('done-btn').addEventListener('click', function(e){
+            e.preventDefault();
             document.getElementById('done-form').submit();
         });
-
-        // Keep Past Refractions active if filtering
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+    
+        // Keep past refractions active if filtering
         {% if request.GET.start_date or request.GET.end_date %}
-            sections.forEach(sec => sec.style.display = 'none');
+            hideAllSections();
             document.getElementById('past-refractions').style.display = 'block';
-            menuItems.forEach(i => i.classList.remove('active'));
-            document.querySelector('[data-target="past-refractions"]').classList.add('active');
+            const pastRefItem = document.querySelector('[data-target="past-refractions"]');
+            pastRefItem.classList.add('active');
+    
+            let parentLi = pastRefItem.closest('ul').parentElement;
+            while (parentLi && parentLi.tagName === 'LI') {
+                parentLi.classList.add('open');
+                parentLi = parentLi.closest('ul').parentElement;
+            }
         {% endif %}
     </script>
 
