@@ -9,12 +9,14 @@
       <div class="form-row">
         <label for="od">OD:</label>
         <input type="text" id="od" name="od" value="       /        ×   ">
+        <input type="text" id="odcl" name="odcl" style="display:none">
       </div>
 
       <!-- OS -->
       <div class="form-row">
         <label for="os">OS:</label>
         <input type="text" id="os" name="os" value="       /        ×   ">
+        <input type="text" id="oscl" name="oscl" style="display:none">
       </div>
        <div class="form-row">
          <label for="pd">Addition:</label>
@@ -24,13 +26,35 @@
         <label for="pd">PD:</label>
         <input type="text" name="pd" class="pd" maxlength="5" required>
       </div>
-
-      <input type="submit" value="Submit">
+          </div>
+       
+          
+      <input type="submit" value="Submit" onclick="testParser()";>
     </form>
-  </div>
-  <div id="success-message" style="display:none; color:green; margin-top:10px;">
-    Refraction submitted successfully!
-</div>
+      <div id="success-message" style="display:none; color:green; margin-top:10px;">
+        Refraction submitted successfully!
+    </div>
+
+    <div id="results">
+        <div id="clod" class="result-card" style="display:none;">
+        <!-- OD results will appear here -->
+        </div>
+        <div id="clos" class="result-card" style="display:none;">
+            <!-- OS results will appear here -->
+        </div>
+    </div>
+    
+
+  
+  
+  
+  
+
+
+
+
+
+
 </div>
 
 <style>
@@ -97,6 +121,33 @@ input[type="submit"]:hover {
     font-size: 16px;   /* bigger symbols */
     
 }
+#results {
+  margin-top: 20px;
+  display: flex;
+  flex-direction: column;
+  gap: 12px;
+}
+
+/* Each result card */
+.result-card {
+  background: #f0fdf4;              /* soft green background */
+  border: 1px solid #34d399;        /* green border */
+  border-left: 6px solid #10b981;   /* bold green accent */
+  border-radius: 8px;
+  padding: 12px 16px;
+  font-size: 15px;
+  font-weight: 500;
+  color: #065f46;                   /* darker green text */
+  box-shadow: 0 2px 6px rgba(0,0,0,0.08);
+  transition: transform 0.2s ease, box-shadow 0.2s ease;
+}
+
+/* Hover effect for cards */
+.result-card:hover {
+  transform: translateY(-2px);
+  box-shadow: 0 4px 12px rgba(0,0,0,0.12);
+}
+</style>
 </style>
 
 <script>
@@ -190,6 +241,72 @@ function handleTabJump(e) {
     });
 });
 
+
+function spectacleToCL(sph, cyl, axis, vertexDistance = 0.012) {
+
+    sph = parseFloat(sph) || 0;
+    cyl = parseFloat(cyl) || 0;
+    axis = parseInt(axis) || 0;
+    // Convert sphere with vertex distance
+    let clSph = sph / (1 - (vertexDistance * sph));
+
+    // Convert max power (sphere + cyl)
+    let maxpow = (sph + cyl) / (1 - (vertexDistance * (sph + cyl)));
+
+    // Round to nearest 0.25D
+    clSph = Math.round(clSph * 4) / 4;
+    let maxpowr = Math.round(maxpow * 4) / 4;
+
+    // CL cyl is the difference between max power and sphere
+    let clCyl = Math.round((maxpowr - clSph) * 4) / 4;
+
+    return {
+        sphere: clSph,
+        cylinder: clCyl,
+        axis: clCyl === 0 ? null : axis  // drop axis if cyl = 0
+    };
+}
+
+
+
+function parsePrescription(inputValue) {
+    // Split and keep separators "/" and "×"
+    let parts = inputValue.split(/([/×])/).map(p => p.trim());
+
+    // Remove empty strings
+    parts = parts.filter(p => p !== "");
+
+    // Expected structure: [sphere, "/", cylinder, "×", axis]
+    let sphere   = parts[0] || "";
+    let cylinder = parts[2] || "";
+    let axis     = parts[4] || "";
+
+    return { sphere, cylinder, axis };
+}
+
+
+function testParser() {
+    let odValue = document.getElementById("od").value;
+    let osValue = document.getElementById("os").value;
+
+    // Parse OD and OS separately
+    let result_od = parsePrescription(odValue);
+    let result_os = parsePrescription(osValue);
+
+    // Convert spectacle to CL (OD example)
+    let cl_result = spectacleToCL(result_od.sphere, result_od.cylinder, result_od.axis);
+    let cl_result_os = spectacleToCL(result_os.sphere, result_os.cylinder, result_os.axis);
+    // Show result
+    document.getElementById("clod").style.display = "block";
+    document.getElementById("clod").innerText = "Spectacle OD: " + result_od.sphere+'/'+result_od.cylinder+'x'+result_od.axis+
+    " and ContactLens OD: " + cl_result.sphere+'/'+cl_result.cylinder+'x'+cl_result.axis;
+    document.getElementById("odcl").value=cl_result.sphere+'/'+cl_result.cylinder+'x'+cl_result.axis
+    
+    document.getElementById("clos").style.display = "block";
+    document.getElementById("clos").innerText = "Spectacle OS: " + result_os.sphere+'/'+result_os.cylinder+'x'+result_os.axis+
+    " and ContactLens OS: " + cl_result_os.sphere+'/'+cl_result_os.cylinder+'x'+cl_result_os.axis;
+     document.getElementById("odcl").value=cl_result_os.sphere+'/'+cl_result_os.cylinder+'x'+cl_result_os.axis
+}
 // AJAX form submission
 document.querySelector("#refraction form").addEventListener("submit", function(e) {
     e.preventDefault();
@@ -215,10 +332,5 @@ document.querySelector("#refraction form").addEventListener("submit", function(e
         alert("Something went wrong!");
     });
 });
-
-
-
-
-
 
 </script>

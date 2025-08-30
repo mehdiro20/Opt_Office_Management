@@ -9,8 +9,11 @@ class Refraction(models.Model):
     patient = models.ForeignKey(Patient, on_delete=models.CASCADE, related_name='refractions')
     od = models.CharField(max_length=50)
     os = models.CharField(max_length=50)
+    odcl = models.CharField(max_length=50)
+    oscl = models.CharField(max_length=50)
     axis = models.CharField(max_length=50)
     pd = models.CharField(max_length=50)
+   
     created_at = models.DateTimeField(auto_now_add=True)
 
     def __str__(self):

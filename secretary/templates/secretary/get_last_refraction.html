@@ -33,6 +33,8 @@ Created on Thu Aug 21 12:23:43 2025
                 <h3>Last Refraction for {{ patient.name }} ({{ patient.patient_id }})</h3>
                 <p><strong>Right Eye (OD):</strong> {{ refraction.od }}</p>
                 <p><strong>Left Eye (OS):</strong> {{ refraction.os }}</p>
+                 <p><strong>Right Eye (OD Contactlens):</strong> {{ refraction.odcl }}</p>
+                 <p><strong>Left Eye (OS Contactlens):</strong> {{ refraction.oscl }}</p>
                 <p><strong>Added on:</strong> {{ refraction.created_at }}</p>
             </div>
         {% elif not_found %}

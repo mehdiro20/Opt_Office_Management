@@ -38,6 +38,8 @@ def submit_refraction(request, patient_id):
     if request.method == "POST":
         od = request.POST.get('od')
         os = request.POST.get('os')
+        odcl=request.POST.get('odcl')
+        oscl=request.POST.get('odcl')
         axis = request.POST.get('axis')  # you had this in form
         pd = request.POST.get('pd')
 
@@ -45,6 +47,8 @@ def submit_refraction(request, patient_id):
             patient=patient,
             od=od,
             os=os,
+            odcl=odcl,
+            oscl=oscl,
             axis=axis,
             pd=pd
         )
