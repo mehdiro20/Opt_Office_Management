@@ -2,7 +2,7 @@
 <div id="refraction" class="section">
   <h3>Refraction</h3>
   <div class="refraction-card">
-    <form method="POST"  action="{% url 'submit_refraction' patient.patient_id %}" style="display: flex; flex-direction: column; gap: 12px;">
+    <form method="POST"  action="{% url 'doctor:submit_refraction' patient.patient_id %}" style="display: flex; flex-direction: column; gap: 12px;">
       {% csrf_token %}
 
       <!-- OD -->
@@ -314,7 +314,7 @@ document.querySelector("#refraction form").addEventListener("submit", function(e
     const form = e.target;
     const formData = new FormData(form);
 
-    fetch(form.action, {
+       fetch(form.action, {
         method: "POST",
         body: formData,
         headers: { "X-Requested-With": "XMLHttpRequest" }

@@ -38,7 +38,9 @@ INSTALLED_APPS = [
     "django.contrib.messages",     # Flash messages (like "Saved successfully")
     "django.contrib.staticfiles",  # CSS, JS, images
     "secretary",      
-    "doctor"# 👈 your custom app
+    "doctor",# 👈 your custom app
+    'accounts',
+    'captcha'
 ]
 
 MIDDLEWARE = [
@@ -122,3 +124,15 @@ STATIC_URL = "static/"
 # https://docs.djangoproject.com/en/5.2/ref/settings/#default-auto-field
 
 DEFAULT_AUTO_FIELD = "django.db.models.BigAutoField"
+
+AUTH_USER_MODEL = 'accounts.CustomUser'
+# Redirect to login page if user is not authenticated
+
+
+LOGIN_REDIRECT_URL = "/doctor/"
+LOGIN_URL = "/login/"
+CSRF_TRUSTED_ORIGINS = [
+    "http://127.0.0.1:8000",
+    "http://localhost:8000"
+]
+STATIC_URL = '/static/'

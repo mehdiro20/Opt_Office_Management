@@ -12,7 +12,7 @@
       <a class="navbar-brand fw-bold" href="#">Optometry Clinic</a>
       <div class="ms-auto">
         <a class="btn btn-outline-light btn-sm" href="/secretary/">Secretary View</a>
-        <a class="btn btn-success btn-sm ms-2" href="{% url 'doctor_patient_list' %}">Patient List</a>
+        <a class="btn btn-success btn-sm ms-2" href="{% url 'doctor:doctor_patient_list' %}">Patient List</a>
         <a class="btn btn-light btn-sm ms-2" href="/admin/">Admin</a>
       </div>
     </div>
@@ -47,10 +47,10 @@
               </div>
 
               <div class="card-footer bg-white d-flex justify-content-between">
-                <a class="btn btn-sm btn-primary" href="{% url 'patient_profile' patient.patient_id %}">Open Profile</a>
+                <a class="btn btn-sm btn-primary" href="{% url 'doctor:patient_profile' patient.patient_id %}">Open Profile</a>
 
                 {% if patient.status == 'accepted' %}
-                  <form method="POST" action="{% url 'remove_from_accepted' patient.patient_id %}" class="d-inline">
+                  <form method="POST" action="{% url 'doctor:remove_from_accepted' patient.patient_id %}" class="d-inline">
                     {% csrf_token %}
                     <button type="submit" class="btn btn-sm btn-outline-danger"
                             onclick="return confirm('Remove from accepted list?');">

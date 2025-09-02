@@ -2,7 +2,7 @@
         <!-- Past Refractions Section -->
         <div id="past-refractions" class="section">
             <h3>Past Refractions</h3>
-            <form method="GET" action="{% url 'patient_profile' patient.patient_id %}" style="display:flex; gap:8px; margin-bottom:15px; flex-wrap: wrap;">
+            <form method="GET" action="{% url 'doctor:patient_profile' patient.patient_id %}" style="display:flex; gap:8px; margin-bottom:15px; flex-wrap: wrap;">
                 <input type="date" name="start_date" value="{{ request.GET.start_date }}">
                 <input type="date" name="end_date" value="{{ request.GET.end_date }}">
                 <input type="submit" value="Filter" style="background:#2980b9;color:white;border:none;padding:4px 10px;border-radius:4px;cursor:pointer;">

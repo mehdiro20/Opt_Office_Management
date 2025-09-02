@@ -24,9 +24,9 @@ Created on Thu Aug 21 13:51:35 2025
   <div class="container">
     <a class="navbar-brand" href="#">Optometry Clinic</a>
     <div class="ms-auto">
-      <a class="btn btn-outline-light btn-sm" href="{% url 'doctor_dashboard' %}">Dashboard</a>
+      <a class="btn btn-outline-light btn-sm" href="{% url 'doctor:doctor_dashboard' %}">Dashboard</a>
       <a class="btn btn-light btn-sm ms-2" href="{% url 'admin:index' %}">Admin</a>
-      <a class="btn btn-success btn-sm ms-2" href="{% url 'doctor_patient_list' %}">Patient List</a>
+      <a class="btn btn-success btn-sm ms-2" href="{% url 'doctor:doctor_patient_list' %}">Patient List</a>
     </div>
   </div>
 </nav>
@@ -61,7 +61,7 @@ Created on Thu Aug 21 13:51:35 2025
           <td>{{ patient.age }}</td>
           <td class="table-actions">
             <!-- Remove from accepted list -->
-           <form method="POST" action="{% url 'delete_patient' patient.id %}">
+           <form method="POST" action="{% url 'doctor:delete_patient' patient.id %}">
                 {% csrf_token %}
                 <button type="submit" class="btn btn-sm btn-outline-danger"
                         onclick="return confirm('Are you sure you want to delete this patient completely?');">
@@ -69,7 +69,7 @@ Created on Thu Aug 21 13:51:35 2025
                 </button>
             </form>
             <!-- Go to profile -->
-            <a href="{% url 'patient_profile' patient.patient_id %}" class="btn btn-sm btn-primary">Profile</a>
+            <a href="{% url 'doctor:patient_profile' patient.patient_id %}" class="btn btn-sm btn-primary">Profile</a>
           </td>
         </tr>
         {% endfor %}

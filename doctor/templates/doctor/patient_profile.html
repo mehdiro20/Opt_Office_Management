@@ -242,11 +242,11 @@ table th {
 
         <!-- Bottom-right buttons -->
         <div class="bottom-buttons">
-            <form method="POST" action="{% url 'remove_from_accepted_profile' patient.patient_id %}" id="done-form">
+            <form method="POST" action="{% url 'doctor:remove_from_accepted_profile' patient.patient_id %}" id="done-form">
                 {% csrf_token %}
                 <button type="submit" id="done-btn" class="done-btn"><i class="fa fa-check"></i></button>
             </form>
-            <a href="{% url 'doctor_dashboard' %}"><i class="fa fa-user-doctor"></i></a>
+            <a href="{% url 'doctor:doctor_dashboard' %}"><i class="fa fa-user-doctor"></i></a>
         </div>
     </div>
 

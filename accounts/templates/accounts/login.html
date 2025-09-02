@@ -1,0 +1,155 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <title>Login</title>
+  {% load static %}
+  <style>
+    /* Body & background */
+    body {
+      font-family: Arial, sans-serif;
+      background-image: url("{% static 'accounts/images/1.jpg' %}");
+      background-size: cover;
+      background-repeat: no-repeat;
+      background-position: center;
+      display: flex;
+      justify-content: center;
+      align-items: center;
+      height: 100vh;
+      margin: 0;
+    }
+
+    /* Login box */
+    .login-box {
+      background-color: rgba(128, 128, 128, 0.4); /* gray with 20% opacity */
+      padding: 30px;
+      border-radius: 12px;
+      width: 360px;
+      text-align: center;
+      box-shadow: 0 6px 15px rgba(0,0,0,0.8);
+    }
+
+    /* Heading */
+ h2 {
+  margin-bottom: 25px;
+  font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+  font-size: 28px;
+  font-weight: 600;
+  font-style: italic; /* makes it italic */
+  color: rgba(250,238,150,0.9);
+  text-shadow: 1px 1px 4px rgba(0, 0, 0, 0.6);
+  letter-spacing: 1px;
+}
+    /* Labels */
+    .input-label {
+      display: block;
+      text-align: left;
+      margin: 10px 0 5px;
+      color: rgba(250,238,150,1);
+      font-weight: 500;
+      font-size: 14px;
+    }
+    /* Inputs & button */
+    input, button {
+      width: 100%;
+      padding: 12px;
+      margin-bottom: 15px;
+      border-radius: 5px;
+      border: 1px solid #ccc;
+      font-size: 14px;
+      box-sizing: border-box;
+    }
+
+    /* Button styling */
+    button {
+      background: #2980b9;
+      color: rgba(250,238,150,1);
+      border: none;
+      cursor: pointer;
+      font-weight: bold;
+    }
+    button:hover { background: #1c5980; }
+    button:disabled { background: #7f8c8d; cursor: not-allowed; }
+
+    /* Error message */
+    .error {
+      color: red;
+      font-size: 13px;
+      margin-top: 5px;
+      display: none;
+    }
+  </style>
+</head>
+<body>
+  <div class="login-box">
+    <h2>Login Pannel</h2>
+    <form id="loginForm" method="POST" action="{% url 'accounts:login' %}">
+      {% csrf_token %}
+
+      <!-- Username -->
+      <label for="username" class="input-label">Username</label>
+      <input type="text" id="username" name="username" placeholder="Enter your username" required>
+
+      <!-- Password -->
+      <label for="password" class="input-label">Password</label>
+      <input type="password" id="password" name="password" placeholder="Enter your password" required>
+
+      <!-- Submit button -->
+      <button type="submit" id="loginBtn">Login</button>
+
+      <p class="error" id="error-msg"></p>
+    </form>
+  </div>
+
+  <script>
+    const form = document.getElementById("loginForm");
+    const errorDiv = document.getElementById("error-msg");
+    const loginBtn = document.getElementById("loginBtn");
+
+    form.addEventListener("submit", async (e) => {
+      e.preventDefault();
+      errorDiv.style.display = "none";
+      loginBtn.disabled = true;
+      loginBtn.textContent = "Logging in...";
+
+      const formData = new FormData(form);
+      const csrfToken = document.querySelector('[name=csrfmiddlewaretoken]').value;
+
+      try {
+        const response = await fetch(form.action, {
+          method: "POST",
+          body: formData,
+          headers: {
+            "X-Requested-With": "XMLHttpRequest",
+            "X-CSRFToken": csrfToken
+          },
+          credentials: "same-origin"
+        });
+
+        let data;
+        try {
+          data = await response.json();
+        } catch {
+          window.location.reload(); 
+          return;
+        }
+
+        if (data.success && data.redirect_url) {
+          window.location.href = data.redirect_url;
+        } else {
+          errorDiv.textContent = data.message || "Login failed";
+          errorDiv.style.display = "block";
+          form.password.value = "";
+        }
+
+      } catch (err) {
+        console.error("AJAX error:", err);
+        window.location.href = form.action;
+      } finally {
+        loginBtn.disabled = false;
+        loginBtn.textContent = "Login";
+      }
+    });
+  </script>
+</body>
+</html>

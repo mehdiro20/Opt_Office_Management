@@ -5,6 +5,8 @@ from doctor.models import Refraction  # model to store refraction data
 from django.utils.dateparse import parse_date
 from django.http import JsonResponse
 # Doctor dashboard: show only accepted patients
+from django.contrib.auth.decorators import login_required
+@login_required
 def doctor_dashboard(request):
     patients = Patient.objects.filter(status="accepted").order_by('-id')
     return render(request, "doctor/dashboard.html", {"patients": patients})

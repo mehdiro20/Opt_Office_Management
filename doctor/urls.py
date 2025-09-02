@@ -7,7 +7,7 @@ Created on Tue Aug 19 05:49:40 2025
 
 from django.urls import path
 from . import views
-
+app_name = "doctor"
 urlpatterns = [
     path('', views.doctor_dashboard, name='doctor_dashboard'),
 
