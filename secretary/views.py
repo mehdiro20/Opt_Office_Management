@@ -7,6 +7,8 @@ from datetime import datetime
 from django.contrib import messages
 from django.views.decorators.http import require_POST
 from django.http import JsonResponse
+from django.contrib.auth.decorators import login_required
+@login_required
 def dashboard(request):
     """
     Secretary dashboard with optional filters by date and status.
@@ -37,6 +39,7 @@ def dashboard(request):
     return render(request, "secretary/dashboard.html", context)
 
 
+
 def patients_table_partial(request):
     """
     Returns the partial patients table for AJAX refresh.
@@ -63,7 +66,8 @@ def accept_patient(request, patient_id):
     return redirect('secretary:secretary_dashboard')
 
 # Register new patient
-
+from django.contrib.auth.decorators import login_required
+@login_required
 def register_patient(request):
     if request.method == 'POST':
         name = request.POST.get('name')
@@ -116,7 +120,7 @@ def register_patient(request):
     # For non-POST:
     return redirect('secretary:secretary_dashboard')
 
-
+@login_required
 def _redirect_with_message(request, msg, error=False):
     if error:
         messages.error(request, msg)
@@ -124,6 +128,7 @@ def _redirect_with_message(request, msg, error=False):
         messages.success(request, msg)
     return redirect('secretary:secretary_dashboard')
 
+@login_required
 def remove_patient(request, patient_id):
     patient = get_object_or_404(Patient, id=patient_id)
     if request.method == "POST":
@@ -134,11 +139,15 @@ def remove_patient(request, patient_id):
 
 
 # View patient profile (works for both secretary and doctor)
+
+@login_required
 def patient_profile(request, patient_id):
     patient = get_object_or_404(Patient, patient_id=patient_id)
     return render(request, "doctor/patient_profile.html", {"patient": patient})
 
 # Get last refraction of a patient
+
+@login_required
 def get_patient_last_refraction(request, patient_id):
     try:
         patient = Patient.objects.get(patient_id=patient_id)  # or patient_id if that's your unique field
@@ -152,10 +161,13 @@ def get_patient_last_refraction(request, patient_id):
             return render(request, "secretary/get_last_refraction.html", {"patient": patient, "not_found": True})
     except Patient.DoesNotExist:
         return render(request, "secretary/get_last_refraction.html", {"not_found": True})
+
+@login_required    
 def get_patient_last_refraction_t2(request):
    
         return render(request, "secretary/get_last_refraction.html")
-    
+
+@login_required    
 def get_patient_last_refraction_t3(request):
    if request.method == 'POST':
        patient_id = request.POST.get('patient_id')
@@ -174,6 +186,8 @@ def get_patient_last_refraction_t3(request):
        
         
 @require_POST
+
+@login_required
 def accept_existing_patient(request):
     melli_code = request.POST.get("melli_code")
     if not melli_code:

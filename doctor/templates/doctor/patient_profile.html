@@ -19,7 +19,6 @@ body {
     background-color: #1f2a38;
     color: white;
     padding-top: 25px;
-   
     box-shadow: 3px 0 8px rgba(0,0,0,0.1);
     position: relative;
 }
@@ -35,7 +34,6 @@ body {
     list-style: none;
     padding: 0;
     margin: 0;
-    
 }
 .sidebar ul li {
     padding: 14px 20px;
@@ -44,30 +42,16 @@ body {
     font-size: 15px;
     border-radius: 6px;
     transition: all 0.2s ease;
-    
 }
 .sidebar ul li:hover {
     background-color: #149174;
     color: #fff;
 }
-
-
-.sidebar ul li:active {
-    background-color: #12876f;
-    color: #fff;
-}  
-.sidebar ul.active {
-    background-color: #16a085;
-    color: white;
-    font-weight: 600;
-}
-
 .sidebar ul li.active {
     background-color: #1abc9c;
     color: white;
     font-weight: 600;
 }
-
 .sidebar ul li ul {
     display: none;
     list-style: none;
@@ -188,7 +172,6 @@ table th {
 .bottom-buttons button.done-btn:hover { background-color: #1e8449; }
 .bottom-buttons a:hover { background-color: #1c5980; }
 </style>
-
 </head>
 <body>
 
@@ -196,15 +179,10 @@ table th {
         <h2>Patient Menu</h2>
         <ul>
             <li>General
-            
-                 <ul>
-                     <li data-target="general">General info</li>
-
-                 </ul>
-            
-            
+                <ul>
+                    <li data-target="general">General info</li>
+                </ul>
             </li>
-
             <li>New Records
                 <ul> 
                     <li data-target="general_health">General Health</li>
@@ -214,19 +192,13 @@ table th {
                     <li data-target="acc_bin">Acc & Binocular Examination</li>
                     <li data-target="cl">Contact Lens</li>
                     <li data-target="amblyopia">Amblyopia & Amblyope Therapy</li>
-                    <li data-target="amblyopia">Vison Therapy</li>
+                    <li data-target="vision_therapy">Vision Therapy</li>
                     <li data-target="follow_up">Follow Up</li>
                     <li data-target="referrals">Referrals</li>
-                    
-                    
-                    
-                    
                 </ul>
             </li>
-
             <li>Past Records
                 <ul>
-                    <li data-target="past-refractions">Past Refractions</li>
                     <li data-target="past-refractions">Past Refractions</li>
                 </ul>
             </li>
@@ -237,9 +209,7 @@ table th {
         {% include "doctor/general_infos.html" %}
         {% include "doctor/refraction.html" %}
         {% include "doctor/past_refraction_list.html" %}
-        
-
-
+        {% include "doctor/optics.html" %}
         <!-- Bottom-right buttons -->
         <div class="bottom-buttons">
             <form method="POST" action="{% url 'doctor:remove_from_accepted_profile' patient.patient_id %}" id="done-form">
@@ -253,93 +223,43 @@ table th {
     <script>
         const sections = document.querySelectorAll('.section');
         const menuItems = document.querySelectorAll('.sidebar ul li[data-target]');
-        const menuItems_bar = document.querySelectorAll('.sidebar ul li');
-        
-        
-        
-        
-        
+        const menuItemsBar = document.querySelectorAll('.sidebar ul li');
+
         function hideAllSections() {
             sections.forEach(sec => sec.style.display = 'none');
         }
-        
-        
-        
-    
-    
-    
-        menuItems_bar.forEach(item => {
+
+        // Sidebar highlight on click
+        menuItemsBar.forEach(item => {
             item.addEventListener('click', () => {
-                // Reset all menu items back to normal
-                menuItems_bar.forEach(li => li.style.backgroundColor = "");
-        
-                // Change background color of the clicked one
-                item.style.backgroundColor = "#1abc9c";  // greenish color
+                menuItemsBar.forEach(li => li.style.backgroundColor = "");
+                item.style.backgroundColor = "#1abc9c";
             });
         });
 
-
-    
-        // Handle submenu parents (toggle open only)
+        // Submenu toggle
         document.querySelectorAll('.sidebar ul li:not([data-target])').forEach(parent => {
             parent.addEventListener('click', (e) => {
                 e.stopPropagation();
                 parent.classList.toggle('open');
             });
         });
-        
-        
 
-        menuItems_bar.forEach(item => {
-            item.addEventListener('click', (e) => {
-                e.stopPropagation();
-    
-                // Hide all sections first
-                hideAllSections();
-    
-                // Remove active from all items
-                menuItems.forEach(i => i.classList.remove('active'));
-    
-                // Show clicked section
-                const target = item.getAttribute('data-target');
-                if (target) {
-                    document.getElementById(target).style.display = 'block';
-                    item.classList.add('active');
-                }
-    
-                // Ensure parent submenu stays open
-                let parentLi = item.closest('ul').parentElement;
-                while (parentLi && parentLi.tagName === 'LI') {
-                    parentLi.classList.add('open');
-                    parentLi.style.backgroundColor="#1abc9c"
-                    parentLi = parentLi.closest('ul').parentElement;
-                }
-            });
-        });
-    
-    
-    
-    
-        // Handle clickable items with data-target
+        // Handle tab clicks
         menuItems.forEach(item => {
             item.addEventListener('click', (e) => {
                 e.stopPropagation();
-    
-                // Hide all sections first
                 hideAllSections();
-    
-                // Remove active from all items
                 menuItems.forEach(i => i.classList.remove('active'));
-    
-                // Show clicked section
+
                 const target = item.getAttribute('data-target');
                 if (target) {
                     document.getElementById(target).style.display = 'block';
-     
                     item.classList.add('active');
+                    // Save active tab
+                    localStorage.setItem("activeTab", target);
                 }
-    
-                // Ensure parent submenu stays open
+
                 let parentLi = item.closest('ul').parentElement;
                 while (parentLi && parentLi.tagName === 'LI') {
                     parentLi.classList.add('open');
@@ -347,58 +267,44 @@ table th {
                 }
             });
         });
-        
-        
-        
-                menuItems_bar.forEach(item => {
-                item.addEventListener('click', (e) => {
-                    e.stopPropagation(); // prevent parent clicks from interfering
-            
-                    const submenu = item.querySelector('ul'); // get child ul
-                    if (submenu) {
-                    
-            
-                        const firstLi = submenu.querySelector('li[data-target]');
-                        if (firstLi) {
-                            const target = firstLi.getAttribute('data-target');
-                            
-                            if (target) {
-                                const sections = document.querySelectorAll('.section');
-                                sections.forEach(sec => sec.style.display = 'none');
-                                document.getElementById(target).style.display = 'block';
-                                firstLi.classList.add('active'); // make it active
-                            }
+
+        // Restore tab on reload
+        window.addEventListener("DOMContentLoaded", () => {
+            const savedTab = localStorage.getItem("activeTab");
+            if (savedTab) {
+                hideAllSections();
+                const section = document.getElementById(savedTab);
+                if (section) {
+                    section.style.display = "block";
+                    const activeItem = document.querySelector(`[data-target="${savedTab}"]`);
+                    if (activeItem) {
+                        activeItem.classList.add("active");
+                        let parentLi = activeItem.closest('ul').parentElement;
+                        while (parentLi && parentLi.tagName === 'LI') {
+                            parentLi.classList.add('open');
+                            parentLi = parentLi.closest('ul').parentElement;
                         }
                     }
-                });
-            });
-        // Default: show general
-       
+                }
+            } else {
+                // Default open "general"
+                document.getElementById("general").style.display = "block";
+                document.querySelector('[data-target="general"]').classList.add("active");
+            }
+        });
+
         // Done button
         document.getElementById('done-btn').addEventListener('click', function(e){
             e.preventDefault();
             document.getElementById('done-form').submit();
         });
-        
-        
-        
-        
-        
-        
-        
-        
-        
-        
-        
-        
-    
+
         // Keep past refractions active if filtering
         {% if request.GET.start_date or request.GET.end_date %}
             hideAllSections();
             document.getElementById('past-refractions').style.display = 'block';
             const pastRefItem = document.querySelector('[data-target="past-refractions"]');
             pastRefItem.classList.add('active');
-    
             let parentLi = pastRefItem.closest('ul').parentElement;
             while (parentLi && parentLi.tagName === 'LI') {
                 parentLi.classList.add('open');
@@ -406,6 +312,5 @@ table th {
             }
         {% endif %}
     </script>
-
 </body>
 </html>

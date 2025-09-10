@@ -1,0 +1,173 @@
+<div id="optics" class="section">
+  <h3 class="mb-3">Optics</h3>
+
+  <label class="form-label fw-bold">Select Lens Brand:</label>
+  <div class="custom-select-wrapper">
+    <!-- Selected item -->
+    <div id="selectedBrand" class="custom-select-box">
+      <span class="placeholder">-- Select a brand --</span>
+      <i class="arrow">&#9662;</i>
+    </div>
+
+    <!-- Dropdown options -->
+    <div id="brandOptions" class="brand-options">
+      <div class="search-box">
+        <input type="text" id="brandSearch" class="form-control" placeholder="Search brand, material, color...">
+      </div>
+
+      {% for brand in splenss %}
+      <div class="brand-option"
+           data-img="{{ brand.brand_img.url }}" 
+           data-name="{{ brand.brand_name }}"
+           data-material="{{ brand.brand_material }}" 
+           data-color="{{ brand.brand_color }}" 
+           data-coating="{{ brand.brand_coating }}"
+           data-prices='[
+             {% for p in brand.prices.all %}
+               {"description": "{{ p.description }}", "price": "{{ p.price }}"}{% if not forloop.last %},{% endif %}
+             {% endfor %}
+           ]'>
+        <img src="{{ brand.brand_img.url }}" alt="brand" class="option-img clickable">
+        <div class="option-info">
+          <div class="option-title">{{ brand.brand_name }}</div>
+          <div class="option-sub">
+            Material: {{ brand.brand_material }} | Color: {{ brand.brand_color }}
+          </div>
+        </div>
+      </div>
+      {% endfor %}
+    </div>
+  </div>
+
+  <!-- Details card -->
+  <div id="brandDetails" class="optics-card" style="display:none;">
+    <div class="image-wrapper">
+      <img id="brandImg" src="" alt="Brand Image" class="clickable">
+    </div>
+    <div class="details-text">
+      <p><strong>Material:</strong> <span id="brandMaterial"></span></p>
+      <p><strong>Color:</strong> <span id="brandColor"></span></p>
+      <p><strong>Coating:</strong> <span id="brandCoating"></span></p>
+
+      <strong>Prices:</strong>
+      <table id="brandPricesTable" style="width:100%; border-collapse: collapse;">
+        <thead>
+          <tr>
+            <th style="text-align:left; padding:6px; border-bottom:1px solid #ccc;">Description</th>
+            <th style="text-align:left; padding:6px; border-bottom:1px solid #ccc;">Price</th>
+          </tr>
+        </thead>
+        <tbody></tbody>
+      </table>
+    </div>
+  </div>
+</div>
+
+<!-- Image modal -->
+<div id="imgModal" class="img-modal">
+  <span class="close">&times;</span>
+  <img class="modal-content" id="imgPreview">
+</div>
+
+<style>
+/* --- Select & Dropdown --- */
+.custom-select-wrapper { position: relative; width: 420px; font-family: 'Segoe UI', sans-serif; }
+.custom-select-box { display: flex; justify-content: space-between; align-items: center; padding: 12px 16px; border-radius: 12px; cursor: pointer; background: white; border: 2px solid #3498db; box-shadow: 0 4px 10px rgba(0,0,0,0.1); transition: all 0.3s ease; }
+.custom-select-box:hover { transform: translateY(-2px); box-shadow: 0 8px 20px rgba(0,0,0,0.15); }
+.placeholder { color: #888; }
+.selected-item { display: flex; align-items: center; gap: 12px; font-weight: 500; color: #2c3e50; background: transparent; border: none; font-size: 18px; }
+.selected-img { width: 38px; height: 38px; object-fit: cover; border-radius: 8px; border: 1.5px solid #3498db; }
+
+/* Dropdown */
+.brand-options { position: absolute; top: 100%; left: 0; width: 100%; max-height: 340px; overflow-y: auto; border-radius: 12px; border: 3px solid #2ecc71; background: linear-gradient(to bottom, #2ecc71, #ffffff); box-shadow: 0 6px 18px rgba(0,0,0,0.15); display: none; z-index: 9999; }
+.search-box { padding: 8px; border-bottom: 1px solid #eee; background: #f9f9f9; }
+.search-box input { width: 100%; padding: 6px 10px; border-radius: 6px; border: 1px solid #ccc; }
+.brand-option { display: flex; align-items: center; gap: 12px; padding: 10px; margin: 0; border-radius: 6px; background: #ffffffaa; transition: all 0.2s ease; cursor: pointer; }
+.brand-option:hover { transform: translateX(2px); background: #e6f7ff; box-shadow: 0 4px 12px rgba(0,0,0,0.1); }
+.option-img { width: 50px; height: 50px; border-radius: 10px; border: 2px solid #3498db; object-fit: cover; box-shadow: 0 2px 6px rgba(0,0,0,0.2); }
+.option-info .option-title { font-weight: 600; font-size: 1rem; }
+.option-info .option-sub { font-size: 0.88rem; color: #555; }
+
+/* --- Details card --- */
+.optics-card { margin-top: 20px; display: flex; gap: 16px; padding: 16px; border-radius: 16px; background: rgba(255,255,255,0.85); backdrop-filter: blur(10px); box-shadow: 0 8px 24px rgba(0,0,0,0.1); transition: all 0.3s ease; }
+.image-wrapper img { width: 260px; height: 160px; border-radius: 16px; border: 2px solid #3498db; object-fit: cover; box-shadow: 0 6px 16px rgba(0,0,0,0.2); transition: transform 0.3s, box-shadow 0.3s; }
+.image-wrapper img:hover { transform: scale(1.05); box-shadow: 0 10px 24px rgba(0,0,0,0.3); }
+.details-text { flex: 1; background: #f0f8ff; border-radius: 12px; padding: 16px; box-shadow: inset 0 2px 6px rgba(0,0,0,0.05); }
+.details-text p { margin: 8px 0; font-size: 0.95rem; color: #333; }
+.details-text strong { display: inline-block; width: 80px; color: #2c3e50; }
+.details-text table { width: 100%; border-collapse: collapse; margin-top: 8px; }
+.details-text th, .details-text td { text-align: left; padding: 6px; border-bottom: 1px solid #ccc; }
+
+/* --- Modal --- */
+.img-modal { display: none; position: fixed; z-index: 2000; padding-top: 60px; left: 0; top: 0; width: 100%; height: 100%; background-color: rgba(0,0,0,0.85); overflow: auto; }
+.img-modal .modal-content { display: block; margin: auto; max-width: 90%; max-height: 85%; border-radius: 12px; box-shadow: 0 6px 20px rgba(0,0,0,0.5); }
+.img-modal .close { position: absolute; top: 20px; right: 35px; color: white; font-size: 40px; font-weight: bold; cursor: pointer; }
+</style>
+
+<script>
+const selectedBox = document.getElementById("selectedBrand");
+const optionsBox = document.getElementById("brandOptions");
+const searchInput = document.getElementById("brandSearch");
+const detailCard = document.getElementById("brandDetails");
+
+// Toggle dropdown
+selectedBox.addEventListener("click", e => {
+  e.stopPropagation();
+  optionsBox.style.display = optionsBox.style.display === "block" ? "none" : "block";
+});
+
+// Select brand
+document.querySelectorAll(".brand-option").forEach(option => {
+  option.addEventListener("click", e => {
+    e.stopPropagation();
+    const img = option.dataset.img;
+    const material = option.dataset.material;
+    const color = option.dataset.color;
+    const coating = option.dataset.coating;
+    const prices = JSON.parse(option.dataset.prices);
+
+    selectedBox.innerHTML = `<span class="selected-item"><img src="${img}" class="selected-img"><span>${option.dataset.name}</span></span><i class="arrow">&#9662;</i>`;
+    document.getElementById("brandImg").src = img;
+    document.getElementById("brandMaterial").textContent = material;
+    document.getElementById("brandColor").textContent = color;
+    document.getElementById("brandCoating").textContent = coating;
+
+    // Fill price table
+    const tbody = document.querySelector("#brandPricesTable tbody");
+    tbody.innerHTML = "";
+    prices.forEach(p => {
+      const tr = document.createElement("tr");
+      tr.innerHTML = `<td>${p.description}</td><td>$${p.price}</td>`;
+      tbody.appendChild(tr);
+    });
+
+    detailCard.style.display = "flex";
+    optionsBox.style.display = "none";
+  });
+});
+
+// Search
+searchInput.addEventListener("keyup", () => {
+  const filter = searchInput.value.toLowerCase();
+  document.querySelectorAll(".brand-option").forEach(option => {
+    const text = (option.dataset.name + " " + option.dataset.material + " " + option.dataset.color + " " + option.dataset.coating).toLowerCase();
+    option.style.display = text.includes(filter) ? "flex" : "none";
+  });
+});
+
+// Close dropdown outside click
+document.addEventListener("click", () => { optionsBox.style.display = "none"; });
+
+// Modal
+const modal = document.getElementById("imgModal");
+const modalImg = document.getElementById("imgPreview");
+const closeBtn = modal.querySelector(".close");
+document.addEventListener("click", e => {
+  if (e.target.classList.contains("clickable")) {
+    modal.style.display = "block";
+    modalImg.src = e.target.src;
+  }
+});
+closeBtn.onclick = () => { modal.style.display = "none"; };
+modal.onclick = e => { if (e.target === modal) modal.style.display = "none"; };
+</script>

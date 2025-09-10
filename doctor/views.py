@@ -6,10 +6,14 @@ from django.utils.dateparse import parse_date
 from django.http import JsonResponse
 # Doctor dashboard: show only accepted patients
 from django.contrib.auth.decorators import login_required
+from django.conf import settings
+from django.core.serializers.json import DjangoJSONEncoder
 @login_required
 def doctor_dashboard(request):
     patients = Patient.objects.filter(status="accepted").order_by('-id')
     return render(request, "doctor/dashboard.html", {"patients": patients})
+
+import json
 
 
 # Patient profile view
@@ -26,11 +30,13 @@ def patient_profile(request, patient_id):
         refractions = refractions.filter(created_at__date__gte=parse_date(start_date))
     if end_date:
         refractions = refractions.filter(created_at__date__lte=parse_date(end_date))
-                
+    splens = BrandsSplenss.objects.all()                
     return render(request, "doctor/patient_profile.html", {
         "patient": patient,
         "last_refraction": last_refraction,
         'past_refractions': refractions.order_by('-created_at'),
+        "MEDIA_URL": settings.MEDIA_URL,
+        "splenss": splens
     })
 
 # Submit refraction
@@ -70,13 +76,13 @@ def remove_from_accepted(request, patient_id):
     if request.method == "POST":
         patient.status = "done"  # move back to secretary list
         patient.save()
-    return redirect(request.META.get('HTTP_REFERER', 'doctor_dashboard'))
+    return redirect(request.META.get('HTTP_REFERER', 'doctor:doctor_dashboard'))
 def remove_from_accepted_profile(request, patient_id):
     patient = get_object_or_404(Patient, patient_id=patient_id)
     if request.method == "POST":
         patient.status = "done"  # move back to secretary list
         patient.save()
-    return redirect('doctor_dashboard')
+    return redirect('doctor:doctor_dashboard')
 
 # List of all patients with optional search
 def doctor_patient_list(request):
@@ -91,4 +97,11 @@ def delete_patient(request, patient_id):
     patient = get_object_or_404(Patient, id=patient_id)
     if request.method == "POST":
         patient.delete()
-    return redirect('doctor_patient_list')
+    return redirect('doctor:doctor_dashboard')
+
+def patients_fragment(request):
+    patients = Patient.objects.filter(status='accepted')  # or whatever your filter is
+    return render(request, 'doctor/patients_list.html', {'patients': patients})
+from django.shortcuts import render
+from .models import BrandsSplenss
+

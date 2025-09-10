@@ -1,13 +1,10 @@
-# -*- coding: utf-8 -*-
-"""
-Created on Tue Aug 19 05:49:40 2025
-
-@author: Mehdi
-"""
 
 from django.urls import path
 from . import views
+from django.conf import settings
+from django.conf.urls.static import static
 app_name = "doctor"
+
 urlpatterns = [
     path('', views.doctor_dashboard, name='doctor_dashboard'),
 
@@ -22,5 +19,10 @@ urlpatterns = [
     path('patients/', views.doctor_patient_list, name='doctor_patient_list'),
     # urls.py
     path('remove_from_accepted_profile/<str:patient_id>/', views.remove_from_accepted_profile, name='remove_from_accepted_profile'),
-
+    
+    path('patients-fragment/', views.patients_fragment, name='patients_fragment'),
+   
 ]
+
+if settings.DEBUG:
+    urlpatterns += static(settings.MEDIA_URL, document_root=settings.MEDIA_ROOT)

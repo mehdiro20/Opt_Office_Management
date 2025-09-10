@@ -23,51 +23,26 @@
       <h4 class="mb-0">Accepted Patients</h4>
     </div>
 
-    {% if patients %}
-      <div class="row row-cols-1 row-cols-md-2 row-cols-lg-3 g-3">
-        {% for patient in patients %}
-          <div class="col">
-            <div class="card h-100 shadow-sm">
-              <div class="card-body">
-                <div class="d-flex justify-content-between align-items-start">
-                  <h6 class="card-title mb-1">{{ patient.name }}</h6>
-                  {% if patient.status == 'accepted' %}
-                    <span class="badge bg-success">Accepted</span>
-                  {% elif patient.status == 'waiting' %}
-                    <span class="badge bg-warning">Waiting</span>
-                    
-                  {% endif %}
-                </div>
-                <p class="mb-1"><strong>ID:</strong> {{ patient.patient_id }}</p>
-                <p class="mb-1"><strong>Age:</strong> {{ patient.age }}</p>
-                {% if patient.phone %}
-                  <p class="mb-1"><strong>Phone:</strong> {{ patient.phone }}</p>
-                {% endif %}
-                <p class="text-muted small mb-0"><strong>Reason:</strong> {{ patient.reason }}</p>
-              </div>
-
-              <div class="card-footer bg-white d-flex justify-content-between">
-                <a class="btn btn-sm btn-primary" href="{% url 'doctor:patient_profile' patient.patient_id %}">Open Profile</a>
-
-                {% if patient.status == 'accepted' %}
-                  <form method="POST" action="{% url 'doctor:remove_from_accepted' patient.patient_id %}" class="d-inline">
-                    {% csrf_token %}
-                    <button type="submit" class="btn btn-sm btn-outline-danger"
-                            onclick="return confirm('Remove from accepted list?');">
-                        done
-                    </button>
-                  </form>
-                {% endif %}
-              </div>
-            </div>
-          </div>
-        {% endfor %}
-      </div>
-    {% else %}
-      <div class="alert alert-info">No accepted patients yet.</div>
-    {% endif %}
+    <!-- Patients container -->
+    <div id="patients-list">
+      {% include 'doctor/patients_list.html' %}
+    </div>
   </main>
 
   <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/js/bootstrap.bundle.min.js"></script>
+  <script>
+    async function refreshPatients() {
+      try {
+        const response = await fetch("{% url 'doctor:patients_fragment' %}");
+        const html = await response.text();
+        document.querySelector('#patients-list').innerHTML = html;
+      } catch (error) {
+        console.error('Error refreshing patients:', error);
+      }
+    }
+
+    // Refresh every 10 seconds
+    setInterval(refreshPatients, 2000);
+  </script>
 </body>
 </html>
