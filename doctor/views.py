@@ -8,14 +8,16 @@ from django.http import JsonResponse
 from django.contrib.auth.decorators import login_required
 from django.conf import settings
 from django.core.serializers.json import DjangoJSONEncoder
-@login_required
+import json
+from django.contrib.auth.decorators import permission_required
+from doctor.models import BrandsSplenss
+@permission_required('doctor.view_patient', raise_exception=True)
 def doctor_dashboard(request):
     patients = Patient.objects.filter(status="accepted").order_by('-id')
     return render(request, "doctor/dashboard.html", {"patients": patients})
 
-import json
 
-
+@permission_required('doctor.view_patient', raise_exception=True)
 # Patient profile view
 def patient_profile(request, patient_id):
     patient = get_object_or_404(Patient, patient_id=patient_id)
@@ -38,7 +40,7 @@ def patient_profile(request, patient_id):
         "MEDIA_URL": settings.MEDIA_URL,
         "splenss": splens
     })
-
+@permission_required('doctor.view_patient', raise_exception=True)
 # Submit refraction
 def submit_refraction(request, patient_id):
     patient = get_object_or_404(Patient, patient_id=patient_id)
@@ -69,7 +71,7 @@ def submit_refraction(request, patient_id):
         return redirect('patient_profile', patient_id=patient.patient_id)
 
     return redirect('patient_profile', patient_id=patient.patient_id)
-
+@permission_required('doctor.view_patient', raise_exception=True)
 # Remove patient from doctor's accepted list
 def remove_from_accepted(request, patient_id):
     patient = get_object_or_404(Patient, patient_id=patient_id)
@@ -77,13 +79,14 @@ def remove_from_accepted(request, patient_id):
         patient.status = "done"  # move back to secretary list
         patient.save()
     return redirect(request.META.get('HTTP_REFERER', 'doctor:doctor_dashboard'))
+@permission_required('doctor.view_patient', raise_exception=True)
 def remove_from_accepted_profile(request, patient_id):
     patient = get_object_or_404(Patient, patient_id=patient_id)
     if request.method == "POST":
         patient.status = "done"  # move back to secretary list
         patient.save()
     return redirect('doctor:doctor_dashboard')
-
+@permission_required('doctor.view_patient', raise_exception=True)
 # List of all patients with optional search
 def doctor_patient_list(request):
     query = request.GET.get('q', '')
@@ -91,17 +94,14 @@ def doctor_patient_list(request):
     if query:
         patients = patients.filter(Q(name__icontains=query) | Q(patient_id__icontains=query))
     return render(request, "doctor/patient_list.html", {"patients": patients})
-
+@permission_required('doctor.view_patient', raise_exception=True)
 # Completely delete a patient
 def delete_patient(request, patient_id):
     patient = get_object_or_404(Patient, id=patient_id)
     if request.method == "POST":
         patient.delete()
     return redirect('doctor:doctor_dashboard')
-
+@permission_required('doctor.view_patient', raise_exception=True)
 def patients_fragment(request):
     patients = Patient.objects.filter(status='accepted')  # or whatever your filter is
     return render(request, 'doctor/patients_list.html', {'patients': patients})
-from django.shortcuts import render
-from .models import BrandsSplenss
-

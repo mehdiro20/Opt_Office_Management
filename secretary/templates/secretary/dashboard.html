@@ -1,10 +1,12 @@
-<!DOCTYPE html>
-<html lang="en">
-<head>
-    <meta charset="UTF-8">
-    <title>Secretary Dashboard</title>
+
+{% extends "base.html" %}
+
+
+{% block title %}Secretary Dashboard{% endblock %}
+
+{% block content %}
     <style>
-        body { font-family: Arial, sans-serif; margin: 20px; background-color: #f5f7fa; }
+        body { font-family: Arial, sans-serif; margin: 5px; background-color: #f5f7fa; }
         h1 { color: #2c3e50; }
 
         .actions { margin-bottom: 20px; }
@@ -94,8 +96,7 @@
         @keyframes fadeIn { from {opacity: 0;} to {opacity: 1;} }
         @keyframes slideDown { from {transform: translateY(-16px); opacity: 0;} to {transform: translateY(0); opacity: 1;} }
     </style>
-</head>
-<body>
+
 <h1>Secretary Dashboard</h1>
 
 <div class="actions">
@@ -363,6 +364,8 @@ function refreshPatientsTable() {
     })
     .catch(() => {});
 }
+
 </script>
+{% endblock %}
 </body>
 </html>

@@ -1,0 +1,140 @@
+{% load static %}
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>{% block title %}My Website{% endblock %}</title>
+
+  <style>
+    /* Reset */
+    * {
+      margin: 0;
+      padding: 0;
+      box-sizing: border-box;
+    }
+
+    body, html {
+      height: 100%;
+      font-family: 'Segoe UI', Arial, sans-serif;
+      background: #f8fafc;
+      color: #2c3e50;
+    }
+
+    body {
+      display: flex;
+      flex-direction: column;
+      min-height: 100vh;
+    }
+
+    a {
+      transition: all 0.3s ease;
+    }
+
+    /* MAIN CONTENT */
+    .content {
+      flex: 1;
+      max-width: 1200px;
+      width: 100%;
+      margin: 40px auto;
+      padding: 0 20px;
+      animation: fadeIn 0.6s ease-in-out;
+    }
+
+    @keyframes fadeIn {
+      from { opacity: 0; transform: translateY(15px); }
+      to { opacity: 1; transform: translateY(0); }
+    }
+
+    /* FOOTER */
+    .site-footer {
+      width: 100%;
+      background: linear-gradient(135deg, #2c3e50, #34495e);
+      color: #ecf0f1;
+      text-align: center;
+      padding: 18px 15px;
+      border-top-left-radius: 14px;
+      border-top-right-radius: 14px;
+      box-shadow: 0 -3px 12px rgba(0,0,0,0.1);
+      font-size: 0.9rem;
+    }
+
+    .footer-links {
+      margin: 8px 0;
+    }
+
+    .footer-links a {
+      color: #1abc9c;
+      text-decoration: none;
+      margin: 0 10px;
+      font-weight: 500;
+    }
+
+    .footer-links a:hover {
+      text-decoration: underline;
+    }
+
+    /* Dashboard / Login Button */
+    .dashboard-link {
+      display: inline-block;
+      margin: 10px 0;
+      padding: 8px 18px;
+      border-radius: 6px;
+      background: linear-gradient(135deg, #1abc9c, #16a085);
+      color: white;
+      text-decoration: none;
+      font-weight: 600;
+      font-size: 0.9rem;
+      transition: transform 0.25s ease, box-shadow 0.25s ease;
+      box-shadow: 0 3px 8px rgba(0,0,0,0.15);
+    }
+
+    .dashboard-link:hover {
+      transform: translateY(-1px) scale(1.02);
+      box-shadow: 0 5px 14px rgba(0,0,0,0.18);
+    }
+
+    /* Responsive */
+    @media (max-width: 600px) {
+      .footer-links {
+        display: flex;
+        flex-direction: column;
+        gap: 6px;
+      }
+    }
+  </style>
+</head>
+<body>
+
+  <!-- MAIN CONTENT -->
+  <main class="content">
+    {% block content %}
+    <!-- Page-specific content goes here -->
+    {% endblock %}
+  </main>
+
+  <!-- FOOTER -->
+  <footer class="site-footer">
+    {% if user.is_authenticated %}
+      {% if role == "doctor" %}
+        <a href="{% url 'doctor_dashboard' %}" class="dashboard-link">Doctor Dashboard</a>
+      {% elif role == "patient" %}
+        <a href="{% url 'patient_dashboard' %}" class="dashboard-link">Patient Dashboard</a>
+      {% elif role == "secretary" %}
+        <a href="{% url 'secretary_dashboard' %}" class="dashboard-link">Secretary Dashboard</a>
+      {% endif %}
+    {% else %}
+      <a href="{% url 'login' %}" class="dashboard-link">Login</a>
+    {% endif %}
+
+    <div class="footer-links">
+      <a href="/about/">About</a> |
+      <a href="/contact/">Contact</a> |
+      <a href="/privacy/">Privacy Policy</a>
+    </div>
+
+    <p>&copy; {{ now|date:"Y" }} Optometry_Secretary Management CMS created by Mehdi Aria.
+    </BR> All Rights Reserved.</p>
+  </footer>
+</body>
+</html>
