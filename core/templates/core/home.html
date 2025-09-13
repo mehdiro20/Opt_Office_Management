@@ -1,0 +1,11 @@
+{% extends "base.html" %}
+
+{% block title %}Home{% endblock %}
+
+{% block content %}
+  <h1>Welcome to the system</h1>
+  <p>
+    <a href="{% url 'secretary:dashboard' %}">Go to Secretary Dashboard</a>
+    <a href="{% url 'doctor:dashboard' %}">Go to doctor Dashboard</a>
+  </p>
+{% endblock %}

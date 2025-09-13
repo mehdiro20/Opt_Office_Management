@@ -21,10 +21,14 @@ from django.shortcuts import redirect
 from django.contrib.auth import views as auth_views
 from django.conf import settings
 from django.conf.urls.static import static
+from core import views
 
 
 urlpatterns = [
     path("admin/", admin.site.urls),
+    path("", include("core.urls")),  # homepage
+
+    path('', views.dashboard_view, name="dashboard_view"),
     path('secretary/', include('secretary.urls', namespace='secretary')),  # ✅ namespace registered
     path("accounts/", include("accounts.urls", namespace="accounts")),
     

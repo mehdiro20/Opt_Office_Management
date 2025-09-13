@@ -37,6 +37,7 @@ INSTALLED_APPS = [
     "django.contrib.sessions",     # Store user sessions
     "django.contrib.messages",     # Flash messages (like "Saved successfully")
     "django.contrib.staticfiles",  # CSS, JS, images
+    'core',   
     "secretary",      
     "doctor",# 👈 your custom app
     'accounts',

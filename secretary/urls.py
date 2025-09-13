@@ -2,6 +2,7 @@ from django.urls import path
 from . import views
 app_name = 'secretary' 
 urlpatterns = [
+    path("dashboard/", views.dashboard, name="dashboard"),
     path('', views.dashboard, name='secretary_dashboard'),
     path('accept/<int:patient_id>/', views.accept_patient, name='accept_patient'),
     path('register/', views.register_patient, name='register_patient'),
@@ -15,7 +16,6 @@ urlpatterns = [
 
     path("patients/table/", views.patients_table_partial, name="patients_table_partial"),
 
-    path("accept_existing_patient/", views.accept_existing_patient, name="accept_existing_patient"),
     # ... other urls
 
 ]

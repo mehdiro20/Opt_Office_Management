@@ -1,6 +1,8 @@
 from django.contrib import admin
 from .models import Refraction
 from .models import BrandsFrames, BrandsSplenss
+
+from .models import OpticsFeature
 @admin.register(Refraction)
 class RefractionAdmin(admin.ModelAdmin):
     list_display = ('patient', 'od', 'os','axis','pd', 'created_at')
@@ -38,4 +40,7 @@ class BrandsSplenssAdmin(admin.ModelAdmin):
 
 
 
-
+@admin.register(OpticsFeature)
+class OpticsFeatureAdmin(admin.ModelAdmin):
+    list_display = ("name",)
+    search_fields = ("name",)

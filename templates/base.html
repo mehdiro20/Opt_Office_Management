@@ -14,7 +14,7 @@
       box-sizing: border-box;
     }
 
-    body, html {
+    html, body {
       height: 100%;
       font-family: 'Segoe UI', Arial, sans-serif;
       background: #f8fafc;
@@ -24,7 +24,7 @@
     body {
       display: flex;
       flex-direction: column;
-      min-height: 100vh;
+      min-height: 100vh; /* ensures full height */
     }
 
     a {
@@ -33,7 +33,7 @@
 
     /* MAIN CONTENT */
     .content {
-      flex: 1;
+      flex: 1; /* pushes footer down */
       max-width: 1200px;
       width: 100%;
       margin: 40px auto;
@@ -48,11 +48,12 @@
 
     /* FOOTER */
     .site-footer {
+      flex-shrink: 0; /* keeps footer size stable */
       width: 100%;
       background: linear-gradient(135deg, #2c3e50, #34495e);
       color: #ecf0f1;
       text-align: center;
-      padding: 18px 15px;
+      padding: 18px 15px; /* normal footer size */
       border-top-left-radius: 14px;
       border-top-right-radius: 14px;
       box-shadow: 0 -3px 12px rgba(0,0,0,0.1);
@@ -103,6 +104,7 @@
       }
     }
   </style>
+  {% block extra_css %}{% endblock %}
 </head>
 <body>
 
@@ -115,26 +117,29 @@
 
   <!-- FOOTER -->
   <footer class="site-footer">
-    {% if user.is_authenticated %}
-      {% if role == "doctor" %}
-        <a href="{% url 'doctor_dashboard' %}" class="dashboard-link">Doctor Dashboard</a>
-      {% elif role == "patient" %}
-        <a href="{% url 'patient_dashboard' %}" class="dashboard-link">Patient Dashboard</a>
-      {% elif role == "secretary" %}
-        <a href="{% url 'secretary_dashboard' %}" class="dashboard-link">Secretary Dashboard</a>
+    <div class="footer-container" style="max-width:1200px; margin:0 auto; padding:0 20px;">
+      {% if user.is_authenticated %}
+        {% if role == "doctor" %}
+          <a href="{% url 'doctor_dashboard' %}" class="dashboard-link">Doctor Dashboard</a>
+        {% elif role == "patient" %}
+          <a href="{% url 'patient_dashboard' %}" class="dashboard-link">Patient Dashboard</a>
+        {% elif role == "secretary" %}
+          <a href="{% url 'secretary_dashboard' %}" class="dashboard-link">Secretary Dashboard</a>
+        {% endif %}
+      {% else %}
+        <a href="{% url 'login' %}" class="dashboard-link">Login</a>
       {% endif %}
-    {% else %}
-      <a href="{% url 'login' %}" class="dashboard-link">Login</a>
-    {% endif %}
 
-    <div class="footer-links">
-      <a href="/about/">About</a> |
-      <a href="/contact/">Contact</a> |
-      <a href="/privacy/">Privacy Policy</a>
+      <div class="footer-links">
+        <a href="/about/">About</a> |
+        <a href="/contact/">Contact</a> |
+        <a href="/privacy/">Privacy Policy</a>
+      </div>
+
+      <p>&copy; {{ now|date:"Y" }} Optometry_Secretary Management CMS created by Mehdi Aria.<br> All Rights Reserved.</p>
     </div>
-
-    <p>&copy; {{ now|date:"Y" }} Optometry_Secretary Management CMS created by Mehdi Aria.
-    </BR> All Rights Reserved.</p>
   </footer>
+
+  {% block extra_js %}{% endblock %}
 </body>
 </html>

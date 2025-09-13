@@ -6,7 +6,7 @@
 
 {% block content %}
     <style>
-        body { font-family: Arial, sans-serif; margin: 5px; background-color: #f5f7fa; }
+        body { font-family: Arial, sans-serif; margin: 0px; background-color: #f5f7fa; }
         h1 { color: #2c3e50; }
 
         .actions { margin-bottom: 20px; }
@@ -60,6 +60,7 @@
             background: #fff; padding: 22px; width: 520px; max-width: 95%;
             border-radius: 12px; position: relative; box-shadow: 0 10px 30px rgba(0,0,0,0.25);
             animation: slideDown 0.25s ease;
+            max-height: 95vh; overflow-y: auto;
         }
         .close-btn {
             position: absolute; right: 14px; top: 10px; font-size: 22px; font-weight: bold; cursor: pointer; color: #666;

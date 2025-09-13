@@ -11,6 +11,11 @@ from django.core.serializers.json import DjangoJSONEncoder
 import json
 from django.contrib.auth.decorators import permission_required
 from doctor.models import BrandsSplenss
+from doctor.models import OpticsFeature
+
+
+@login_required
+
 @permission_required('doctor.view_patient', raise_exception=True)
 def doctor_dashboard(request):
     patients = Patient.objects.filter(status="accepted").order_by('-id')
@@ -33,12 +38,14 @@ def patient_profile(request, patient_id):
     if end_date:
         refractions = refractions.filter(created_at__date__lte=parse_date(end_date))
     splens = BrandsSplenss.objects.all()                
+    optics_features = OpticsFeature.objects.all()
     return render(request, "doctor/patient_profile.html", {
         "patient": patient,
         "last_refraction": last_refraction,
         'past_refractions': refractions.order_by('-created_at'),
         "MEDIA_URL": settings.MEDIA_URL,
-        "splenss": splens
+        "splenss": splens,
+        "optics_features": optics_features,
     })
 @permission_required('doctor.view_patient', raise_exception=True)
 # Submit refraction

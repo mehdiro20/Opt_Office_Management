@@ -1,316 +1,376 @@
+{% load static %}
 <!DOCTYPE html>
 <html lang="en">
 <head>
-    <meta charset="UTF-8">
-    <title>Patient Profile</title>
-    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.0/css/all.min.css" />
-<style>
-body {
-    font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
-    margin: 0;
-    display: flex;
-    background-color: #eef2f5;
-    min-height: 100vh;
-}
+  <meta charset="UTF-8">
+  <title>Patient Profile</title>
+  <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.0/css/all.min.css" />
+  <style>
+    body {
+      font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+      margin: 0;
+      background-color: #eef2f5;
+      min-height: 100vh;
+      display: flex;
+      flex-direction: column;
+    }
 
-/* Sidebar */
-.sidebar {
-    width: 240px;
-    background-color: #1f2a38;
-    color: white;
-    padding-top: 25px;
-    box-shadow: 3px 0 8px rgba(0,0,0,0.1);
-    position: relative;
-}
-.sidebar h2 {
-    text-align: center;
-    margin-bottom: 25px;
-    font-size: 20px;
-    color: #1abc9c;
-    letter-spacing: 1px;
-    text-transform: uppercase;
-}
-.sidebar ul {
-    list-style: none;
-    padding: 0;
-    margin: 0;
-}
-.sidebar ul li {
-    padding: 14px 20px;
-    cursor: pointer;
-    position: relative;
-    font-size: 15px;
-    border-radius: 6px;
-    transition: all 0.2s ease;
-}
-.sidebar ul li:hover {
-    background-color: #149174;
-    color: #fff;
-}
-.sidebar ul li.active {
-    background-color: #1abc9c;
-    color: white;
-    font-weight: 600;
-}
-.sidebar ul li ul {
-    display: none;
-    list-style: none;
-    padding-left: 20px;
-    margin-top: 5px;
-}
-.sidebar ul li.open > ul {
-    display: block;
-}
-.sidebar ul li ul li {
-    padding: 10px 18px;
-    background: #2c3e50;
-    color: #ecf0f1;
-    font-size: 14px;
-    border-radius: 2px;
-    margin-bottom: 0px;
-    transition: all 0.2s ease;
-}
-.sidebar ul li ul li:hover {
-    background-color: #16a085;
-    color: #fff;
-}
-.sidebar ul li ul li.active {
-    background-color: #12876f;
-    color: white;
-    font-weight: 600;
-}
+    .page-wrapper {
+      display: flex;
+      flex: 1;
+      min-height: calc(100vh - 60px);
+    }
 
-/* Add arrows to submenu parents */
-.sidebar ul li.has-submenu::after {
-    content: "\f105";
-    font-family: "Font Awesome 6 Free";
-    font-weight: 900;
-    position: absolute;
-    right: 20px;
-    transition: transform 0.3s ease;
-}
-.sidebar ul li.open.has-submenu::after {
-    transform: rotate(90deg);
-}
+    .sidebar {
+      width: 240px;
+      background-color: #1f2a38;
+      color: white;
+      padding-top: 25px;
+      box-shadow: 3px 0 8px rgba(0,0,0,0.1);
+      flex-shrink: 0;
+      border-radius:0px 0px 6px 6px;
+      margin-bottom:5px;
+    }
 
-/* Main content */
-.main-content {
-    flex-grow: 1;
-    padding: 25px;
-    display: flex;
-    justify-content: center;
-    box-sizing: border-box;
-    min-width: 750px;
-    min-height: 550px;
-}
+    .sidebar h2 {
+      text-align: center;
+      margin-bottom: 25px;
+      font-size: 20px;
+      color: #1abc9c;
+      letter-spacing: 1px;
+      text-transform: uppercase;
+    }
 
-/* Section boxes */
-.section {
-    display: none;
-    background: white;
-    padding: 35px;
-    border-radius: 12px;
-    box-shadow: 0 4px 15px rgba(0,0,0,0.1);
-    width: 100%;
-    max-width: 850px;
-    text-align: left;
-    transition: all 0.3s ease;
-}
-.section h3 {
-    margin-top: 0;
-    text-align: center;
-    color: #2980b9;
-    font-size: 22px;
-}
+    .sidebar ul {
+      list-style: none;
+      padding: 0;
+      margin: 0;
+    }
 
-/* Table styling */
-table {
-    width: 100%;
-    border-collapse: collapse;
-    margin-top: 20px;
-    border-radius: 8px;
-    overflow: hidden;
-    box-shadow: 0 2px 5px rgba(0,0,0,0.05);
-}
-table th, table td {
-    padding: 10px 15px;
-    border-bottom: 1px solid #ddd;
-    text-align: left;
-}
-table th {
-    background-color: #3498db;
-    color: white;
-    font-weight: 600;
-}
+    .sidebar ul li {
+      padding: 14px 20px;
+      cursor: pointer;
+      position: relative;
+      font-size: 15px;
+      border-radius: 6px;
+      transition: all 0.2s ease;
+    }
 
-/* Bottom-right floating buttons */
-.bottom-buttons {
-    position: fixed;
-    bottom: 20px;
-    right: 20px;
-    display: flex;
-    gap: 14px;
-}
-.bottom-buttons button,
-.bottom-buttons a {
-    width: 55px;
-    height: 55px;
-    border-radius: 50%;
-    border: none;
-    background-color: #2980b9;
-    color: white;
-    font-size: 22px;
-    display: flex;
-    align-items: center;
-    justify-content: center;
-    cursor: pointer;
-    text-decoration: none;
-    box-shadow: 0 4px 8px rgba(0,0,0,0.15);
-    transition: all 0.2s ease;
-}
-.bottom-buttons button.done-btn { background-color: #27ae60; }
-.bottom-buttons button.done-btn:hover { background-color: #1e8449; }
-.bottom-buttons a:hover { background-color: #1c5980; }
-</style>
+    .sidebar ul li:hover {
+      background-color: #149174;
+      color: #fff;
+    }
+
+    .sidebar ul li.active {
+      background-color: #1abc9c;
+      color: white;
+      font-weight: 600;
+    }
+
+    .sidebar ul li ul {
+      display: none;
+      list-style: none;
+      padding-left: 20px;
+      margin-top: 5px;
+    }
+
+    .sidebar ul li.open > ul {
+      display: block;
+    }
+
+    .sidebar ul li ul li {
+      padding: 10px 18px;
+      background: #2c3e50;
+      color: #ecf0f1;
+      font-size: 14px;
+      border-radius: 2px;
+      margin-bottom: 0;
+      transition: all 0.2s ease;
+    }
+
+    .sidebar ul li ul li:hover {
+      background-color: #16a085;
+      color: #fff;
+    }
+
+    .sidebar ul li ul li.active {
+      background-color: #12876f;
+      color: white;
+      font-weight: 600;
+    }
+
+    .sidebar ul li.has-submenu::after {
+      content: "\f105";
+      font-family: "Font Awesome 6 Free";
+      font-weight: 900;
+      position: absolute;
+      right: 20px;
+      transition: transform 0.3s ease;
+    }
+
+    .sidebar ul li.open.has-submenu::after {
+      transform: rotate(90deg);
+    }
+
+    .main-content {
+      flex: 1;
+      padding: 25px;
+      box-sizing: border-box;
+      display: flex;
+      justify-content: center;
+      align-items: flex-start;
+    }
+
+    .section {
+      display: none;
+      background: white;
+      padding: 35px;
+      border-radius: 12px;
+      box-shadow: 0 4px 15px rgba(0,0,0,0.1);
+      width: 100%;
+      max-width: 850px;
+      text-align: left;
+      transition: all 0.3s ease;
+    }
+
+    .section h3 {
+      margin-top: 0;
+      text-align: center;
+      color: #2980b9;
+      font-size: 22px;
+    }
+
+    table {
+      width: 100%;
+      border-collapse: collapse;
+      margin-top: 20px;
+      border-radius: 8px;
+      overflow: hidden;
+      box-shadow: 0 2px 5px rgba(0,0,0,0.05);
+    }
+
+    table th, table td {
+      padding: 10px 15px;
+      border-bottom: 1px solid #ddd;
+      text-align: left;
+    }
+
+    table th {
+      background-color: #3498db;
+      color: white;
+      font-weight: 600;
+    }
+
+    .bottom-buttons {
+      position: fixed;
+      bottom: 20px;
+      right: 20px;
+      display: flex;
+      gap: 14px;
+    }
+
+    .bottom-buttons button,
+    .bottom-buttons a {
+      width: 55px;
+      height: 55px;
+      border-radius: 50%;
+      border: none;
+      background-color: #2980b9;
+      color: white;
+      font-size: 22px;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      cursor: pointer;
+      text-decoration: none;
+      box-shadow: 0 4px 8px rgba(0,0,0,0.15);
+      transition: all 0.2s ease;
+    }
+
+    .bottom-buttons button.done-btn { background-color: #27ae60; }
+    .bottom-buttons button.done-btn:hover { background-color: #1e8449; }
+    .bottom-buttons a:hover { background-color: #1c5980; }
+
+    textarea {
+      resize: vertical;
+    }
+
+    footer {
+      background: #1f2a38;
+      color: #ecf0f1;
+      text-align: center;
+      padding: 12px 20px;
+      font-size: 14px;
+      letter-spacing: 0.5px;
+      margin-top: auto;
+      box-shadow: 0 -2px 8px rgba(0,0,0,0.1);
+      border-radius:5px 5px 0px 0px;
+    }
+
+    .site-footer {
+      flex-shrink: 0;
+      width: 100%;
+      background: linear-gradient(135deg, #2c3e50, #34495e);
+      color: #ecf0f1;
+      text-align: center;
+      padding: 18px 15px;
+      box-shadow: 0 -3px 12px rgba(0,0,0,0.1);
+      font-size: 0.9rem;
+    }
+
+    .footer-links {
+      margin: 8px 0;
+    }
+
+    .footer-links a {
+      color: #1abc9c;
+      text-decoration: none;
+      margin: 0 10px;
+      font-weight: 500;
+    }
+
+    .footer-links a:hover {
+      text-decoration: underline;
+    }
+  </style>
 </head>
 <body>
 
-    <div class="sidebar">
-        <h2>Patient Menu</h2>
+<div class="page-wrapper">
+  <div class="sidebar">
+    <h2>Patient Menu</h2>
+    <ul>
+      <li class="has-submenu">General
         <ul>
-            <li>General
-                <ul>
-                    <li data-target="general">General info</li>
-                </ul>
-            </li>
-            <li>New Records
-                <ul> 
-                    <li data-target="general_health">General Health</li>
-                    <li data-target="previous_examination">Previous Examination / Illness</li>
-                    <li data-target="refraction">VA & Refraction</li>
-                    <li data-target="optics">Optics</li>
-                    <li data-target="acc_bin">Acc & Binocular Examination</li>
-                    <li data-target="cl">Contact Lens</li>
-                    <li data-target="amblyopia">Amblyopia & Amblyope Therapy</li>
-                    <li data-target="vision_therapy">Vision Therapy</li>
-                    <li data-target="follow_up">Follow Up</li>
-                    <li data-target="referrals">Referrals</li>
-                </ul>
-            </li>
-            <li>Past Records
-                <ul>
-                    <li data-target="past-refractions">Past Refractions</li>
-                </ul>
-            </li>
+          <li data-target="general">General info</li>
         </ul>
+      </li>
+      <li class="has-submenu">New Records
+        <ul>
+          <li data-target="general_health">General Health</li>
+          <li data-target="previous_examination">Previous Examination / Illness</li>
+          <li data-target="refraction">VA & Refraction</li>
+          <li data-target="optics">Optics</li>
+          <li data-target="acc_bin">Acc & Binocular Examination</li>
+          <li data-target="cl">Contact Lens</li>
+          <li data-target="amblyopia">Amblyopia & Amblyope Therapy</li>
+          <li data-target="vision_therapy">Vision Therapy</li>
+          <li data-target="follow_up">Follow Up</li>
+          <li data-target="referrals">Referrals</li>
+        </ul>
+      </li>
+      <li class="has-submenu">Past Records
+        <ul>
+          <li data-target="past-refractions">Past Refractions</li>
+          <li data-target="past-vt">Past VT programs</li>
+        </ul>
+      </li>
+    </ul>
+  </div>
+
+  <div class="main-content">
+    {% include "doctor/general_infos.html" %}
+    {% include "doctor/refraction.html" %}
+    {% include "doctor/past_refraction_list.html" %}
+    {% include "doctor/optics.html" %}
+  </div>
+</div>
+
+<div class="bottom-buttons">
+  <form method="POST" action="{% url 'doctor:remove_from_accepted_profile' patient.patient_id %}" id="done-form">
+    {% csrf_token %}
+    <button type="submit" id="done-btn" class="done-btn"><i class="fa fa-check"></i></button>
+  </form>
+  <a href="{% url 'doctor:doctor_dashboard' %}"><i class="fa fa-user-doctor"></i></a>
+</div>
+
+<footer class="site-footer">
+  <div class="footer-container" style="max-width:1200px; margin:0 auto; padding:0 20px;">
+    {% if user.is_authenticated %}
+      {% if role == "doctor" %}
+        <a href="{% url 'doctor_dashboard' %}" class="dashboard-link">Doctor Dashboard</a>
+      {% elif role == "patient" %}
+        <a href="{% url 'patient_dashboard' %}" class="dashboard-link">Patient Dashboard</a>
+      {% elif role == "secretary" %}
+        <a href="{% url 'secretary_dashboard' %}" class="dashboard-link">Secretary Dashboard</a>
+      {% endif %}
+    {% else %}
+      <a href="{% url 'login' %}" class="dashboard-link">Login</a>
+    {% endif %}
+
+    <div class="footer-links">
+      <a href="/about/">About</a> |
+      <a href="/contact/">Contact</a> |
+      <a href="/privacy/">Privacy Policy</a>
     </div>
 
-    <div class="main-content">
-        {% include "doctor/general_infos.html" %}
-        {% include "doctor/refraction.html" %}
-        {% include "doctor/past_refraction_list.html" %}
-        {% include "doctor/optics.html" %}
-        <!-- Bottom-right buttons -->
-        <div class="bottom-buttons">
-            <form method="POST" action="{% url 'doctor:remove_from_accepted_profile' patient.patient_id %}" id="done-form">
-                {% csrf_token %}
-                <button type="submit" id="done-btn" class="done-btn"><i class="fa fa-check"></i></button>
-            </form>
-            <a href="{% url 'doctor:doctor_dashboard' %}"><i class="fa fa-user-doctor"></i></a>
-        </div>
-    </div>
+    <p>&copy; {{ now|date:"Y" }} Optometry_Secretary Management CMS created by Mehdi Aria.<br> All Rights Reserved.</p>
+  </div>
+</footer>
 
-    <script>
-        const sections = document.querySelectorAll('.section');
-        const menuItems = document.querySelectorAll('.sidebar ul li[data-target]');
-        const menuItemsBar = document.querySelectorAll('.sidebar ul li');
+<script>
+  const sections = document.querySelectorAll('.section');
+  const menuItems = document.querySelectorAll('.sidebar ul li[data-target]');
 
-        function hideAllSections() {
-            sections.forEach(sec => sec.style.display = 'none');
+  function hideAllSections() {
+    sections.forEach(sec => sec.style.display = 'none');
+  }
+
+  document.querySelectorAll('.sidebar ul li.has-submenu').forEach(parent => {
+    parent.addEventListener('click', (e) => {
+      if (!e.target.hasAttribute('data-target')) {
+        parent.classList.toggle('open');
+      }
+    });
+  });
+
+  menuItems.forEach(item => {
+    item.addEventListener('click', (e) => {
+      e.stopPropagation();
+      hideAllSections();
+      menuItems.forEach(i => i.classList.remove('active'));
+
+      const target = item.getAttribute('data-target');
+      if (target) {
+        const sec = document.getElementById(target);
+        if (sec) {
+          sec.style.display = 'block';
+          item.classList.add('active');
+          localStorage.setItem("activeTab", target);
         }
+      }
+    });
+  });
 
-        // Sidebar highlight on click
-        menuItemsBar.forEach(item => {
-            item.addEventListener('click', () => {
-                menuItemsBar.forEach(li => li.style.backgroundColor = "");
-                item.style.backgroundColor = "#1abc9c";
-            });
-        });
+  // Restore last opened tab OR default to General info
+  window.addEventListener("DOMContentLoaded", () => {
+    let savedTab = localStorage.getItem("activeTab");
 
-        // Submenu toggle
-        document.querySelectorAll('.sidebar ul li:not([data-target])').forEach(parent => {
-            parent.addEventListener('click', (e) => {
-                e.stopPropagation();
-                parent.classList.toggle('open');
-            });
-        });
+    if (!savedTab) {
+      savedTab = "general"; // default first visit
+      localStorage.setItem("activeTab", savedTab);
+    }
 
-        // Handle tab clicks
-        menuItems.forEach(item => {
-            item.addEventListener('click', (e) => {
-                e.stopPropagation();
-                hideAllSections();
-                menuItems.forEach(i => i.classList.remove('active'));
+    hideAllSections();
+    const sec = document.getElementById(savedTab);
+    if (sec) {
+      sec.style.display = "block";
+      const activeItem = document.querySelector(`[data-target="${savedTab}"]`);
+      if (activeItem) {
+        activeItem.classList.add("active");
+        let parentLi = activeItem.closest('ul').parentElement;
+        while (parentLi && parentLi.tagName === 'LI') {
+          parentLi.classList.add('open');
+          parentLi = parentLi.closest('ul').parentElement;
+        }
+      }
+    }
+  });
 
-                const target = item.getAttribute('data-target');
-                if (target) {
-                    document.getElementById(target).style.display = 'block';
-                    item.classList.add('active');
-                    // Save active tab
-                    localStorage.setItem("activeTab", target);
-                }
-
-                let parentLi = item.closest('ul').parentElement;
-                while (parentLi && parentLi.tagName === 'LI') {
-                    parentLi.classList.add('open');
-                    parentLi = parentLi.closest('ul').parentElement;
-                }
-            });
-        });
-
-        // Restore tab on reload
-        window.addEventListener("DOMContentLoaded", () => {
-            const savedTab = localStorage.getItem("activeTab");
-            if (savedTab) {
-                hideAllSections();
-                const section = document.getElementById(savedTab);
-                if (section) {
-                    section.style.display = "block";
-                    const activeItem = document.querySelector(`[data-target="${savedTab}"]`);
-                    if (activeItem) {
-                        activeItem.classList.add("active");
-                        let parentLi = activeItem.closest('ul').parentElement;
-                        while (parentLi && parentLi.tagName === 'LI') {
-                            parentLi.classList.add('open');
-                            parentLi = parentLi.closest('ul').parentElement;
-                        }
-                    }
-                }
-            } else {
-                // Default open "general"
-                document.getElementById("general").style.display = "block";
-                document.querySelector('[data-target="general"]').classList.add("active");
-            }
-        });
-
-        // Done button
-        document.getElementById('done-btn').addEventListener('click', function(e){
-            e.preventDefault();
-            document.getElementById('done-form').submit();
-        });
-
-        // Keep past refractions active if filtering
-        {% if request.GET.start_date or request.GET.end_date %}
-            hideAllSections();
-            document.getElementById('past-refractions').style.display = 'block';
-            const pastRefItem = document.querySelector('[data-target="past-refractions"]');
-            pastRefItem.classList.add('active');
-            let parentLi = pastRefItem.closest('ul').parentElement;
-            while (parentLi && parentLi.tagName === 'LI') {
-                parentLi.classList.add('open');
-                parentLi = parentLi.closest('ul').parentElement;
-            }
-        {% endif %}
-    </script>
+  document.getElementById('done-btn').addEventListener('click', function(e){
+    e.preventDefault();
+    document.getElementById('done-form').submit();
+  });
+</script>
 </body>
 </html>
