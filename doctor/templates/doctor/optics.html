@@ -3,7 +3,7 @@
 
   <!-- Optics Features -->
   <div class="optics-features mb-4">
-    <label class="form-label fw-bold">Select Optics Features:</label>
+    <label class="form-label fw-bold">Select Optical Features:</label>
     <div class="features-list">
       {% for feature in optics_features %}
         <label class="feature-checkbox">
@@ -11,7 +11,7 @@
           <span class="feature-text">{{ feature.name }}</span>
         </label>
       {% empty %}
-        <p style="color:#888;">No optics features configured by admin.</p>
+        <p style="color:#888;">No optical features configured by admin.</p>
       {% endfor %}
     </div>
   </div>
