@@ -4,5 +4,5 @@ Goals:
 Open-source programming can help expand the electronic aspects of optometry.
 Contact me:
 Telegram:@mehdiartl
-Instagram:mehdiaria.ir
+Instagram:https://instagram.com/mehdiaria.ir
 Email:mehdiariatwt@gmail.com
