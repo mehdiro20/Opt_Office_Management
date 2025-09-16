@@ -3,6 +3,6 @@ This project was founded by Mehdi Aria.
 Goals:
 Open-source programming can help expand the electronic aspects of optometry.
 Contact me:
-telegram:@mehdiartl
-instagram:mehdiaria.ir
-
+Telegram:@mehdiartl
+Instagram:https://instagram.com/mehdiaria.ir
+Email:mehdiariatwt@gmail.com
