@@ -47,7 +47,7 @@ h1 { color: #2c3e50; margin: 20px; }
     background: white;
     border-radius: 8px;
     box-shadow: 0 4px 10px rgba(0,0,0,0.15);
-    min-width: 200px;
+    min-width: 230px;
     flex-direction: column;
     z-index: 1000;
 }
@@ -86,7 +86,7 @@ tr:nth-child(even) { background-color: #f2f2f2; }
 .status-done { color: gray; font-weight: bold; }
 
 /* Buttons inside table */
-.accept-button, .remove-button, .done-button, .get-lr-button, .dismiss-button {
+.accept-button, .remove-button, .done-button, .get-lr-button {
     padding: 6px 12px; border: none; border-radius: 6px; cursor: pointer; font-weight: bold;
     transition: all 0.2s ease; box-shadow: 0 2px 4px rgba(0,0,0,0.15);
 }
@@ -98,8 +98,6 @@ tr:nth-child(even) { background-color: #f2f2f2; }
 .remove-button:hover { background-color: #c0392b; transform: translateY(-2px); }
 .done-button { background-color: #2e7d32; color: white; }
 .done-button:hover { background-color: #1b5e20; transform: translateY(-2px); }
-.dismiss-button { background-color: #f39c12; color: white; }
-.dismiss-button:hover { background-color: #d68910; transform: translateY(-2px); }
 
 /* ================= Toast ================= */
 .toast {
@@ -118,7 +116,7 @@ tr:nth-child(even) { background-color: #f2f2f2; }
         <div class="submenu">
             <a onclick="openRegisterModal()">➕ Register New Patient</a>
             <a onclick="openAcceptModal()">✅ Accept Existing Patient</a>
-            <a href="{% url 'secretary:patients_table_partial' %}">🔍 Search / View Patients</a>
+            <a href="">🔍 Search / View Patients</a>
         </div>
     </div>
 
@@ -145,7 +143,7 @@ tr:nth-child(even) { background-color: #f2f2f2; }
         <div class="submenu">
             <a href="">⏳ Waiting Patients</a>
             <a href="">✅ Done Patients</a>
-            <a href="">📦 Dismissed / Archived</a>
+            <a href="">📦 Archived</a>
         </div>
     </div>
 
@@ -172,7 +170,6 @@ tr:nth-child(even) { background-color: #f2f2f2; }
             <option value="accepted" {% if request.GET.status == 'accepted' %}selected{% endif %}>Accepted</option>
             <option value="done" {% if request.GET.status == 'done' %}selected{% endif %}>Done</option>
         </select>
-        <label><input type="checkbox" name="keep_dismissed" {% if request.GET.keep_dismissed %}checked{% endif %}> Keep Dismissed Visible</label>
         <button type="submit">Apply Filter</button>
     </form>
 </div>
@@ -191,53 +188,6 @@ tr:nth-child(even) { background-color: #f2f2f2; }
 <div id="successToast" class="toast">✅ Action successful.</div>
 
 <script>
-// ================= Local Storage Dismiss =================
-const dismissedKey = "dismissedPatients";
-function getDismissed() { return JSON.parse(localStorage.getItem(dismissedKey) || "[]"); }
-function setDismissed(arr) { localStorage.setItem(dismissedKey, JSON.stringify(arr)); }
-function removeFromDismissed(patientId) {
-    const dismissed = getDismissed().filter(id => id !== patientId.toString());
-    setDismissed(dismissed);
-}
-
-function toggleDismiss(patientId) {
-    const row = document.getElementById(`patient-${patientId}`);
-    if (!row) return;
-    let dismissed = getDismissed();
-    if (dismissed.includes(patientId.toString())) {
-        dismissed = dismissed.filter(id => id !== patientId.toString());
-        row.style.display = "";
-        const btn = row.querySelector(".dismiss-button");
-        if (btn) btn.textContent = "Dismiss";
-    } else {
-        dismissed.push(patientId.toString());
-        row.style.display = "none";
-    }
-    setDismissed(dismissed);
-}
-
-function attachDismissHandlers() {
-    document.querySelectorAll('.dismiss-button').forEach(button => {
-        button.onclick = () => toggleDismiss(button.dataset.patientId);
-    });
-}
-
-function hideDismissedRows() {
-    const dismissed = getDismissed();
-    const urlParams = new URLSearchParams(window.location.search);
-    const keepDismissed = urlParams.has('keep_dismissed');
-    if (!keepDismissed) {
-        dismissed.forEach(id => {
-            const row = document.getElementById(`patient-${id}`);
-            if (row) {
-                row.style.display = "none";
-                const btn = row.querySelector(".dismiss-button");
-                if (btn) btn.textContent = "Restore";
-            }
-        });
-    }
-}
-
 // ================= Refresh Patients Table =================
 function refreshPatientsTable() {
     const params = new URLSearchParams(new FormData(document.getElementById('filter-form'))).toString();
@@ -247,8 +197,6 @@ function refreshPatientsTable() {
     .then(res => res.text())
     .then(html => {
         document.getElementById("patients-table").innerHTML = html;
-        attachDismissHandlers();
-        hideDismissedRows();
     })
     .catch(() => {});
 }
@@ -269,7 +217,7 @@ function openRegisterModal() {
     const nameInput = document.getElementById("rp_name");
     if (nameInput) nameInput.focus();
 }
-function closeRegisterModal(newPatientId=null) {
+function closeRegisterModal() {
     const modal = document.getElementById("registerModal");
     modal.style.display = "none";
     modal.setAttribute("aria-hidden", "true");
@@ -277,7 +225,6 @@ function closeRegisterModal(newPatientId=null) {
     if (err) { err.textContent = ""; err.style.display = "none"; }
     const form = document.getElementById("registerForm");
     if (form) form.reset();
-    if (newPatientId) removeFromDismissed(newPatientId);
 }
 
 function openAcceptModal() {
@@ -287,7 +234,7 @@ function openAcceptModal() {
     const input = document.getElementById("accept_melli");
     if (input) input.focus();
 }
-function closeAcceptModal(acceptedPatientId=null) {
+function closeAcceptModal() {
     const modal = document.getElementById("acceptModal");
     modal.style.display = "none";
     modal.setAttribute("aria-hidden", "true");
@@ -295,7 +242,6 @@ function closeAcceptModal(acceptedPatientId=null) {
     if (err) { err.textContent = ""; err.style.display = "none"; }
     const form = document.getElementById("acceptForm");
     if (form) form.reset();
-    if (acceptedPatientId) removeFromDismissed(acceptedPatientId);
 }
 
 // ================= AJAX Form Submissions =================
@@ -313,7 +259,7 @@ document.addEventListener("DOMContentLoaded", () => {
             .then(res => res.json())
             .then(data => {
                 if (data.success) {
-                    closeRegisterModal(data.patient_id);
+                    closeRegisterModal();
                     refreshPatientsTable();
                     showToast("✅ Patient registered successfully.");
                 } else {
@@ -338,7 +284,7 @@ document.addEventListener("DOMContentLoaded", () => {
             .then(res => res.json())
             .then(data => {
                 if (data.success) {
-                    closeAcceptModal(data.patient_id);
+                    closeAcceptModal();
                     refreshPatientsTable();
                     showToast("✅ Patient accepted successfully.");
                 } else {
@@ -363,9 +309,7 @@ window.addEventListener("click", (event) => {
     if (event.target.id === "acceptModal") closeAcceptModal();
 });
 
-// ================= Initialize =================
-attachDismissHandlers();
-hideDismissedRows();
+// ================= Auto-refresh =================
 setInterval(refreshPatientsTable, 5000);
 </script>
 {% endblock %}

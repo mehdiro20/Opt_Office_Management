@@ -6,30 +6,38 @@
   <title>Patient Profile</title>
   <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.0/css/all.min.css" />
   <style>
+    /* Reset & Base */
     body {
       font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
       margin: 0;
       background-color: #eef2f5;
-      min-height: 100vh;
       display: flex;
       flex-direction: column;
+      min-height: 100vh;
     }
 
+    a { text-decoration: none; color: inherit; }
+
+    /* Page wrapper */
     .page-wrapper {
       display: flex;
       flex: 1;
-      min-height: calc(100vh - 60px);
     }
 
+    /* Sidebar */
     .sidebar {
+      position: fixed;
+      top: 0;
+      left: 0;
+      bottom: 0;
       width: 240px;
       background-color: #1f2a38;
       color: white;
       padding-top: 25px;
-      box-shadow: 3px 0 8px rgba(0,0,0,0.1);
-      flex-shrink: 0;
-      border-radius:0px 0px 6px 6px;
-      margin-bottom:5px;
+      padding-bottom: 100px; /* allow space for footer */
+      box-shadow: 2px 0 8px rgba(0,0,0,0.15);
+      overflow-y: auto;
+      border-radius: 0 0 6px 6px;
     }
 
     .sidebar h2 {
@@ -74,9 +82,7 @@
       margin-top: 5px;
     }
 
-    .sidebar ul li.open > ul {
-      display: block;
-    }
+    .sidebar ul li.open > ul { display: block; }
 
     .sidebar ul li ul li {
       padding: 10px 18px;
@@ -95,7 +101,6 @@
 
     .sidebar ul li ul li.active {
       background-color: #12876f;
-      color: white;
       font-weight: 600;
     }
 
@@ -108,13 +113,13 @@
       transition: transform 0.3s ease;
     }
 
-    .sidebar ul li.open.has-submenu::after {
-      transform: rotate(90deg);
-    }
+    .sidebar ul li.open.has-submenu::after { transform: rotate(90deg); }
 
+    /* Main content */
     .main-content {
-      flex: 1;
+      margin-left: 240px;
       padding: 25px;
+      flex: 1;
       box-sizing: border-box;
       display: flex;
       justify-content: center;
@@ -161,6 +166,7 @@
       font-weight: 600;
     }
 
+    /* Bottom buttons */
     .bottom-buttons {
       position: fixed;
       bottom: 20px;
@@ -191,10 +197,7 @@
     .bottom-buttons button.done-btn:hover { background-color: #1e8449; }
     .bottom-buttons a:hover { background-color: #1c5980; }
 
-    textarea {
-      resize: vertical;
-    }
-
+    /* Footer */
     footer {
       background: #1f2a38;
       color: #ecf0f1;
@@ -218,25 +221,21 @@
       font-size: 0.9rem;
     }
 
-    .footer-links {
-      margin: 8px 0;
-    }
-
+    .footer-links { margin: 8px 0; }
     .footer-links a {
       color: #1abc9c;
       text-decoration: none;
       margin: 0 10px;
       font-weight: 500;
     }
+    .footer-links a:hover { text-decoration: underline; }
 
-    .footer-links a:hover {
-      text-decoration: underline;
-    }
   </style>
 </head>
 <body>
 
 <div class="page-wrapper">
+  <!-- Sidebar -->
   <div class="sidebar">
     <h2>Patient Menu</h2>
     <ul>
@@ -253,7 +252,7 @@
           <li data-target="optics">Optics</li>
           <li data-target="acc_bin">Acc & Binocular Examination</li>
           <li data-target="cl">Contact Lens</li>
-          <li data-target="amblyopia">Amblyopia & Amblyope Therapy</li>
+          <li data-target="amblyopia">Amblyopia & Therapy</li>
           <li data-target="vision_therapy">Vision Therapy</li>
           <li data-target="follow_up">Follow Up</li>
           <li data-target="referrals">Referrals</li>
@@ -268,6 +267,7 @@
     </ul>
   </div>
 
+  <!-- Main Content -->
   <div class="main-content">
     {% include "doctor/general_infos.html" %}
     {% include "doctor/refraction.html" %}
@@ -276,6 +276,7 @@
   </div>
 </div>
 
+<!-- Bottom buttons -->
 <div class="bottom-buttons">
   <form method="POST" action="{% url 'doctor:remove_from_accepted_profile' patient.patient_id %}" id="done-form">
     {% csrf_token %}
@@ -284,6 +285,7 @@
   <a href="{% url 'doctor:doctor_dashboard' %}"><i class="fa fa-user-doctor"></i></a>
 </div>
 
+<!-- Footer -->
 <footer class="site-footer">
   <div class="footer-container" style="max-width:1200px; margin:0 auto; padding:0 20px;">
     {% if user.is_authenticated %}
@@ -308,6 +310,7 @@
   </div>
 </footer>
 
+<!-- JS -->
 <script>
   const sections = document.querySelectorAll('.section');
   const menuItems = document.querySelectorAll('.sidebar ul li[data-target]');
@@ -316,6 +319,7 @@
     sections.forEach(sec => sec.style.display = 'none');
   }
 
+  // Sidebar submenu toggle
   document.querySelectorAll('.sidebar ul li.has-submenu').forEach(parent => {
     parent.addEventListener('click', (e) => {
       if (!e.target.hasAttribute('data-target')) {
@@ -324,12 +328,12 @@
     });
   });
 
+  // Sidebar menu click
   menuItems.forEach(item => {
     item.addEventListener('click', (e) => {
       e.stopPropagation();
       hideAllSections();
       menuItems.forEach(i => i.classList.remove('active'));
-
       const target = item.getAttribute('data-target');
       if (target) {
         const sec = document.getElementById(target);
@@ -344,33 +348,30 @@
 
   // Restore last opened tab OR default to General info
   window.addEventListener("DOMContentLoaded", () => {
-    let savedTab = localStorage.getItem("activeTab");
-
-    if (!savedTab) {
-      savedTab = "general"; // default first visit
-      localStorage.setItem("activeTab", savedTab);
-    }
-
+    let savedTab = localStorage.getItem("activeTab") || "general";
     hideAllSections();
     const sec = document.getElementById(savedTab);
-    if (sec) {
-      sec.style.display = "block";
-      const activeItem = document.querySelector(`[data-target="${savedTab}"]`);
-      if (activeItem) {
-        activeItem.classList.add("active");
-        let parentLi = activeItem.closest('ul').parentElement;
-        while (parentLi && parentLi.tagName === 'LI') {
-          parentLi.classList.add('open');
-          parentLi = parentLi.closest('ul').parentElement;
-        }
+    if (sec) sec.style.display = "block";
+
+    // Highlight active menu item
+    const activeItem = document.querySelector(`[data-target="${savedTab}"]`);
+    if (activeItem) {
+      activeItem.classList.add("active");
+      let parentLi = activeItem.closest('ul').parentElement;
+      while (parentLi && parentLi.tagName === 'LI') {
+        parentLi.classList.add('open');
+        parentLi = parentLi.closest('ul').parentElement;
       }
     }
   });
 
+  // Done button clears localStorage
   document.getElementById('done-btn').addEventListener('click', function(e){
     e.preventDefault();
+    localStorage.removeItem("activeTab"); // remove saved tab
     document.getElementById('done-form').submit();
   });
 </script>
+
 </body>
 </html>

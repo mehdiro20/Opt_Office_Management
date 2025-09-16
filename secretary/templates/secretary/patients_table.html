@@ -29,11 +29,6 @@
                 </form>
                 {% endif %}
 
-                <!-- Dismiss button always present -->
-                <button type="button" class="remove-button dismiss-button" data-patient-id="{{ patient.id }}">
-                    Dismiss
-                </button>
-
                 {% if patient.status == "done" %}
                 <!-- Get Last Refraction -->
                 <form method="POST" action="{% url 'secretary:get_patient_last_refraction' patient.patient_id %}" style="display:inline;">
