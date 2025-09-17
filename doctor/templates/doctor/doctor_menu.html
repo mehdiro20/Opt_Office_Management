@@ -1,0 +1,102 @@
+
+
+<!-- doctor_menu.html -->
+<style>
+    @import url('https://fonts.googleapis.com/css2?family=Poppins:wght@400;600&display=swap');
+
+    /* 🔹 Top Menu Bar */
+    .menu-bar {
+        display: flex;
+        gap: 30px;
+        background: #3498db;
+        padding: 14px 20px;
+        border-radius: 0 0 16px 16px;
+        box-shadow: 0 3px 8px rgba(0,0,0,0.15);
+        position: sticky;
+        top: 0;
+        z-index: 900;
+    }
+
+    .menu { position: relative; }
+
+    .menu-title {
+        background: white;
+        color: #3498db;
+        font-weight: 600;
+        font-size: 15px;
+        padding: 10px 18px;
+        border-radius: 50px;
+        cursor: pointer;
+        display: inline-block;
+        box-shadow: 0 3px 6px rgba(0,0,0,0.15);
+        transition: all 0.25s ease;
+    }
+
+    .menu-title:hover {
+        background: linear-gradient(135deg, #ecf5ff, #dceeff);
+        transform: translateY(-2px);
+    }
+
+    /* Submenu */
+    .submenu {
+        position: absolute;
+        top: 100%;
+        left: 0;
+        background: white;
+        border-radius: 12px;
+        box-shadow: 0 4px 12px rgba(0,0,0,0.15);
+        flex-direction: column;
+        min-width: 210px;
+        display: none;
+        z-index: 1000;
+    }
+
+    .submenu a {
+        padding: 10px 14px;
+        font-size: 14px;
+        font-weight: 500;
+        color: #2c3e50;
+        text-decoration: none;
+        display: block;
+    }
+
+    .submenu a:hover {
+        background: #f0f8ff;
+        color: #3498db;
+    }
+
+    /* Show submenu on hover */
+    .menu:hover .submenu,
+    .menu .submenu:hover {
+        display: flex;
+    }
+</style>
+
+<!-- 🔹 Menu -->
+<div class="menu-bar">
+    <div class="menu">
+        <div class="menu-title">👨‍⚕️ Patients</div>
+        <div class="submenu">
+            <a href="{% url 'doctor:doctor_patient_list' %}">📋 Accepted Patients</a>
+            <a href="">🕒 Patient History</a>
+            <a href="">➕ New Consultation</a>
+        </div>
+    </div>
+
+    <div class="menu">
+        <div class="menu-title">📊 Reports</div>
+        <div class="submenu">
+            <a href="">📈 Daily Report</a>
+            <a href="">🗓 Weekly Summary</a>
+            <a href="">📑 Full Analytics</a>
+        </div>
+    </div>
+
+    <div class="menu">
+        <div class="menu-title">🤝 Collaboration</div>
+        <div class="submenu">
+            <a href="/secretary/">👩‍💼 Secretary Dashboard</a>
+            <a href="/admin/">⚙️ Admin Panel</a>
+        </div>
+    </div>
+</div>

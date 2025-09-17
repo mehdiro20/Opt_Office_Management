@@ -1,81 +1,193 @@
+{% extends "base.html" %}
 
+{% load static %}
 
-<!DOCTYPE html>
-<html lang="en">
-<head>
-  <meta charset="UTF-8" />
-  <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
-  <title>Doctor - Patient List</title>
-  <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/css/bootstrap.min.css" rel="stylesheet"/>
-  <style>
-    body { background-color: #f8f9fa; }
-    .toolbar { margin-bottom: 20px; }
-    .table-actions button, .table-actions a { margin-right: 5px; }
-  </style>
-</head>
-<body>
+{% block title %}Doctor - Patient List{% endblock %}
 
-<nav class="navbar navbar-expand-lg navbar-dark bg-primary">
-  <div class="container">
-    <a class="navbar-brand" href="#">Optometry Clinic</a>
-    <div class="ms-auto">
-      <a class="btn btn-outline-light btn-sm" href="{% url 'doctor:doctor_dashboard' %}">Dashboard</a>
-      <a class="btn btn-light btn-sm ms-2" href="{% url 'admin:index' %}">Admin</a>
-      <a class="btn btn-success btn-sm ms-2" href="{% url 'doctor:doctor_patient_list' %}">Patient List</a>
-    </div>
-  </div>
-</nav>
+{% block extra_css %}
+<link rel="stylesheet" href="{% static 'css/doctor_menu.css' %}">
+<style>
+  /* 🔹 Card container */
+  .patient-card {
+      border-radius: 12px;
+      overflow: hidden;
+      box-shadow: 0 4px 12px rgba(0,0,0,0.08);
+  }
+
+  /* 🔹 Table styling */
+  .patient-table {
+      width: 100%;
+      border-collapse: collapse;
+  }
+
+  .patient-table thead th {
+      background: #3498db;
+      color: #ffffff;
+      font-weight: 600;
+      padding: 16px;
+      font-size: 15px;
+      text-align: center;
+      vertical-align: middle;
+      border-bottom: 2px solid #ddd;
+  }
+
+  .patient-table tbody td {
+      padding: 16px 14px;   /* Increased row height */
+      font-size: 14px;
+      text-align: center;
+      vertical-align: middle;
+  }
+
+  /* Names left aligned */
+  .patient-table tbody td.col-name,
+  .patient-table thead th.col-name-header {
+      text-align: left !important;
+  }
+
+  .patient-table tbody tr {
+      border-bottom: 1px solid #e9ecef;
+      transition: background 0.2s ease;
+  }
+
+  .patient-table tbody tr:hover {
+      background: #f0f8ff;
+  }
+
+  /* Column widths */
+  .col-id { width: 15%; }
+  .col-name { width: 35%; }
+  .col-age { width: 10%; }
+  .col-actions { width: 40%; }
+
+  /* 🔹 Action buttons */
+  .table-actions {
+      display: flex;
+      justify-content: center;
+      gap: 12px;
+      flex-wrap: wrap;
+  }
+
+  .table-actions .btn {
+      border-radius: 0; /* square buttons */
+      padding: 6px 14px;
+      font-size: 13px;
+      font-weight: 500;
+  }
+
+  /* Primary action colors */
+  .btn-primary {
+      background-color: #3498db;
+      border-color: #3498db;
+      color: white;
+  }
+  .btn-primary:hover {
+      background-color: #217dbb;
+      border-color: #217dbb;
+  }
+  .btn-outline-danger {
+      border-radius: 0;
+  }
+
+  /* 🔹 Filter/Search card */
+  .filter-card {
+
+      padding: 18px;
+     
+      margin-bottom: 25px;
+
+  }
+
+  .filter-card .form-control {
+      border-radius: 0;
+      border: 1px solid #ccc;
+      box-shadow: none;
+      height: 42px;
+      font-size: 14px;
+  }
+
+  .filter-card .btn {
+      border-radius: 0;
+      padding: 0 20px;
+      font-weight: 500;
+      height: 42px;
+      background-color: #3498db;
+      border-color: #3498db;
+      color: #fff;
+      margin-left:5px;
+  }
+
+  .filter-card .btn:hover {
+      background-color: #217dbb;
+      border-color: #217dbb;
+  }
+  .mb-3{
+      padding-top:5px;
+      padding-left:20px;
+      font-size:20px;
+  }
+</style>
+{% endblock %}
+
+{% block content %}
+<h1 class="mb-4">Doctor - Patient List</h1>
+
+{% include "doctor/doctor_menu.html" %}
 
 <main class="container py-4">
-  <h4>Accepted Patients</h4>
+  <h4 class="mb-3">Accepted Patients</h4>
 
   <!-- 🔹 Filter/Search -->
-  <form method="GET" class="mb-3">
-    <div class="input-group">
-      <input type="text" name="q" value="{{ request.GET.q }}" class="form-control" placeholder="Search by ID or Name">
-      <button class="btn btn-primary" type="submit">Filter</button>
-    </div>
-  </form>
+  <div class="filter-card">
+    <form method="GET">
+      <div class="input-group">
+        <input type="text" name="q" value="{{ request.GET.q }}" class="form-control" placeholder=" Search by name or ID">
+        <button class="btn" type="submit">Search</button>
+      </div>
+    </form>
+  </div>
 
   {% if patients %}
-  <div class="table-responsive">
-    <table class="table table-striped table-hover">
-      <thead class="table-primary">
-        <tr>
-          <th>Patient ID</th>
-          <th>Full Name</th>
-          <th>Age</th>
-          <th>Actions</th>
-        </tr>
-      </thead>
-      <tbody>
-        {% for patient in patients %}
-        <tr>
-          <td>{{ patient.patient_id }}</td>
-          <td>{{ patient.name }}</td>
-          <td>{{ patient.age }}</td>
-          <td class="table-actions">
-            <!-- Remove from accepted list -->
-           <form method="POST" action="{% url 'doctor:delete_patient' patient.id %}">
-                {% csrf_token %}
-                <button type="submit" class="btn btn-sm btn-outline-danger"
-                        onclick="return confirm('Are you sure you want to delete this patient completely?');">
+  <div class="card patient-card">
+    <div class="table-responsive">
+      <table class="table patient-table mb-0">
+        <thead>
+          <tr>
+            <th class="col-id">Patient ID</th>
+            <th class="col-name-header col-name">Full Name</th>
+            <th class="col-age">Age</th>
+            <th class="col-actions">Actions</th>
+          </tr>
+        </thead>
+        <tbody>
+          {% for patient in patients %}
+          <tr>
+            <td class="col-id fw-semibold">{{ patient.patient_id }}</td>
+            <td class="col-name">{{ patient.name }}</td>
+            <td class="col-age">
+              <span class="badge bg-info text-dark">{{ patient.age }}</span>
+            </td>
+            <td class="col-actions">
+              <div class="table-actions">
+                <form method="POST" action="{% url 'doctor:delete_patient' patient.id %}">
+                  {% csrf_token %}
+                  <button type="submit" class="btn btn-outline-danger btn-sm"
+                          onclick="return confirm('Are you sure you want to delete this patient completely?');">
                     Remove
-                </button>
-            </form>
-            <!-- Go to profile -->
-            <a href="{% url 'doctor:patient_profile' patient.patient_id %}" class="btn btn-sm btn-primary">Profile</a>
-          </td>
-        </tr>
-        {% endfor %}
-      </tbody>
-    </table>
+                  </button>
+                </form>
+                <a href="{% url 'doctor:patient_profile' patient.patient_id %}" class="btn btn-primary btn-sm">
+                  Profile
+                </a>
+              </div>
+            </td>
+          </tr>
+          {% endfor %}
+        </tbody>
+      </table>
+    </div>
   </div>
   {% else %}
     <div class="alert alert-info">No accepted patients found.</div>
   {% endif %}
 </main>
-
-<script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/js/bootstrap.bundle.min.js"></script>
-</body>
-</html>
+{% endblock %}
