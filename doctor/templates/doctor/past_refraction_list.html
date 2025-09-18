@@ -1,40 +1,62 @@
+<!-- Past Refractions Section -->
+<div id="past-refractions" class="section">
+    <h3>Past Refractions</h3>
+    <form id="filter-form" method="GET" action="{% url 'doctor:patient_profile' patient.patient_id %}" style="display:flex; gap:8px; margin-bottom:15px; flex-wrap: wrap;">
+        <input type="date" name="start_date" value="{{ request.GET.start_date }}">
+        <input type="date" name="end_date" value="{{ request.GET.end_date }}">
+        <input type="submit" value="Filter" style="background:#2980b9;color:white;border:none;padding:4px 10px;border-radius:4px;cursor:pointer;">
+    </form>
 
-        <!-- Past Refractions Section -->
-        <div id="past-refractions" class="section">
-            <h3>Past Refractions</h3>
-            <form method="GET" action="{% url 'doctor:patient_profile' patient.patient_id %}" style="display:flex; gap:8px; margin-bottom:15px; flex-wrap: wrap;">
-                <input type="date" name="start_date" value="{{ request.GET.start_date }}">
-                <input type="date" name="end_date" value="{{ request.GET.end_date }}">
-                <input type="submit" value="Filter" style="background:#2980b9;color:white;border:none;padding:4px 10px;border-radius:4px;cursor:pointer;">
-            </form>
-            <table>
-                <thead>
-                    <tr>
-                        <th>Date/Time</th>
-                        <th>OD</th>
-                        <th>OS</th>
-                        <th>ODCL</th>
-                        <th>OSCL</th>
-                        <th>Axis</th>
-                        <th>PD</th>
-                    </tr>
-                </thead>
-                <tbody>
-                    {% for refraction in past_refractions %}
-                    <tr>
-                        <td>{{ refraction.created_at }}</td>
-                        <td>{{ refraction.od }}</td>
-                        <td>{{ refraction.os }}</td>
-                        <td>{{ refraction.odcl }}</td>
-                        <td>{{ refraction.oscl }}</td>
-                        <td>{{ refraction.axis }}</td>
-                        <td>{{ refraction.pd }}</td>
-                    </tr>
-                    {% empty %}
-                    <tr>
-                        <td colspan="5" style="text-align:center;">No past refractions available.</td>
-                    </tr>
-                    {% endfor %}
-                </tbody>
-            </table>
-        </div>
+    <table>
+        <thead>
+            <tr>
+        
+                <th>Subject of Rx</th>
+                <th>OD</th>
+                <th>OS</th>
+                <th>ODCL</th>
+                <th>OSCL</th>
+                <th>PD</th>
+                <th>Date/Time</th>
+            </tr>
+        </thead>
+        <tbody id="refractions-table-body">
+            {% for refraction in past_refractions %}
+            <tr>
+                <td>{{ refraction.subject }}</td>
+                <td>{{ refraction.od }}</td>
+                <td>{{ refraction.os }}</td>
+                <td>{{ refraction.odcl }}</td>
+                <td>{{ refraction.oscl }}</td>
+                <td>{{ refraction.pd }}</td>
+                <td>{{ refraction.created_at_tehran_jalali  }}</td>
+            </tr>
+            {% empty %}
+            <tr>
+                <td colspan="7" style="text-align:center;">No past refractions available.</td>
+            </tr>
+            {% endfor %}
+        </tbody>
+    </table>
+</div>
+
+<!-- AJAX Auto-refresh Script -->
+<script>
+    function refreshTable() {
+        const form = document.getElementById('filter-form');
+        const url = form.action + '?' + new URLSearchParams(new FormData(form)).toString();
+
+        fetch(url, { headers: { 'X-Requested-With': 'XMLHttpRequest' } })
+            .then(response => response.text())
+            .then(html => {
+                const parser = new DOMParser();
+                const doc = parser.parseFromString(html, 'text/html');
+                const newTbody = doc.getElementById('refractions-table-body');
+                document.getElementById('refractions-table-body').innerHTML = newTbody.innerHTML;
+            })
+            .catch(err => console.error('Error refreshing table:', err));
+    }
+
+    // Refresh every 10 seconds
+    setInterval(refreshTable, 10000);
+</script>

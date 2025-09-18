@@ -23,6 +23,7 @@
     <table style="width: 100%; border-collapse: collapse; background: #fff;">
         <thead>
             <tr style="background: #2980b9; color: white;">
+                <th style="padding: 8px; text-align: left;">Subject</th>    
                 <th style="padding: 8px; text-align: left;">Date</th>
                 <th style="padding: 8px; text-align: left;">OD</th>
                 <th style="padding: 8px; text-align: left;">OS</th>
@@ -32,6 +33,7 @@
         <tbody>
             {% for refraction in past_refractions %}
                 <tr>
+                    <td style="padding: 8px; border-bottom: 1px solid #ddd;">{{ refraction.subject }}</td>
                     <td style="padding: 8px; border-bottom: 1px solid #ddd;">{{ refraction.date }}</td>
                     <td style="padding: 8px; border-bottom: 1px solid #ddd;">{{ refraction.od }}</td>
                     <td style="padding: 8px; border-bottom: 1px solid #ddd;">{{ refraction.os }}</td>

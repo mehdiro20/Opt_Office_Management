@@ -53,6 +53,7 @@ def submit_refraction(request, patient_id):
     patient = get_object_or_404(Patient, patient_id=patient_id)
 
     if request.method == "POST":
+        subject=request.POST.get('subject')
         od = request.POST.get('od')
         os = request.POST.get('os')
         odcl=request.POST.get('odcl')
@@ -61,6 +62,7 @@ def submit_refraction(request, patient_id):
         pd = request.POST.get('pd')
 
         Refraction.objects.create(
+            subject=subject,
             patient=patient,
             od=od,
             os=os,

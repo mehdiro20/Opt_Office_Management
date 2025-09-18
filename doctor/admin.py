@@ -7,9 +7,9 @@ from .models import OpticsFeature
 import os
 @admin.register(Refraction)
 class RefractionAdmin(admin.ModelAdmin):
-    list_display = ('patient', 'od', 'os','axis','pd', 'created_at')
+    list_display = ('subject','patient', 'od', 'os','axis','pd', 'created_at')
     list_filter = ('created_at', 'patient')
-    search_fields = ('patient__name', 'patient__patient_id')
+    search_fields = ('subject','patient__name', 'patient__patient_id')
     
 
 
