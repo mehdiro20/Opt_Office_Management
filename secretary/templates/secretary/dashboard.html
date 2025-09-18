@@ -261,10 +261,13 @@ document.addEventListener("DOMContentLoaded", () => {
                 if (data.success) {
                     closeRegisterModal();
                     refreshPatientsTable();
-                    showToast("✅ Patient registered successfully.");
+                    showToast("✅ " + (data.message || "Patient registered successfully."));
                 } else {
                     const err = document.getElementById("formError");
-                    if (err) { err.textContent = data.error || "Registration failed."; err.style.display = "block"; }
+                    if (err) {
+                        err.textContent = data.error || "Registration failed.";
+                        err.style.display = "block";
+                    }
                 }
             })
             .catch(() => showToast("❌ Error registering patient."));
@@ -286,10 +289,13 @@ document.addEventListener("DOMContentLoaded", () => {
                 if (data.success) {
                     closeAcceptModal();
                     refreshPatientsTable();
-                    showToast("✅ Patient accepted successfully.");
+                    showToast("✅ " + (data.message || "Patient accepted successfully."));
                 } else {
                     const err = document.getElementById("acceptError");
-                    if (err) { err.textContent = data.error || "Accept failed."; err.style.display = "block"; }
+                    if (err) {
+                        err.textContent = data.error || "Accept failed.";
+                        err.style.display = "block";
+                    }
                 }
             })
             .catch(() => showToast("❌ Error accepting patient."));

@@ -86,53 +86,71 @@ def accept_patient(request, patient_id):
 # -------------------------------
 @login_required
 @user_passes_test(is_secretary_doctor_admin)
+
 def register_patient(request):
     if request.method == 'POST':
-        name = request.POST.get('name')
-        family_name = request.POST.get('family_name')
-        phone = request.POST.get('phone')
-        age = request.POST.get('age')
-        gender = request.POST.get('gender')
-        melli_code = request.POST.get('melli_code')
-        reason = request.POST.get('reason')
+        try:
+            name = request.POST.get('name')
+            family_name = request.POST.get('family_name')
+            phone = request.POST.get('phone')
+            age = request.POST.get('age')
+            gender = request.POST.get('gender')
+            melli_code = request.POST.get('melli_code')
+            reason = request.POST.get('reason')
 
-        is_ajax = request.headers.get('X-Requested-With') == 'XMLHttpRequest'
+            is_ajax = request.headers.get('X-Requested-With') == 'XMLHttpRequest'
 
-        def ajax_error(msg, status=400):
-            return JsonResponse({'success': False, 'error': msg}, status=status)
+            def ajax_error(msg, status=400):
+                return JsonResponse({'success': False, 'error': msg}, status=status)
 
-        if not all([name, family_name, age, gender, reason]):
-            msg = "All required fields must be filled!"
-            return ajax_error(msg) if is_ajax else _redirect_with_message(request, msg, error=True)
+            # Required fields
+            if not all([name, family_name, age, gender, reason]):
+                msg = "All required fields must be filled!"
+                return ajax_error(msg) if is_ajax else _redirect_with_message(request, msg, error=True)
 
-        if phone and not phone.isdigit():
-            msg = "Phone number must contain digits only."
-            return ajax_error(msg) if is_ajax else _redirect_with_message(request, msg, error=True)
+            if phone and not phone.isdigit():
+                msg = "Phone number must contain digits only."
+                return ajax_error(msg) if is_ajax else _redirect_with_message(request, msg, error=True)
 
-        if melli_code and not melli_code.isdigit():
-            msg = "Melli code must contain digits only."
-            return ajax_error(msg) if is_ajax else _redirect_with_message(request, msg, error=True)
+            if melli_code and not melli_code.isdigit():
+                msg = "Melli code must contain digits only."
+                return ajax_error(msg) if is_ajax else _redirect_with_message(request, msg, error=True)
 
-        if melli_code and Patient.objects.filter(melli_code=melli_code).exists():
-            msg = "This Melli code is already registered."
-            return ajax_error(msg, status=409) if is_ajax else _redirect_with_message(request, msg, error=True)
+            if melli_code and Patient.objects.filter(melli_code=melli_code).exists():
+                msg = "This Melli code is already registered."
+                return ajax_error(msg, status=409) if is_ajax else _redirect_with_message(request, msg, error=True)
 
-        patient = Patient.objects.create(
-            name=name,
-            family_name=family_name,
-            phone=phone,
-            age=age,
-            gender=gender,
-            melli_code=melli_code,
-            reason=reason
-        )
+            # ✅ Save Patient
+            patient = Patient.objects.create(
+                name=name,
+                family_name=family_name,
+                phone=phone,
+                age=age,
+                gender=gender,
+                melli_code=melli_code,
+                reason=reason
+            )
 
-        msg = f"Patient {name} registered successfully."
-        if is_ajax:
-            return JsonResponse({'success': True, 'message': msg, 'id': patient.id})
-        return _redirect_with_message(request, msg)
+            msg = f"Patient {name} registered successfully."
+            if is_ajax:
+                return JsonResponse({
+                    'success': True,
+                    'message': msg,
+                    'patient_id': patient.patient_id,
+                    'patient_name': f"{patient.name} {patient.family_name}"
+                })
+            else:
+                return _redirect_with_message(request, msg)
+
+        except Exception as e:
+            is_ajax = request.headers.get('X-Requested-With') == 'XMLHttpRequest'
+            msg = f"Error registering patient: {str(e)}"
+            if is_ajax:
+                return JsonResponse({'success': False, 'error': msg}, status=500)
+            return _redirect_with_message(request, msg, error=True)
 
     return redirect('secretary:secretary_dashboard')
+
 
 
 @login_required
