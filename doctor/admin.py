@@ -1,8 +1,10 @@
 from django.contrib import admin
 from .models import Refraction
 from .models import BrandsFrames, BrandsSplenss
-
+from django.db.models.signals import post_delete, pre_save
+from django.dispatch import receiver
 from .models import OpticsFeature
+import os
 @admin.register(Refraction)
 class RefractionAdmin(admin.ModelAdmin):
     list_display = ('patient', 'od', 'os','axis','pd', 'created_at')
@@ -44,3 +46,25 @@ class BrandsSplenssAdmin(admin.ModelAdmin):
 class OpticsFeatureAdmin(admin.ModelAdmin):
     list_display = ("name",)
     search_fields = ("name",)
+    
+    
+@receiver(post_delete, sender=BrandsSplenss)
+def delete_brand_image_on_delete(sender, instance, **kwargs):
+    if instance.brand_img:
+        instance.brand_img.delete(save=False)
+        
+@receiver(pre_save, sender=BrandsSplenss)
+def delete_old_brand_image_on_update(sender, instance, **kwargs):
+    if not instance.pk:
+        return False  # skip for new objects (no old file exists)
+    
+    try:
+        old_instance = BrandsSplenss.objects.get(pk=instance.pk)
+    except BrandsSplenss.DoesNotExist:
+        return False
+
+    old_file = old_instance.brand_img
+    new_file = instance.brand_img
+    if old_file and old_file != new_file:
+        if os.path.isfile(old_file.path):
+            old_file.delete(save=False)
