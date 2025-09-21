@@ -1,77 +1,94 @@
-<div id="optics" class="section">
-  <h3 class="mb-3">Optics</h3>
+{% load static %}
 
-  <!-- Optics Features -->
-  <div class="optics-features mb-4">
-    <label class="form-label fw-bold">Select Optical Features:</label>
-    <div class="features-list">
-      {% for feature in optics_features %}
-        <label class="feature-checkbox">
-          <input type="checkbox" name="optics_features" value="{{ feature.name }}">
-          <span class="feature-text">{{ feature.name }}</span>
-        </label>
-      {% empty %}
-        <p style="color:#888;">No optical features configured by admin.</p>
-      {% endfor %}
-    </div>
-  </div>
+<form method="post" action="{% url 'doctor:optics_page' patient.patient_id  %}">
+  {% csrf_token %}
 
-  <!-- Brand select -->
-  <label class="form-label fw-bold">Select Lens Brand:</label>
-  <div class="custom-select-wrapper">
-    <div id="selectedBrand" class="custom-select-box">
-      <span class="placeholder">-- Select a brand --</span>
-      <i class="arrow">&#9662;</i>
+  <div id="optics" class="section">
+    <h3 class="mb-3">Optics</h3>
+
+    <!-- Optics Features -->
+    <div class="optics-features mb-4">
+      <label class="form-label fw-bold">Select Optical Features:</label>
+      <div class="features-list">
+        {% for feature in optics_features %}
+          <label class="feature-checkbox">
+            <input type="checkbox" name="optics_features" value="{{ feature.name }}">
+            <span class="feature-text">{{ feature.name }}</span>
+          </label>
+        {% empty %}
+          <p style="color:#888;">No optical features configured by admin.</p>
+        {% endfor %}
+      </div>
     </div>
 
-    <div id="brandOptions" class="brand-options">
-      <div class="search-box">
-        <input type="text" id="brandSearch" class="form-control" placeholder="Search brand, material, color...">
+    <!-- Brand select -->
+    <label class="form-label fw-bold">Select Lens Brand:</label>
+    <div class="custom-select-wrapper">
+      <div id="selectedBrand" class="custom-select-box">
+        <span class="placeholder">-- Select a brand --</span>
+        <i class="arrow">&#9662;</i>
       </div>
 
-      {% for brand in splenss %}
-      <div class="brand-option"
-           data-img="{{ brand.brand_img.url }}" 
-           data-name="{{ brand.brand_name }}"
-           data-material="{{ brand.brand_material }}" 
-           data-color="{{ brand.brand_color }}" 
-           data-coating="{{ brand.brand_coating }}"
-           data-prices='[ {% for p in brand.prices.all %} {"description": "{{ p.description }}", "price": "{{ p.price }}"}{% if not forloop.last %},{% endif %} {% endfor %} ]'>
-        <img src="{{ brand.brand_img.url }}" alt="brand" class="option-img clickable">
-        <div class="option-info">
-          <div class="option-title">{{ brand.brand_name }}</div>
-          <div class="option-sub">
-            Material: {{ brand.brand_material }} | Color: {{ brand.brand_color }}
+      <div id="brandOptions" class="brand-options">
+        <div class="search-box">
+          <input type="text" id="brandSearch" class="form-control" placeholder="Search brand, material, color...">
+        </div>
+
+        {% for brand in splenss %}
+        <div class="brand-option"
+             data-img="{{ brand.brand_img.url }}" 
+             data-name="{{ brand.brand_name }}"
+             data-material="{{ brand.brand_material }}" 
+             data-color="{{ brand.brand_color }}" 
+             data-coating="{{ brand.brand_coating }}"
+             data-prices='[ {% for p in brand.prices.all %} {"description": "{{ p.description }}", "price": "{{ p.price }}"}{% if not forloop.last %},{% endif %} {% endfor %} ]'>
+          <img src="{{ brand.brand_img.url }}" alt="brand" class="option-img clickable">
+          <div class="option-info">
+            <div class="option-title">{{ brand.brand_name }}</div>
+            <div class="option-sub">
+              Material: {{ brand.brand_material }} | Color: {{ brand.brand_color }}
+            </div>
           </div>
         </div>
+        {% endfor %}
       </div>
-      {% endfor %}
+    </div>
+
+    <!-- Details card -->
+    <div id="brandDetails" class="optics-card" style="display:none;">
+      <div class="image-wrapper">
+        <img id="brandImg" src="" alt="Brand Image" class="clickable">
+      </div>
+      <div class="details-text">
+        <p><strong>Material:</strong> <span id="brandMaterial"></span></p>
+        <p><strong>Color:</strong> <span id="brandColor"></span></p>
+        <p><strong>Coating:</strong> <span id="brandCoating"></span></p>
+
+        <strong>Prices:</strong>
+        <table id="brandPricesTable" style="width:100%; border-collapse: collapse;">
+          <thead>
+            <tr>
+              <th style="text-align:left; padding:6px; border-bottom:1px solid #ccc;">Description</th>
+              <th style="text-align:left; padding:6px; border-bottom:1px solid #ccc;">Price</th>
+            </tr>
+          </thead>
+          <tbody></tbody>
+        </table>
+      </div>
+    </div>
+
+    <!-- Final Description Box -->
+    <div class="mt-4">
+      <label for="finalDescription" class="final-description-label">Final Description:</label>
+      <textarea id="finalDescription" name="final_description" class="final-description" rows="6"></textarea>
+    </div>
+
+    <!-- Submit button -->
+    <div class="mt-4">
+      <button type="submit" class="btn btn-primary">Save Optics</button>
     </div>
   </div>
-
-  <!-- Details card -->
-  <div id="brandDetails" class="optics-card" style="display:none;">
-    <div class="image-wrapper">
-      <img id="brandImg" src="" alt="Brand Image" class="clickable">
-    </div>
-    <div class="details-text">
-      <p><strong>Material:</strong> <span id="brandMaterial"></span></p>
-      <p><strong>Color:</strong> <span id="brandColor"></span></p>
-      <p><strong>Coating:</strong> <span id="brandCoating"></span></p>
-
-      <strong>Prices:</strong>
-      <table id="brandPricesTable" style="width:100%; border-collapse: collapse;">
-        <thead>
-          <tr>
-            <th style="text-align:left; padding:6px; border-bottom:1px solid #ccc;">Description</th>
-            <th style="text-align:left; padding:6px; border-bottom:1px solid #ccc;">Price</th>
-          </tr>
-        </thead>
-        <tbody></tbody>
-      </table>
-    </div>
-  </div>
-</div>
+</form>
 
 <!-- Image modal -->
 <div id="imgModal" class="img-modal">
@@ -79,7 +96,11 @@
   <img class="modal-content" id="imgPreview">
 </div>
 
+<!-- Popup messages for Django messages -->
+<div id="f" class="popup-message" style="display:none;"></div>
+
 <style>
+
 /* --- Optics Features --- */
 .features-list {
   display: flex;
@@ -149,81 +170,180 @@
 .details-text table { width: 100%; border-collapse: collapse; margin-top: 8px; }
 .details-text th, .details-text td { text-align: left; padding: 6px; border-bottom: 1px solid #ccc; }
 
+/* --- Final Description Textarea --- */
+.final-description-label {
+  font-weight: bold;
+  font-size: 1.1rem;
+  margin-bottom: 8px;
+  align-self: flex-start;
+}
+
+.final-description {
+  width: 80%;
+  min-width: 320px;    
+  padding: 14px 16px;
+  border-radius: 14px;
+  border: 2px solid #3498db;
+  background: linear-gradient(to bottom, #f9fcff, #eef7ff);
+  font-size: 1rem;
+  font-family: "Segoe UI", sans-serif;
+  line-height: 1.6;
+  color: #2c3e50;
+  resize: none;
+  box-shadow: inset 0 2px 6px rgba(0,0,0,0.08), 0 4px 12px rgba(0,0,0,0.08);
+  transition: all 0.3s ease;
+  white-space: pre-line;
+}
+
+.final-description:focus {
+  outline: none;
+  border-color: #2ecc71;
+  box-shadow: 0 0 0 4px rgba(46,204,113,0.2);
+}
+
 /* --- Modal --- */
 .img-modal { display: none; position: fixed; z-index: 2000; padding-top: 60px; left: 0; top: 0; width: 100%; height: 100%; background-color: rgba(0,0,0,0.85); overflow: auto; }
 .img-modal .modal-content { display: block; margin: auto; max-width: 90%; max-height: 85%; border-radius: 12px; box-shadow: 0 6px 20px rgba(0,0,0,0.5); }
 .img-modal .close { position: absolute; top: 20px; right: 35px; color: white; font-size: 40px; font-weight: bold; cursor: pointer; }
+
+/* ✅ Toast Styles with smooth slide animation */
+.popup-message {
+  position: fixed;
+  top: 30px;
+  right: -400px; 
+  padding: 16px 22px;
+  border-radius: 12px;
+  font-size: 1rem;
+  font-weight: 500;
+  color: #fff;
+  box-shadow: 0 6px 20px rgba(0,0,0,0.2);
+  z-index: 5000;
+  opacity: 0;
+  transform: translateX(0);
+  transition: right 0.5s ease, opacity 0.5s ease, transform 0.5s ease;
+}
+
+.popup-message.show {
+  right: 30px;
+  opacity: 1;
+  transform: translateX(0);
+}
+
+.popup-message.hide {
+  right: -400px;
+  opacity: 0;
+  transform: translateX(50px);
+}
+
+.popup-message.success {
+  background: linear-gradient(135deg, #2ecc71, #27ae60);
+}
+
+.popup-message.error {
+  background: linear-gradient(135deg, #e74c3c, #c0392b);
+}
 </style>
+
+
+
 
 <script>
 const selectedBox = document.getElementById("selectedBrand");
 const optionsBox = document.getElementById("brandOptions");
 const searchInput = document.getElementById("brandSearch");
 const detailCard = document.getElementById("brandDetails");
+const finalDescBox = document.getElementById("finalDescription");
 
-// Toggle dropdown
-selectedBox.addEventListener("click", e => {
-  e.stopPropagation();
-  optionsBox.style.display = optionsBox.style.display === "block" ? "none" : "block";
-});
+// Dropdown toggle
+selectedBox.addEventListener("click", e => { e.stopPropagation(); optionsBox.style.display = optionsBox.style.display === "block" ? "none" : "block"; });
+
+// Update final description
+function updateFinalDescription() {
+    const features = [...document.querySelectorAll('input[name="optics_features"]:checked')].map(cb => cb.value);
+    const selectedBrandEl = selectedBox.querySelector(".selected-item span:not(.selected-img)");
+    const brandName = selectedBrandEl ? selectedBrandEl.textContent : "";
+    const material = document.getElementById("brandMaterial").textContent;
+    const color = document.getElementById("brandColor").textContent;
+    const coating = document.getElementById("brandCoating").textContent;
+
+    let desc = "";
+    if (features.length > 0) desc += `Features: ${features.join(", ")}.\n`;
+    if (brandName) desc += `Brand: ${brandName}, Material: ${material}, Color: ${color}, Coating: ${coating}.`;
+
+    finalDescBox.value = desc.trim();
+}
+
+document.querySelectorAll('input[name="optics_features"]').forEach(cb => cb.addEventListener("change", updateFinalDescription));
 
 // Select brand
 document.querySelectorAll(".brand-option").forEach(option => {
-  option.addEventListener("click", e => {
-    e.stopPropagation();
-    const img = option.dataset.img;
-    const material = option.dataset.material;
-    const color = option.dataset.color;
-    const coating = option.dataset.coating;
-    const prices = JSON.parse(option.dataset.prices);
+    option.addEventListener("click", e => {
+        e.stopPropagation();
+        const img = option.dataset.img;
+        const material = option.dataset.material;
+        const color = option.dataset.color;
+        const coating = option.dataset.coating;
+        let prices = [];
+        try { prices = JSON.parse(option.dataset.prices); } catch { prices = []; }
 
-    selectedBox.innerHTML = `<span class="selected-item"><img src="${img}" class="selected-img"><span>${option.dataset.name}</span></span><i class="arrow">&#9662;</i>`;
-    document.getElementById("brandImg").src = img;
-    document.getElementById("brandMaterial").textContent = material;
-    document.getElementById("brandColor").textContent = color;
-    document.getElementById("brandCoating").textContent = coating;
+        selectedBox.innerHTML = `<span class="selected-item"><img src="${img}" class="selected-img"><span>${option.dataset.name}</span></span><i class="arrow">&#9662;</i>`;
+        document.getElementById("brandImg").src = img;
+        document.getElementById("brandMaterial").textContent = material;
+        document.getElementById("brandColor").textContent = color;
+        document.getElementById("brandCoating").textContent = coating;
 
-    const tbody = document.querySelector("#brandPricesTable tbody");
-    tbody.innerHTML = "";
-    prices.forEach(p => {
-      const tr = document.createElement("tr");
-      tr.innerHTML = `<td>${p.description}</td><td>$${p.price}</td>`;
-      tbody.appendChild(tr);
+        const tbody = document.querySelector("#brandPricesTable tbody");
+        tbody.innerHTML = "";
+        prices.forEach(p => {
+            const tr = document.createElement("tr");
+            tr.innerHTML = `<td>${p.description}</td><td>$${p.price}</td>`;
+            tbody.appendChild(tr);
+        });
+
+        detailCard.style.display = "flex";
+        optionsBox.style.display = "none";
+        updateFinalDescription();
     });
-
-    detailCard.style.display = "flex";
-    optionsBox.style.display = "none";
-  });
 });
 
 // Search brands
 searchInput.addEventListener("keyup", () => {
-  const filter = searchInput.value.toLowerCase();
-  document.querySelectorAll(".brand-option").forEach(option => {
-    const text = (option.dataset.name + " " + option.dataset.material + " " + option.dataset.color + " " + option.dataset.coating).toLowerCase();
-    option.style.display = text.includes(filter) ? "flex" : "none";
-  });
+    const filter = searchInput.value.toLowerCase();
+    document.querySelectorAll(".brand-option").forEach(option => {
+        const text = (option.dataset.name + " " + option.dataset.material + " " + option.dataset.color + " " + option.dataset.coating).toLowerCase();
+        option.style.display = text.includes(filter) ? "flex" : "none";
+    });
 });
 
-// Close dropdown outside click
+// Close dropdown
 document.addEventListener("click", () => { optionsBox.style.display = "none"; });
 
 // Modal
 const modal = document.getElementById("imgModal");
 const modalImg = document.getElementById("imgPreview");
 const closeBtn = modal.querySelector(".close");
-document.addEventListener("click", e => {
-  if (e.target.classList.contains("clickable")) {
-    modal.style.display = "block";
-    modalImg.src = e.target.src;
-  }
+document.querySelectorAll(".clickable").forEach(img => {
+    img.addEventListener("click", () => { modal.style.display = "block"; modalImg.src = img.src; });
 });
 closeBtn.onclick = () => { modal.style.display = "none"; };
 modal.onclick = e => { if (e.target === modal) modal.style.display = "none"; };
 
-// Get selected optics features
-function getSelectedOpticsFeatures() {
-  return [...document.querySelectorAll('input[name="optics_features"]:checked')]
-         .map(cb => cb.value);
+// ✅ Django Messages Popup
+function showMessage(msg, type="success") {
+    const box = document.createElement("div");
+    box.className = `popup-message ${type}`;
+    box.textContent = msg;
+    document.body.appendChild(box);
+    setTimeout(() => box.classList.add("show"), 100);
+    setTimeout(() => { box.classList.remove("show"); setTimeout(() => box.remove(), 500); }, 3000);
 }
+
+// Read Django messages
+{% if messages %}
+  {% for message in messages %}
+    showMessage("{{ message }}", "{% if message.tags %}{{ message.tags }}{% else %}success{% endif %}");
+  {% endfor %}
+{% endif %}
 </script>
+
+

@@ -68,3 +68,14 @@ def delete_old_brand_image_on_update(sender, instance, **kwargs):
     if old_file and old_file != new_file:
         if os.path.isfile(old_file.path):
             old_file.delete(save=False)
+            
+            
+
+from .models import OpticsDescription
+
+@admin.register(OpticsDescription)
+class OpticsDescriptionAdmin(admin.ModelAdmin):
+    list_display = ("id","patient_id", "description", "created_at")   # show these columns in the list
+    search_fields = ("description",)                     # enable search by description
+    list_filter = ("created_at",)               
+            

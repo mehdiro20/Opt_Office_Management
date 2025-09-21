@@ -12,8 +12,12 @@ import json
 from django.contrib.auth.decorators import permission_required
 from doctor.models import BrandsSplenss
 from doctor.models import OpticsFeature
+from .models import OpticsDescription
+import json
+from django.http import JsonResponse
+from django.views.decorators.csrf import csrf_exempt
 
-
+from django.contrib import messages
 @login_required
 
 @permission_required('doctor.view_patient', raise_exception=True)
@@ -114,3 +118,36 @@ def delete_patient(request, patient_id):
 def patients_fragment(request):
     patients = Patient.objects.filter(status='accepted')  # or whatever your filter is
     return render(request, 'doctor/patients_list.html', {'patients': patients})
+@permission_required('doctor.view_patient', raise_exception=True)
+
+
+
+
+def optics_page(request, patient_id):
+    if request.method == "POST":
+        try:
+            features = request.POST.getlist("optics_features")
+            brand_name = request.POST.get("brand_name", "")
+            brand_material = request.POST.get("brand_material", "")
+            brand_color = request.POST.get("brand_color", "")
+            brand_coating = request.POST.get("brand_coating", "")
+            final_description = request.POST.get("final_description", "")
+
+            # Save to DB here...
+            # patient = Patient.objects.get(patient_id=patient_id)
+            OpticsDescription.objects.create(patient_id= patient_id,
+                                             description=final_description
+                                             
+                                                 
+                                             
+                                             
+                                             )
+
+            messages.success(request, "✅ Optics saved successfully!")
+            return redirect("doctor:patient_profile", patient_id=patient_id)
+
+        except Exception as e:
+            messages.error(request, f"❌ Error: {str(e)}")
+            return redirect("doctor:patient_profile", patient_id=patient_id)
+
+    return redirect("doctor:patient_profile", patient_id=patient_id)

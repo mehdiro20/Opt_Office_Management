@@ -100,3 +100,15 @@ class OpticsFeature(models.Model):
 
     def __str__(self):
         return self.name    
+    
+    
+
+
+class OpticsDescription(models.Model):
+    patient_id = models.CharField(max_length=50)
+    description = models.TextField()  # Stores the final description
+    created_at = models.DateTimeField(auto_now_add=True)  # When it was created
+    updated_at = models.DateTimeField(auto_now=True)      # Last update
+
+    def __str__(self):
+        return f"Optics Description #{self.id}"    

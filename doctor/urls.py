@@ -9,7 +9,7 @@ urlpatterns = [
     path('', views.doctor_dashboard, name='doctor_dashboard'),
 
     path('dashboard/', views.doctor_dashboard, name='dashboard'),
-
+    path("optics/<str:patient_id>", views.optics_page, name="optics_page"),  # 👈 this gives the name
     path('profile/<str:patient_id>/', views.patient_profile, name='patient_profile'),
     path('submit_refraction/<str:patient_id>/', views.submit_refraction, name='submit_refraction'),
 
@@ -22,7 +22,6 @@ urlpatterns = [
     
     path('patients-fragment/', views.patients_fragment, name='patients_fragment'),
 
-   
 ]
 
 if settings.DEBUG:
