@@ -33,6 +33,7 @@ Follow these steps to set up the project locally:
 ---
 
 ### Step 2: Create and Activate a Virtual Environment
+in Anaconda Powershell Prompt read and accept all questions.
 ```bash
 - conda create -n optometry python=3.11
 - conda activate optometry
