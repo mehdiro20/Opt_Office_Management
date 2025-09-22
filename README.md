@@ -21,12 +21,24 @@ Open-source programming can help expand the electronic aspects of optometry.
 
 ---
 
-## ⚙️ Installation Manual
 
-1. **Download and install [Anaconda](https://www.anaconda.com/products/distribution)**  
-   Choose the version for your operating system.
+## ⚙️ Installation Steps
 
-2. **Create a new virtual environment**  
-   ```bash
-   conda create -n optometry python=3.11
-   conda activate optometry
+Follow these steps to set up the project locally:
+
+### Step 1: Download and Install Anaconda
+- Download Anaconda for your operating system from [here](https://www.anaconda.com/products/distribution).  
+- Follow the installation instructions.
+
+---
+
+### Step 2: Create and Activate a Virtual Environment
+```bash
+- conda create -n optometry python=3.11
+- conda activate optometry
+
+###Step 3: Clone the Project Repository
+git clone https://github.com/your-username/your-repo.git
+cd your-repo
+
+   
