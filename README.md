@@ -13,7 +13,7 @@ Mehdi Aria
 Open-source programming can help expand electronic aspects of optometry.  
 ---
 ### Project Status: In Progress
-[█████-----] In Progress
+- [█████-----] In Progress
 ---
 
 📬 **Contact Me**  
