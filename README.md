@@ -58,7 +58,7 @@ Then in Windows run Git CMD or Command Prompt (cmd not anaconda powershell promp
 ---
 
 ### Step 4: Install Dependencies
-from this step please use Anaconda Powershell Prompt (in windows)
+From this step please use Anaconda Powershell Prompt (in windows)
 ```
    pip install -r requirements.txt
 
