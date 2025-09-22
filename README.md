@@ -39,7 +39,7 @@ Follow these steps to set up the project locally:
 ---
 
 ### Step 2: Create and Activate a Virtual Environment
-in Anaconda Powershell Prompt read and accept all questions.
+In Anaconda Powershell Prompt read and accept all questions.
 ```bash
 - conda create -n optometry python=3.11
 - conda activate optometry
@@ -56,8 +56,9 @@ Then in Windows run Git CMD or Command Prompt (cmd not anaconda powershell promp
 
 ```
 ---
-### Step 4: Install Dependencies
 
+### Step 4: Install Dependencies
+from this step please use Anaconda Powershell Prompt (in windows)
 ```
    pip install -r requirements.txt
 
