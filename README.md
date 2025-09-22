@@ -37,9 +37,16 @@ Follow these steps to set up the project locally:
 - conda create -n optometry python=3.11
 - conda activate optometry
 
-###Step 3: Clone the Project Repository
-git clone https://github.com/your-username/your-repo.git
-cd your-repo
 ```
-### step 3
+### Step 3:clone the repo: 
+   git clone https://github.com/your-username/your-repo.git
+   cd your-repo 
+### Step 4: Install Dependencies
+   pip install -r requirements.txt
+### Step 5: Run Database Migrations
+   python manage.py migrate
+### Step 6: Create a Superuser (Admin Account)
+   python manage.py createsuperuser
+### Step 7: Start the Development Server
+   python manage.py runserver
    
