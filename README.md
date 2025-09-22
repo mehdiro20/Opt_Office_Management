@@ -72,6 +72,10 @@ Then in Windows run Git CMD or Command Prompt (cmd not anaconda powershell promp
 ### Step 6: Create a Superuser (Admin Account)
 
 ```
+   python manage.py shell
+    from django.contrib.auth.models import User
+    User.objects.get(username='mehdi').delete()
+    exit()
    python manage.py createsuperuser
 
 ```
