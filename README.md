@@ -40,5 +40,6 @@ Follow these steps to set up the project locally:
 ###Step 3: Clone the Project Repository
 git clone https://github.com/your-username/your-repo.git
 cd your-repo
-
+```
+### step 3
    
