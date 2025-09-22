@@ -41,8 +41,9 @@ in Anaconda Powershell Prompt read and accept all questions.
 ```
 ---
 ### Step 3:clone the repo:
--Download Git from [here](https://git-scm.com/downloads/win) for windows.
--you can also download git for linux from [here](https://git-scm.com/downloads/linux) .  
+Download Git from [here](https://git-scm.com/downloads/win) for windows.
+you can also download git for linux from [here](https://git-scm.com/downloads/linux). 
+then in windows run git cmd and in linux(e.g ubuntu you can run git with command .
 ```
    git clone https://github.com/your-username/your-repo.git
    cd your-repo
