@@ -15,7 +15,7 @@ Open-source programming can help expand electronic aspects of optometry.
 
 ---
 
-**Project Status:** 
+⏳ **Project Status:** 
 - [█████-----] In Progress
   
 ---
