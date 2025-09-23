@@ -45,7 +45,12 @@ In Anaconda Powershell Prompt write codes below and read and accept all question
  conda activate optometry
 
 ```
+every where you want to use use server also after installation you should first use 
+```
+conda activate optometry
+```
 ---
+
 ### Step 3:clone the repo:
 Download Git for Windows from [here](https://git-scm.com/downloads/win).<br>
 You can also download Git for Linux from [here](https://git-scm.com/downloads/linux)(if you have linux operation system).<br>
