@@ -85,6 +85,7 @@ then ...
     User.objects.get(username='mehdi').delete()
     exit()
 ```
+then again after exit in Anaconda Powershell Prompt :
 ```  
    python manage.py createsuperuser
 
