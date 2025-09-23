@@ -45,7 +45,7 @@ In Anaconda Powershell Prompt write codes below and read and accept all question
  conda activate optometry
 
 ```
-every where you want to use server also after installation you should first use:
+every where you want to use server  (in Anaconda Powershell Prompt not CMD)  also after installation of server you should first use:
 ```
 conda activate optometry
 ```
