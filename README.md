@@ -62,7 +62,7 @@ Open CMD or GITCMD in Windows and enter the commands below.
 ### Step 4: Install Dependencies
 From this step please use Anaconda Powershell Prompt (in windows).
 ```
-   cd %USERPROFILE%\Desktop
+   cd Desktop
    cd MyProject
    pip install -r requirements.txt
 
