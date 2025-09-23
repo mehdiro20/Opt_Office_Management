@@ -54,14 +54,16 @@ Open CMD or GITCMD in Windows and enter the commands below.
 ```
    cd %USERPROFILE%\Desktop
    git clone https://github.com/mehdiro20/Opt_Office_Management MyProject
-   cd MyProject
+
 
 ```
 ---
 
 ### Step 4: Install Dependencies
-From this step please use Anaconda Powershell Prompt (in windows)
+From this step please use Anaconda Powershell Prompt (in windows).
 ```
+   cd %USERPROFILE%\Desktop
+   cd MyProject
    pip install -r requirements.txt
 
 ```
