@@ -24,3 +24,7 @@ pytz>=2024.1
 
 # Excel / CSV export (optional for reports)
 openpyxl>=3.1
+#captha
+captcha
+#jdtime
+jdatetime
