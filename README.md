@@ -49,8 +49,8 @@ In Anaconda Powershell Prompt read and accept all questions.
 ### Step 3:clone the repo:
 Download Git for Windows from [here](https://git-scm.com/downloads/win).<br>
 You can also download Git for Linux from [here](https://git-scm.com/downloads/linux)(if you have linux operation system).<br>
-Then in Windows run Git CMD or Command Prompt (cmd not anaconda powershell prompt), and in Linux (e.g., Ubuntu) use the terminal<br>.
-Open CMD in Windows and enter the commands below.
+Then in Windows run Git CMD or Command Prompt (cmd not anaconda powershell prompt), and in Linux (e.g., Ubuntu) use the terminal.<br>
+Open CMD or GITCMD in Windows and enter the commands below.
 ```
    cd %USERPROFILE%\Desktop
    git clone https://github.com/mehdiro20/Opt_Office_Management MyProject
