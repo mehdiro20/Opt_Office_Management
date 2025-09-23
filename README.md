@@ -78,9 +78,14 @@ From this step please use Anaconda Powershell Prompt (in windows).
 
 ```
    python manage.py shell
+```
+then ...
+```
     from django.contrib.auth.models import User
     User.objects.get(username='mehdi').delete()
     exit()
+```
+```  
    python manage.py createsuperuser
 
 ```
