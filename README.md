@@ -50,9 +50,11 @@ In Anaconda Powershell Prompt read and accept all questions.
 Download Git for Windows from [here](https://git-scm.com/downloads/win).<br>
 You can also download Git for Linux from [here](https://git-scm.com/downloads/linux)(if you have linux operation system).<br>
 Then in Windows run Git CMD or Command Prompt (cmd not anaconda powershell prompt), and in Linux (e.g., Ubuntu) use the terminal.
+open cmd.
 ```
-   git clone https://github.com/your-username/your-repo.git
-   cd your-repo
+   cd %USERPROFILE%\Desktop
+   git clone https://github.com/mehdiro20/Opt_Office_Management MyProject
+   cd MyProject
 
 ```
 ---
