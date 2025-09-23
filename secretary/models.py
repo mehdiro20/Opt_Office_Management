@@ -1,7 +1,7 @@
-
 from django.db import models
 from django.utils import timezone
 import jdatetime
+
 
 class Patient(models.Model):
     STATUS_CHOICES = [
@@ -15,11 +15,11 @@ class Patient(models.Model):
     family_name = models.CharField(max_length=100)
     phone = models.CharField(max_length=15, blank=True, null=True)
     age = models.PositiveIntegerField()
-    gender = models.CharField(max_length=1, choices=[('M','Male'),('F','Female')])
-    melli_code = models.CharField(max_length=10,unique=True, blank=True, null=True)
+    gender = models.CharField(max_length=1, choices=[('M', 'Male'), ('F', 'Female')])
+    melli_code = models.CharField(max_length=10, unique=True, blank=True, null=True)
     reason = models.TextField()
     status = models.CharField(max_length=20, choices=STATUS_CHOICES, default='waiting')
-    created_at = models.DateTimeField(default=timezone.now)  # ✅ Correct
+    created_at = models.DateTimeField(default=timezone.now)
 
     def save(self, *args, **kwargs):
         if not self.patient_id:
@@ -37,16 +37,29 @@ class Patient(models.Model):
             else:
                 season_number = 4
 
-            # Start / end of season
-            start_of_season = jdatetime.datetime(year, (season_number-1)*3+1, 1).togregorian()
-            end_day = 31 if season_number != 4 else 29
-            end_of_season = jdatetime.datetime(year, season_number*3, end_day).togregorian()
+            # Start of season (first day of first month in season)
+            start_of_season = jdatetime.datetime(
+                year, (season_number - 1) * 3 + 1, 1
+            ).togregorian()
 
-            # Count existing patients
-            count_season = Patient.objects.filter(
-                created_at__gte=start_of_season,
-                created_at__lte=end_of_season
-            ).count() + 1
+            # End of season (last day of last month in season)
+            end_month = season_number * 3
+            if end_month == 12:
+                # next year, month 1
+                next_month = jdatetime.datetime(year + 1, 1, 1)
+            else:
+                next_month = jdatetime.datetime(year, end_month + 1, 1)
+
+            end_of_season = (next_month - jdatetime.timedelta(days=1)).togregorian()
+
+            # Count patients in this season
+            count_season = (
+                Patient.objects.filter(
+                    created_at__gte=start_of_season,
+                    created_at__lte=end_of_season
+                ).count()
+                + 1
+            )
 
             # Generate patient_id
             self.patient_id = f"P{year}S{season_number}{count_season:03d}"
@@ -55,4 +68,3 @@ class Patient(models.Model):
 
     def __str__(self):
         return f"{self.name} ({self.patient_id})"
-    

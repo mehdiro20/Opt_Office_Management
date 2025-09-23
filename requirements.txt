@@ -1,0 +1,26 @@
+# Core Django
+Django>=4.2,<5.0
+
+# Database (SQLite is built-in, no need for extra package)
+
+# Image handling (for profile pictures, charts, etc.)
+Pillow>=10.0
+
+# Forms and admin enhancements
+django-crispy-forms>=2.0
+crispy-bootstrap5>=0.7
+
+# Environment variables (optional, good for config)
+python-decouple>=3.8
+
+# Debugging (optional)
+django-debug-toolbar>=4.1
+
+# REST API support (if you plan to expand)
+djangorestframework>=3.14
+
+# Timezone & utilities (optional)
+pytz>=2024.1
+
+# Excel / CSV export (optional for reports)
+openpyxl>=3.1
