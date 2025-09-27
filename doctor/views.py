@@ -12,12 +12,18 @@ import json
 from django.contrib.auth.decorators import permission_required
 from doctor.models import BrandsSplenss
 from doctor.models import OpticsFeature
-from .models import OpticsDescription
+
 import json
 from django.http import JsonResponse
 from django.views.decorators.csrf import csrf_exempt
-
+from doctor.models import Refraction, OpticsDescription
 from django.contrib import messages
+from django.utils import timezone
+
+
+
+
+
 @login_required
 
 @permission_required('doctor.view_patient', raise_exception=True)
@@ -32,6 +38,7 @@ def patient_profile(request, patient_id):
     patient = get_object_or_404(Patient, patient_id=patient_id)
     last_refraction = Refraction.objects.filter(patient=patient).order_by('-created_at').first()
     # Date filtering
+
     start_date = request.GET.get('start_date')
     end_date = request.GET.get('end_date')
     
@@ -43,14 +50,29 @@ def patient_profile(request, patient_id):
         refractions = refractions.filter(created_at__date__lte=parse_date(end_date))
     splens = BrandsSplenss.objects.all()                
     optics_features = OpticsFeature.objects.all()
-    return render(request, "doctor/patient_profile.html", {
+
+    
+    context= {
         "patient": patient,
         "last_refraction": last_refraction,
         'past_refractions': refractions.order_by('-created_at'),
         "MEDIA_URL": settings.MEDIA_URL,
         "splenss": splens,
         "optics_features": optics_features,
-    })
+
+    }
+    context.update(patient_summary(request,patient_id))
+
+    
+    return render(request, "doctor/patient_profile.html",context)
+
+
+def get_patient_data(patient_id):
+    patient = get_object_or_404(Patient, patient_id=patient_id)
+    last_optics_desc = OpticsDescription.objects.filter(patient_id=patient_id).order_by('-created_at').first()
+    
+    return {'last_optics_desc': last_optics_desc}
+
 @permission_required('doctor.view_patient', raise_exception=True)
 # Submit refraction
 def submit_refraction(request, patient_id):
@@ -61,7 +83,7 @@ def submit_refraction(request, patient_id):
         od = request.POST.get('od')
         os = request.POST.get('os')
         odcl=request.POST.get('odcl')
-        oscl=request.POST.get('odcl')
+        oscl=request.POST.get('oscl')
         axis = request.POST.get('axis')  # you had this in form
         pd = request.POST.get('pd')
 
@@ -72,7 +94,7 @@ def submit_refraction(request, patient_id):
             os=os,
             odcl=odcl,
             oscl=oscl,
-            axis=axis,
+         
             pd=pd
         )
 
@@ -107,6 +129,7 @@ def doctor_patient_list(request):
     if query:
         patients = patients.filter(Q(name__icontains=query) | Q(patient_id__icontains=query))
     return render(request, "doctor/patient_list.html", {"patients": patients})
+
 @permission_required('doctor.view_patient', raise_exception=True)
 # Completely delete a patient
 def delete_patient(request, patient_id):
@@ -114,15 +137,13 @@ def delete_patient(request, patient_id):
     if request.method == "POST":
         patient.delete()
     return redirect('doctor:doctor_dashboard')
+
 @permission_required('doctor.view_patient', raise_exception=True)
 def patients_fragment(request):
     patients = Patient.objects.filter(status='accepted')  # or whatever your filter is
     return render(request, 'doctor/patients_list.html', {'patients': patients})
+
 @permission_required('doctor.view_patient', raise_exception=True)
-
-
-
-
 def optics_page(request, patient_id):
     if request.method == "POST":
         try:
@@ -151,3 +172,43 @@ def optics_page(request, patient_id):
             return redirect("doctor:patient_profile", patient_id=patient_id)
 
     return redirect("doctor:patient_profile", patient_id=patient_id)
+
+
+@permission_required('doctor.view_patient', raise_exception=True)
+def patient_summary(request, patient_id):
+    patient = get_object_or_404(Patient, patient_id=patient_id)
+
+    # defaults
+    rows = request.session.get("rows", 1)
+    include_refraction = request.session.get("include_refraction", False)
+    include_optics = request.session.get("include_optics", False)
+
+    if request.method == "POST":
+        # read values from form
+        rows = int(request.POST.get("rows", 1))
+        include_refraction = "include_refraction" in request.POST
+        include_optics = "include_optics" in request.POST
+
+        # save them in session
+        request.session["rows"] = rows
+        request.session["include_refraction"] = include_refraction
+        request.session["include_optics"] = include_optics
+
+    refractions = None
+    optics = None
+
+    if include_refraction:
+        refractions = Refraction.objects.filter(patient=patient).order_by("-created_at")[:rows]
+
+    if include_optics:
+        optics = OpticsDescription.objects.filter(patient_id=patient_id).order_by("-created_at")[:rows]
+
+    context = {
+        "patient": patient,
+        "rows": rows,
+        "include_refraction": include_refraction,
+        "include_optics": include_optics,
+        "refractions": refractions,
+        "optics": optics,
+    }
+    return context

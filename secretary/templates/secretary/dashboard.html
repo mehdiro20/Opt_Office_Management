@@ -20,8 +20,6 @@ h1 { color: #2c3e50; margin: 20px; }
     top: 0;
     z-index: 900;
 }
-
-/* Main menu items */
 .menu-bar .menu-item {
     position: relative;
     background: white;
@@ -33,16 +31,13 @@ h1 { color: #2c3e50; margin: 20px; }
     transition: all 0.2s ease;
     box-shadow: 0 2px 6px rgba(0,0,0,0.15);
 }
-.menu-bar .menu-item:hover {
-    background: #ecf5ff;
-    transform: translateY(-2px);
-}
+.menu-bar .menu-item:hover { background: #ecf5ff; transform: translateY(-2px); }
 
 /* Submenu */
 .menu-bar .submenu {
     display: none;
     position: absolute;
-    top: 110%;
+    top: 100%; /* fixed: directly below menu item */
     left: 0;
     background: white;
     border-radius: 8px;
@@ -50,19 +45,23 @@ h1 { color: #2c3e50; margin: 20px; }
     min-width: 230px;
     flex-direction: column;
     z-index: 1000;
+    opacity: 0;
+    transition: opacity 0.3s ease;
+}
+.menu-bar .menu-item:hover .submenu {
+    display: block;
+    opacity: 1;
 }
 .menu-bar .submenu a {
     padding: 10px 16px;
+    display: block; /* makes link fully clickable */
     text-decoration: none;
     color: #3498db;
-    display: block;
     font-weight: normal;
     transition: background 0.2s;
+    white-space: nowrap;
 }
 .menu-bar .submenu a:hover { background: #ecf5ff; }
-
-/* Show submenu on hover */
-.menu-bar .menu-item:hover .submenu { display: flex; }
 
 /* ================= Filter ================= */
 .filter {
@@ -111,47 +110,32 @@ tr:nth-child(even) { background-color: #f2f2f2; }
 
 <!-- 🔹 Menu Bar with Submenus -->
 <div class="menu-bar">
-    <!-- Patient Management -->
     <div class="menu-item">Patient Management
         <div class="submenu">
             <a onclick="openRegisterModal()">➕ Register New Patient</a>
             <a onclick="openAcceptModal()">✅ Accept Existing Patient</a>
-            <a href="">🔍 Search / View Patients</a>
+            <a href="#">🔍 Search / View Patients</a>
         </div>
     </div>
-
-    <!-- Appointments -->
     <div class="menu-item">Appointments
         <div class="submenu">
-            <a href="">📅 Today’s Appointments</a>
-            <a href="">➕ Book Appointment</a>
-            <a href="">✏️ Reschedule / Cancel</a>
+            <a href="#">📅 Today’s Appointments</a>
+            <a href="#">➕ Book Appointment</a>
+            <a href="#">✏️ Reschedule / Cancel</a>
         </div>
     </div>
-
-    <!-- Refraction / Reports -->
     <div class="menu-item">Refraction / Reports
         <div class="submenu">
-            <a href="">👁 Get Last Refraction</a>
-            <a href="">⬆️ Upload Report</a>
-            <a href="">📄 View Reports</a>
+            <a href="#">👁 Get Last Refraction</a>
+            <a href="#">⬆️ Upload Report</a>
+            <a href="#">📄 View Reports</a>
         </div>
     </div>
-
-    <!-- Follow-up / Status -->
     <div class="menu-item">Follow-up / Status
         <div class="submenu">
-            <a href="">⏳ Waiting Patients</a>
-            <a href="">✅ Done Patients</a>
-            <a href="">📦 Archived</a>
-        </div>
-    </div>
-
-    <!-- Admin -->
-    <div class="menu-item">Admin
-        <div class="submenu">
-            <a href="">🖨 Print Letters</a>
-            <a href="">📊 Reports / Stats</a>
+            <a href="#">⏳ Waiting Patients</a>
+            <a href="#">✅ Done Patients</a>
+            <a href="#">📦 Archived</a>
         </div>
     </div>
 </div>
@@ -174,17 +158,16 @@ tr:nth-child(even) { background-color: #f2f2f2; }
     </form>
 </div>
 
-<!-- 🔹 Patients Table -->
 <h2 style="margin-left:20px;">All Patients</h2>
 <div id="patients-table">
     {% include "secretary/patients_table.html" %}
 </div>
 
-<!-- 🔹 Modals -->
+<!-- Modals -->
 {% include "secretary/register_patient_modal.html" %}
 {% include "secretary/accept_existing_patient_modal.html" %}
 
-<!-- 🔹 Toast -->
+<!-- Toast -->
 <div id="successToast" class="toast">✅ Action successful.</div>
 
 <script>
@@ -226,7 +209,6 @@ function closeRegisterModal() {
     const form = document.getElementById("registerForm");
     if (form) form.reset();
 }
-
 function openAcceptModal() {
     const modal = document.getElementById("acceptModal");
     modal.style.display = "flex";
@@ -246,7 +228,6 @@ function closeAcceptModal() {
 
 // ================= AJAX Form Submissions =================
 document.addEventListener("DOMContentLoaded", () => {
-    // Register form
     const registerForm = document.getElementById("registerForm");
     if (registerForm) {
         registerForm.onsubmit = (e) => {
@@ -255,8 +236,7 @@ document.addEventListener("DOMContentLoaded", () => {
                 method: "POST",
                 body: new FormData(registerForm),
                 headers: { "X-Requested-With": "XMLHttpRequest" }
-            })
-            .then(res => res.json())
+            }).then(res => res.json())
             .then(data => {
                 if (data.success) {
                     closeRegisterModal();
@@ -264,17 +244,11 @@ document.addEventListener("DOMContentLoaded", () => {
                     showToast("✅ " + (data.message || "Patient registered successfully."));
                 } else {
                     const err = document.getElementById("formError");
-                    if (err) {
-                        err.textContent = data.error || "Registration failed.";
-                        err.style.display = "block";
-                    }
+                    if (err) { err.textContent = data.error || "Registration failed."; err.style.display = "block"; }
                 }
-            })
-            .catch(() => showToast("❌ Error registering patient."));
+            }).catch(() => showToast("❌ Error registering patient."));
         };
     }
-
-    // Accept form
     const acceptForm = document.getElementById("acceptForm");
     if (acceptForm) {
         acceptForm.onsubmit = (e) => {
@@ -283,8 +257,7 @@ document.addEventListener("DOMContentLoaded", () => {
                 method: "POST",
                 body: new FormData(acceptForm),
                 headers: { "X-Requested-With": "XMLHttpRequest" }
-            })
-            .then(res => res.json())
+            }).then(res => res.json())
             .then(data => {
                 if (data.success) {
                     closeAcceptModal();
@@ -292,23 +265,16 @@ document.addEventListener("DOMContentLoaded", () => {
                     showToast("✅ " + (data.message || "Patient accepted successfully."));
                 } else {
                     const err = document.getElementById("acceptError");
-                    if (err) {
-                        err.textContent = data.error || "Accept failed.";
-                        err.style.display = "block";
-                    }
+                    if (err) { err.textContent = data.error || "Accept failed."; err.style.display = "block"; }
                 }
-            })
-            .catch(() => showToast("❌ Error accepting patient."));
+            }).catch(() => showToast("❌ Error accepting patient."));
         };
     }
 });
 
 // ================= Escape + Click Outside =================
 window.addEventListener("keydown", (e) => {
-    if (e.key === "Escape") {
-        closeRegisterModal();
-        closeAcceptModal();
-    }
+    if (e.key === "Escape") { closeRegisterModal(); closeAcceptModal(); }
 });
 window.addEventListener("click", (event) => {
     if (event.target.id === "registerModal") closeRegisterModal();

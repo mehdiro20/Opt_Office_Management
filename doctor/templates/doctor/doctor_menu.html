@@ -1,5 +1,3 @@
-
-
 <!-- doctor_menu.html -->
 <style>
     @import url('https://fonts.googleapis.com/css2?family=Poppins:wght@400;600&display=swap');
@@ -15,6 +13,7 @@
         position: sticky;
         top: 0;
         z-index: 900;
+        font-family: 'Poppins', sans-serif;
     }
 
     .menu { position: relative; }
@@ -49,6 +48,8 @@
         min-width: 210px;
         display: none;
         z-index: 1000;
+        transition: opacity 0.3s ease;
+        opacity: 0;
     }
 
     .submenu a {
@@ -58,6 +59,8 @@
         color: #2c3e50;
         text-decoration: none;
         display: block;
+        transition: background 0.2s, color 0.2s;
+        white-space: nowrap;
     }
 
     .submenu a:hover {
@@ -66,29 +69,37 @@
     }
 
     /* Show submenu on hover */
-    .menu:hover .submenu,
-    .menu .submenu:hover {
+    .menu:hover .submenu {
         display: flex;
+        opacity: 1;
+    }
+
+    /* Responsive */
+    @media (max-width: 768px) {
+        .menu-bar {
+            flex-direction: column;
+            gap: 10px;
+        }
+        .submenu { position: relative; top: 0; left: 0; min-width: auto; }
     }
 </style>
 
-<!-- 🔹 Menu -->
 <div class="menu-bar">
     <div class="menu">
         <div class="menu-title">👨‍⚕️ Patients</div>
         <div class="submenu">
             <a href="{% url 'doctor:doctor_patient_list' %}">📋 Accepted Patients</a>
-            <a href="">🕒 Patient History</a>
-            <a href="">➕ New Consultation</a>
+            <a href="#">🕒 Patient History</a>
+            <a href="#">➕ New Consultation</a>
         </div>
     </div>
 
     <div class="menu">
         <div class="menu-title">📊 Reports</div>
         <div class="submenu">
-            <a href="">📈 Daily Report</a>
-            <a href="">🗓 Weekly Summary</a>
-            <a href="">📑 Full Analytics</a>
+            <a href="#">📈 Daily Report</a>
+            <a href="#">🗓 Weekly Summary</a>
+            <a href="#">📑 Full Analytics</a>
         </div>
     </div>
 

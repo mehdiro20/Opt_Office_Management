@@ -15,9 +15,7 @@
       </div>
 
       <div class="card-body">
-        <form method="POST" 
-              action="{% url 'doctor:submit_refraction' patient.patient_id %}" 
-              class="refraction-form">
+        <form method="POST" action="{% url 'doctor:submit_refraction' patient.patient_id %}" class="refraction-form">
           {% csrf_token %}
 
           <!-- Subject -->
@@ -32,6 +30,9 @@
             <input type="text" name="od" value="       /        ×   " class="od-input">
             <input type="text" name="odcl" class="odcl" style="display:none">
           </div>
+          <div class="form-row">
+            <div class="input-error od-error" style="display:none; margin-left:100px; color:#c0392b;"></div>
+          </div>
 
           <!-- OS -->
           <div class="form-row">
@@ -39,8 +40,11 @@
             <input type="text" name="os" value="       /        ×   " class="os-input">
             <input type="text" name="oscl" class="oscl" style="display:none">
           </div>
+          <div class="form-row">
+            <div class="input-error os-error" style="display:none; margin-left:100px; color:#c0392b;"></div>
+          </div>
 
-          <!-- Addition -->
+          <!-- Addition / Axis -->
           <div class="form-row">
             <label>Addition:</label>
             <input type="text" name="axis" class="addition" maxlength="5" required>
@@ -64,25 +68,21 @@
   <div id="success-message" style="display:none; color:green; margin-top:10px;">
     Refraction submitted successfully!
   </div>
-    <div id="cl-message" style="display:none; color:green; margin-top:10px;">
-      <p id="clodval"></p>
-      <p id="closval"></p>
-    </div>
-  
-  
-  
-  
+
+  <div id="cl-message" style="display:none; color:green; margin-top:10px;">
+    <p id="clodval"></p>
+    <p id="closval"></p>
+  </div>
 </div>
 
 <style>
-/* Card styling */
+/* ------------------ Card & Form Styling ------------------ */
 .refraction-card {
   background: #ffffff;
   border: 1px solid #e0e0e0;
   border-radius: 12px;
   margin-bottom: 16px;
   box-shadow: 0 4px 12px rgba(0,0,0,0.08);
-  overflow: hidden;
   transition: all 0.3s ease;
 }
 .card-header {
@@ -132,12 +132,8 @@ input[type="text"]:focus {
   border-color: #2980b9;
   outline: none;
 }
-input.pd {
-  width: 60px;
-}
-input.addition {
-  width: 100px;
-}
+input.pd { width: 60px; }
+input.addition { width: 100px; }
 input[type="submit"] {
   background: #2980b9;
   color: white;
@@ -147,15 +143,28 @@ input[type="submit"] {
   cursor: pointer;
   transition: background 0.2s ease;
 }
-input[type="submit"]:hover {
-  background: #1c5980;
-}
+input[type="submit"]:hover { background: #1c5980; }
+.input-error { font-size: 0.95rem; line-height: 1.2; }
 </style>
 
 <script>
 let formCounter = 1;
+const DEFAULT_PLACEHOLDER = "       /        ×   ";
 
-// ========== CONTACT LENS LOGIC ==========
+/* ---------------------------
+   Helpers
+--------------------------- */
+function normalizeInputText(s) {
+  return String(s || "").replace(/\u00D7/g, "x").trim(); // convert × → x
+}
+
+function parsePrescription(inputValue) {
+  const normalized = normalizeInputText(inputValue);
+  const parts = normalized.split(/[\/x]/i).map(p => p.trim());
+  while (parts.length < 3) parts.push("");
+  return { sphere: parts[0], cylinder: parts[1], axis: parts[2] };
+}
+
 function spectacleToCL(sph, cyl, axis, vertexDistance = 0.012) {
   sph = parseFloat(sph) || 0;
   cyl = parseFloat(cyl) || 0;
@@ -176,119 +185,140 @@ function spectacleToCL(sph, cyl, axis, vertexDistance = 0.012) {
   };
 }
 
-function parsePrescription(inputValue) {
-  let parts = inputValue.split(/[/×]/).map(p => p.trim());
-  while (parts.length < 3) parts.push("");
-  return { sphere: parts[0], cylinder: parts[1], axis: parts[2] };
-}
-
-// Run before submit: fill odcl/oscl values
+/* ---------------------------
+   Validation + Fill CL + Sanitize
+--------------------------- */
 function fillContactLensFields(form) {
-  let odValue = form.querySelector(".od-input").value;
-  let osValue = form.querySelector(".os-input").value;
+  const odInput = form.querySelector(".od-input");
+  const osInput = form.querySelector(".os-input");
+  const odclInput = form.querySelector(".odcl");
+  const osclInput = form.querySelector(".oscl");
+  const odErrorEl = form.querySelector(".od-error");
+  const osErrorEl = form.querySelector(".os-error");
 
-  let result_od = parsePrescription(odValue);
-  let result_os = parsePrescription(osValue);
+  // Clear previous errors
+  [odErrorEl, osErrorEl].forEach(el => { if(el){el.style.display="none"; el.textContent="";} });
 
-  let cl_od = spectacleToCL(result_od.sphere, result_od.cylinder, result_od.axis);
-  let cl_os = spectacleToCL(result_os.sphere, result_os.cylinder, result_os.axis);
+  let odRaw = normalizeInputText(odInput.value || "");
+  let osRaw = normalizeInputText(osInput.value || "");
 
-  const odclVal = form.querySelector(".odcl").value;
-  const osclVal = form.querySelector(".oscl").value;
-form.querySelector(".odcl").value = `${cl_od.sphere}/${cl_od.cylinder}${cl_od.axis !== null ? "x" + cl_od.axis : ""}`;
-form.querySelector(".oscl").value = `${cl_os.sphere}/${cl_os.cylinder}${cl_os.axis !== null ? "x" + cl_os.axis : ""}`;
+  let odParts = parsePrescription(odRaw);
+  let osParts = parsePrescription(osRaw);
 
+  // Axis validation
+  const odNeedsAxis = odParts.cylinder !== "" && odParts.axis === "";
+  const osNeedsAxis = osParts.cylinder !== "" && osParts.axis === "";
+  if (odNeedsAxis) {
+    odErrorEl.textContent = "Write axis please";
+    odErrorEl.style.display = "block";
+    odInput.focus();
+    return false;
+  }
+  if (osNeedsAxis) {
+    osErrorEl.textContent = "Write axis please";
+    osErrorEl.style.display = "block";
+    osInput.focus();
+    return false;
+  }
 
+  // --- SANITIZE INPUTS BEFORE SENDING ---
+  function sanitizePrescription(parts) {
+    // Remove axis if cylinder is empty
+    if (parts.cylinder === "") parts.axis = "";
+    let result = parts.sphere || "";
+    if (parts.cylinder !== "") result += "/" + parts.cylinder;
+    if (parts.axis !== "") result += "x" + parts.axis;
+    return result;
+  }
 
-// Show them in your message box
-document.getElementById("clodval").textContent = "OD CL: " + `${cl_od.sphere}/${cl_od.cylinder}${cl_od.axis !== null ? "x" + cl_od.axis : ""}`;
-document.getElementById("closval").textContent = "OS CL: " + `${cl_os.sphere}/${cl_os.cylinder}${cl_os.axis !== null ? "x" + cl_os.axis : ""}`;
-document.getElementById("cl-message").style.display = "block";
+  odInput.value = sanitizePrescription(odParts);
+  osInput.value = sanitizePrescription(osParts);
 
+  // --- Calculate Contact Lens values using sanitized input ---
+  odParts = parsePrescription(odInput.value);
+  osParts = parsePrescription(osInput.value);
+
+  if(odParts.sphere || odParts.cylinder || odParts.axis){
+    const cl_od = spectacleToCL(odParts.sphere, odParts.cylinder, odParts.axis);
+    const odCLString = cl_od.cylinder===0 ? `${cl_od.sphere}` : `${cl_od.sphere}/${cl_od.cylinder}${cl_od.axis!==null?"x"+cl_od.axis:""}`;
+    if(odclInput) odclInput.value = odCLString;
+    document.getElementById("clodval").textContent = "OD CL: " + odCLString;
+  } else if(odclInput) odclInput.value="";
+
+  if(osParts.sphere || osParts.cylinder || osParts.axis){
+    const cl_os = spectacleToCL(osParts.sphere, osParts.cylinder, osParts.axis);
+    const osCLString = cl_os.cylinder===0 ? `${cl_os.sphere}` : `${cl_os.sphere}/${cl_os.cylinder}${cl_os.axis!==null?"x"+cl_os.axis:""}`;
+    if(osclInput) osclInput.value = osCLString;
+    document.getElementById("closval").textContent = "OS CL: " + osCLString;
+  } else if(osclInput) osclInput.value="";
+
+  // Show CL message only if any values exist
+  if(odParts.sphere || odParts.cylinder || odParts.axis || osParts.sphere || osParts.cylinder || osParts.axis){
+    document.getElementById("cl-message").style.display="block";
+  } else {
+    document.getElementById("cl-message").style.display="none";
+  }
+
+  return true;
 }
 
-// ========== DYNAMIC FORM MANAGEMENT ==========
+/* ---------------------------
+   Dynamic forms
+--------------------------- */
 document.addEventListener("click", function(e) {
-  if (e.target.classList.contains("add-form")) {
-    const card = e.target.closest(".refraction-card");
-    const clone = card.cloneNode(true);
+  const card = e.target.closest(".refraction-card");
+  if (!card) return;
 
+  if (e.target.classList.contains("add-form")) {
+    const clone = card.cloneNode(true);
     formCounter++;
     clone.querySelector(".card-title").textContent = "Refraction Form #" + formCounter;
-
-    // Reset fields
     clone.querySelectorAll("input[type=text]").forEach(inp => {
-      if (inp.classList.contains("od-input") || inp.classList.contains("os-input")) {
-        inp.value = "       /        ×   ";
-      } else {
-        inp.value = "";
-      }
+      if (inp.classList.contains("od-input") || inp.classList.contains("os-input")) inp.value = DEFAULT_PLACEHOLDER;
+      else inp.value = "";
     });
-
+    clone.querySelectorAll(".odcl, .oscl").forEach(h => h.value = "");
+    clone.querySelectorAll(".input-error").forEach(div => { div.style.display = "none"; div.textContent = ""; });
     document.getElementById("refraction-forms").appendChild(clone);
   }
 
   if (e.target.classList.contains("remove-form")) {
-    const card = e.target.closest(".refraction-card");
-    if (document.querySelectorAll(".refraction-card").length > 1) {
-      card.remove();
-    } else {
-      alert("At least one form must remain.");
-    }
+    if (document.querySelectorAll(".refraction-card").length > 1) card.remove();
+    else alert("At least one form must remain.");
   }
 
   if (e.target.classList.contains("toggle-card")) {
-    const card = e.target.closest(".refraction-card");
     const body = card.querySelector(".card-body");
-    if (body.style.display === "none") {
-      body.style.display = "block";
-      e.target.textContent = "▼";
-    } else {
-      body.style.display = "none";
-      e.target.textContent = "▲";
-    }
+    body.style.display = body.style.display === "none" ? "block" : "none";
+    e.target.textContent = body.style.display === "none" ? "▲" : "▼";
   }
 });
 
-// ========== AJAX SUBMISSION ==========
+/* ---------------------------
+   AJAX submit
+--------------------------- */
 document.addEventListener("submit", function(e) {
-  if (e.target.classList.contains("refraction-form")) {
-    e.preventDefault();
+  if (!e.target.classList.contains("refraction-form")) return;
+  e.preventDefault();
+  const form = e.target;
+  const ok = fillContactLensFields(form);
+  if (!ok) return; // blocked by validation
 
-    const form = e.target;
-
-    // Before submit → fill hidden contact lens fields
-    fillContactLensFields(form);
-
-    const formData = new FormData(form);
-
-    fetch(form.action, {
-      method: "POST",
-      body: formData,
-      headers: { "X-Requested-With": "XMLHttpRequest" }
-    })
-    .then(response => {
-      if (!response.ok) throw new Error("Network error");
-      return response.json();
-    })
-    .then(data => {
-      document.getElementById("success-message").style.display = "block";
-
-      // Collapse form after success
-      const cardBody = form.closest(".card-body");
-      cardBody.style.display = "none";
-      form.closest(".refraction-card").querySelector(".toggle-card").textContent = "▲";
-
-      // Update card title with Subject
-      const subjectVal = form.querySelector("input[name=subject]").value;
-      if (subjectVal) {
-        form.closest(".refraction-card").querySelector(".card-title").textContent = "Refraction - " + subjectVal;
-      }
-    })
-    .catch(error => {
-      console.error("Error:", error);
-      alert("Something went wrong!");
-    });
-  }
+  const formData = new FormData(form);
+  fetch(form.action, {
+    method: "POST",
+    body: formData,
+    headers: { "X-Requested-With": "XMLHttpRequest" }
+  })
+  .then(r => { if (!r.ok) throw new Error("Network error"); return r.json(); })
+  .then(data => {
+    document.getElementById("success-message").style.display = "block";
+    const cardBody = form.closest(".card-body");
+    cardBody.style.display = "none";
+    form.closest(".refraction-card").querySelector(".toggle-card").textContent = "▲";
+    const subjectVal = form.querySelector("input[name=subject]").value;
+    if (subjectVal) form.closest(".refraction-card").querySelector(".card-title").textContent = "Refraction - " + subjectVal;
+  })
+  .catch(err => { console.error(err); alert("Something went wrong!"); });
 });
 </script>

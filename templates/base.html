@@ -4,8 +4,8 @@
 <head>
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
-  <title>{% block title %}My Website{% endblock %}</title>
-
+  <title>{{ site_settings.site_name }}</title>
+  <link rel="icon" type="image/png" href="{{ site_settings.favicon.url }}">    
   <style>
     /* Reset */
     * {
@@ -107,6 +107,9 @@
   {% block extra_css %}{% endblock %}
 </head>
 <body>
+   
+
+
 
   <!-- MAIN CONTENT -->
   <main class="content">

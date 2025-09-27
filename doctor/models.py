@@ -89,10 +89,10 @@ class BrandsSplenss(models.Model):
 class BrandPrice(models.Model):
     brand = models.ForeignKey('BrandsSplenss', on_delete=models.CASCADE, related_name='prices')
     description = models.CharField(max_length=100, blank=True)  # e.g., "Single Vision", "Progressive"
-    price = models.DecimalField(max_digits=10, decimal_places=2)
+    price = models.DecimalField(max_digits=10,decimal_places=0)
 
     def __str__(self):
-        return f"{self.brand.brand_name} - {self.description}: ${self.price}"    
+        return f"{self.brand.brand_name} - {self.description}: {self.price}"    
     
     
 class OpticsFeature(models.Model):
@@ -112,3 +112,5 @@ class OpticsDescription(models.Model):
 
     def __str__(self):
         return f"Optics Description #{self.id}"    
+    
+    

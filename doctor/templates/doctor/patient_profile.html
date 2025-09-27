@@ -26,15 +26,13 @@
       position: sticky;
       top: 0;
       height: calc(100vh - 80px);
-      
       background: linear-gradient(180deg, #1f2a38 0%, #2c3e50 100%);
-
       color: #ecf0f1;
       padding-top: 25px;
       overflow-y: auto;
       box-shadow: 2px 0 8px rgba(0,0,0,0.15);
       margin-bottom:2px;
-      border-radius:0px 0px 5px 5px
+      border-radius:0px 0px 5px 5px;
     }
 
     /* Custom scrollbar */
@@ -76,16 +74,14 @@
     }
     .sidebar ul li.open.has-submenu::after { transform: rotate(90deg); }
 
-       .main-content {
+    .main-content {
       margin-left: 40px;
-      
       padding: 25px;
       flex: 1;
       box-sizing: border-box;
       display: flex;
-      justify-content: center; /* horizontal center */
-
-      min-height: calc(100vh - 80px); /* full height minus footer */
+      justify-content: center;
+      min-height: calc(100vh - 80px);
     }
 
     .section {
@@ -111,16 +107,16 @@
       bottom: 20px;
       right: 20px;
       display: flex;
+      flex-direction: column;
       gap: 14px;
       z-index: 999;
     }
     .bottom-buttons button,
     .bottom-buttons a {
-      width: 55px;
-      height: 55px;
+      width: 60px;
+      height: 60px;
       border-radius: 50%;
       border: none;
-      background-color: #2980b9;
       color: white;
       font-size: 22px;
       display: flex;
@@ -128,12 +124,38 @@
       justify-content: center;
       cursor: pointer;
       text-decoration: none;
-      box-shadow: 0 4px 8px rgba(0,0,0,0.15);
-      transition: all 0.2s ease;
+      box-shadow: 0 4px 10px rgba(0,0,0,0.15);
+      transition: all 0.3s ease;
     }
-    .bottom-buttons button.done-btn { background-color: #27ae60; }
-    .bottom-buttons button.done-btn:hover { background-color: #1e8449; }
-    .bottom-buttons a:hover { background-color: #1c5980; }
+    .bottom-buttons button:hover,
+    .bottom-buttons a:hover {
+      transform: translateY(-2px);
+      box-shadow: 0 6px 12px rgba(0,0,0,0.2);
+    }
+
+    /* Done (green) */
+    .bottom-buttons button.done-btn {
+      background: linear-gradient(135deg, #27ae60, #2ecc71);
+    }
+    .bottom-buttons button.done-btn:hover {
+      background: linear-gradient(135deg, #1e8449, #27ae60);
+    }
+
+    /* Wait Outside (orange) */
+    .bottom-buttons button.wait-btn {
+      background: linear-gradient(135deg, #f39c12, #e67e22);
+    }
+    .bottom-buttons button.wait-btn:hover {
+      background: linear-gradient(135deg, #d35400, #e67e22);
+    }
+
+    /* Dashboard (blue) */
+    .bottom-buttons a {
+      background: linear-gradient(135deg, #2980b9, #3498db);
+    }
+    .bottom-buttons a:hover {
+      background: linear-gradient(135deg, #1c5980, #2980b9);
+    }
 
     /* Footer */
     footer { background: #1f2a38; color: #ecf0f1; text-align: center; padding: 12px 20px; font-size: 14px; letter-spacing: 0.5px; box-shadow: 0 -2px 8px rgba(0,0,0,0.1); border-radius:5px 5px 0px 0px; }
@@ -177,6 +199,12 @@
             <li data-target="past-vt">Past VT programs</li>
           </ul>
         </li>
+        <li class="has-submenu">Final Records
+          <ul>
+            <li data-target="final-records-file">Final Records File</li>
+          
+          </ul>
+        </li>
       </ul>
     </div>
   </div>
@@ -187,15 +215,25 @@
     {% include "doctor/refraction.html" %}
     {% include "doctor/past_refraction_list.html" %}
     {% include "doctor/optics.html" %}
+     {% include "doctor/patient_summary.html" %}
   </div>
 </div>
 
 <!-- Bottom buttons -->
 <div class="bottom-buttons">
+  <!-- Done -->
   <form method="POST" action="{% url 'doctor:remove_from_accepted_profile' patient.patient_id %}" id="done-form">
     {% csrf_token %}
     <button type="submit" id="done-btn" class="done-btn"><i class="fa fa-check"></i></button>
   </form>
+
+  <!-- Wait Outside -->
+  <form method="POST" action="" id="wait-form">
+    {% csrf_token %}
+    <button type="submit" id="wait-btn" class="wait-btn"><i class="fa fa-clock"></i></button>
+  </form>
+
+  <!-- Doctor Dashboard -->
   <a href="{% url 'doctor:doctor_dashboard' %}"><i class="fa fa-user-doctor"></i></a>
 </div>
 
@@ -226,32 +264,46 @@
 <script>
   const sections = document.querySelectorAll('.section');
   const menuItems = document.querySelectorAll('.sidebar ul li[data-target]');
+  const patientId = "{{ patient.patient_id }}";  
+  const storageKey = "activeTab_" + patientId;
 
-  function hideAllSections() { sections.forEach(sec => sec.style.display = 'none'); }
+  function hideAllSections() {
+    sections.forEach(sec => sec.style.display = 'none');
+  }
 
+  // Toggle submenu
   document.querySelectorAll('.sidebar ul li.has-submenu').forEach(parent => {
-    parent.addEventListener('click', (e) => { if (!e.target.hasAttribute('data-target')) parent.classList.toggle('open'); });
+    parent.addEventListener('click', (e) => {
+      if (!e.target.hasAttribute('data-target')) {
+        parent.classList.toggle('open');
+      }
+    });
   });
 
+  // Handle menu item click
   menuItems.forEach(item => {
     item.addEventListener('click', (e) => {
       e.stopPropagation();
       hideAllSections();
       menuItems.forEach(i => i.classList.remove('active'));
+
       const target = item.getAttribute('data-target');
       if (target) {
         const sec = document.getElementById(target);
         if (sec) {
           sec.style.display = 'block';
           item.classList.add('active');
-          localStorage.setItem("activeTab", target);
+          localStorage.setItem(storageKey, target);
         }
       }
     });
   });
 
+  // Show saved or default section
   window.addEventListener("DOMContentLoaded", () => {
-    let savedTab = localStorage.getItem("activeTab") || "general";
+    let savedTab = localStorage.getItem(storageKey);
+    if (!savedTab) { savedTab = "general"; }
+
     hideAllSections();
     const sec = document.getElementById(savedTab);
     if (sec) sec.style.display = "block";
@@ -259,14 +311,19 @@
     const activeItem = document.querySelector(`[data-target="${savedTab}"]`);
     if (activeItem) {
       activeItem.classList.add("active");
+
       let parentLi = activeItem.closest('ul').parentElement;
-      while (parentLi && parentLi.tagName === 'LI') { parentLi.classList.add('open'); parentLi = parentLi.closest('ul').parentElement; }
+      while (parentLi && parentLi.tagName === 'LI') {
+        parentLi.classList.add('open');
+        parentLi = parentLi.closest('ul').parentElement;
+      }
     }
   });
 
+  // Clear localStorage for this patient on Done
   document.getElementById('done-btn').addEventListener('click', function(e){
     e.preventDefault();
-    localStorage.removeItem("activeTab");
+    localStorage.removeItem(storageKey);
     document.getElementById('done-form').submit();
   });
 </script>

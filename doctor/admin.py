@@ -4,6 +4,9 @@ from .models import BrandsFrames, BrandsSplenss
 from django.db.models.signals import post_delete, pre_save
 from django.dispatch import receiver
 from .models import OpticsFeature
+
+from .models import BrandsSplenss, BrandPrice
+from .models import OpticsDescription
 import os
 @admin.register(Refraction)
 class RefractionAdmin(admin.ModelAdmin):
@@ -21,7 +24,6 @@ class BrandsFrameAdmin(admin.ModelAdmin):
     ordering = ("-created_at",)
 
 
-from .models import BrandsSplenss, BrandPrice
 
 # Inline admin for prices
 class BrandPriceInline(admin.TabularInline):
@@ -71,7 +73,7 @@ def delete_old_brand_image_on_update(sender, instance, **kwargs):
             
             
 
-from .models import OpticsDescription
+
 
 @admin.register(OpticsDescription)
 class OpticsDescriptionAdmin(admin.ModelAdmin):
@@ -79,3 +81,4 @@ class OpticsDescriptionAdmin(admin.ModelAdmin):
     search_fields = ("description",)                     # enable search by description
     list_filter = ("created_at",)               
             
+

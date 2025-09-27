@@ -3,9 +3,95 @@
 {% block title %}Home{% endblock %}
 
 {% block content %}
-  <h1>Welcome to the system</h1>
-  <p>
-    <a href="{% url 'secretary:dashboard' %}">Go to Secretary Dashboard</a>
-    <a href="{% url 'doctor:dashboard' %}">Go to doctor Dashboard</a>
-  </p>
+<style>
+  body {
+    background: #f0f4f8;
+    font-family: 'Poppins', sans-serif;
+    margin: 0;
+    padding: 0;
+  }
+
+  .home-container {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    justify-content: center;
+    min-height: 80vh;
+    padding: 20px;
+  }
+
+  h1 {
+    color: #2c3e50;
+    margin-bottom: 40px;
+    text-align: center;
+    font-size: 2.5rem;
+  }
+
+  .cards {
+    display: flex;
+    gap: 30px;
+    flex-wrap: wrap;
+    justify-content: center;
+  }
+
+  .card {
+    background: white;
+    border-radius: 16px;
+    box-shadow: 0 8px 20px rgba(0,0,0,0.1);
+    padding: 40px 30px;
+    width: 500px;
+    height: 300px;
+    text-align: center;
+    transition: transform 0.3s ease, box-shadow 0.3s ease;
+    cursor: pointer;
+    text-decoration: none;
+    color: #2c3e50;
+  }
+
+  .card:hover {
+    transform: translateY(-8px);
+    box-shadow: 0 12px 30px rgba(0,0,0,0.15);
+  }
+
+  .card h2 {
+    font-size: 1.4rem;
+    margin-bottom: 10px;
+    color: #3498db;
+  }
+
+  .card p {
+    font-size: 0.95rem;
+    color: #555;
+  }
+
+  .card-icon {
+    font-size: 2.5rem;
+    margin-bottom: 15px;
+    color: #3498db;
+  }
+
+  @media (max-width: 600px) {
+    .cards {
+      flex-direction: column;
+      gap: 20px;
+    }
+  }
+</style>
+
+<div class="home-container">
+  <h1>{{ site_settings.site_name }}</h1>
+  
+  <div class="cards">
+    <a href="{% url 'secretary:dashboard' %}" class="card">
+      <div class="card-icon">👩‍💼</div>
+      <h2>Secretary Dashboard</h2>
+      <p> to manage secretary office</p>
+    </a>
+    <a href="{% url 'doctor:dashboard' %}" class="card">
+      <div class="card-icon">👨‍⚕️</div>
+      <h2>Doctor Dashboard</h2>
+      <p> to manage doctor office</p>  
+    </a>
+  </div>
+</div>
 {% endblock %}

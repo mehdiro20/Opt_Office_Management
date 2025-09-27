@@ -1,0 +1,65 @@
+{% load static %}
+
+<div id="final-records-file" class="section">
+  <h3 class="mb-3">Patient Summary</h3>
+
+  <!-- Patient Info -->
+  <p><strong>Patient:</strong> {{ patient.name }} (ID: {{ patient.patient_id }})</p>
+
+  <!-- Selection form -->
+  <div id="summary-selector" class="mb-4">
+    <h4>Choose Data to Display</h4>
+    <form method="post">
+      {% csrf_token %}
+      <label>
+        <input type="checkbox" name="include_refraction" {% if include_refraction %}checked{% endif %}>
+        Show Refraction
+      </label><br>
+
+      <label>
+        <input type="checkbox" name="include_optics" {% if include_optics %}checked{% endif %}>
+        Show Optics
+      </label><br>
+
+      <label for="rows">Show last:</label>
+      <select name="rows" id="rows">
+        <option value="1" {% if rows == 1 %}selected{% endif %}>1 row</option>
+        <option value="2" {% if rows == 2 %}selected{% endif %}>2 rows</option>
+        <option value="3" {% if rows == 3 %}selected{% endif %}>3 rows</option>
+      </select>
+
+      <button type="submit">Apply</button>
+    </form>
+  </div>
+
+  <!-- Refractions -->
+  {% if refractions %}
+    <div class="summary-block">
+      <h4>Refractions</h4>
+      {% for r in refractions %}
+        <div class="refraction-item">
+          <p><strong>Subject:</strong> {{ r.subject }}</p>
+          <p><strong>OD:</strong> {{ r.od }} | <strong>OS:</strong> {{ r.os }}</p>
+          <p><strong>OD CL:</strong> {{ r.odcl }} | <strong>OS CL:</strong> {{ r.oscl }}</p>
+          <p><strong>PD:</strong> {{ r.pd }}</p>
+          <p><em>{{ r.created_at|date:"Y-m-d H:i" }}</em></p>
+        </div>
+        {% if not forloop.last %}<hr>{% endif %}
+      {% endfor %}
+    </div>
+  {% endif %}
+
+  <!-- Optics -->
+  {% if optics %}
+    <div class="summary-block">
+      <h4>Optics Descriptions</h4>
+      {% for o in optics %}
+        <div class="optics-item">
+          <p>{{ o.description }}</p>
+          <p><em>{{ o.created_at|date:"Y-m-d H:i" }}</em></p>
+        </div>
+        {% if not forloop.last %}<hr>{% endif %}
+      {% endfor %}
+    </div>
+  {% endif %}
+</div>
