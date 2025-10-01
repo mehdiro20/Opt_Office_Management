@@ -1,0 +1,181 @@
+{% load static %}
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <style>
+    body {
+      font-family: "Helvetica", "Arial", sans-serif;
+      font-size: 12pt;
+      line-height: 1.4;
+      color: #333;
+      margin: 40px;
+    }
+    h1, h2 {
+      color: #2c3e50;
+      margin-bottom: 5px;
+    }
+    .header {
+      text-align: center;
+      padding-bottom: 12px;
+      border-bottom: 2px solid #2c3e50;
+      margin-bottom: 18px;
+    }
+    .patient-info {
+      margin-bottom: 15px;
+      padding: 8px;
+      border: 1px solid #ddd;
+      background: #f9f9f9;
+      font-size: 11pt;
+    }
+    .patient-info h2 {
+      margin-top: 0;
+      font-size: 13pt;
+    }
+    .info-table {
+      width: 100%;
+      border-collapse: collapse;
+    }
+    .info-table td {
+      padding: 4px 6px;
+      border-bottom: 1px solid #eee;
+      vertical-align: top;
+      width: 50%;
+    }
+    .section {
+      margin-bottom: 20px;
+    }
+
+    /* Two-column refraction style */
+    .record.two-col {
+      width: 55%;
+      border-collapse: collapse;
+      margin-bottom: 12px;
+      font-size: 9.5pt;
+    }
+    .record.two-col th {
+      width: 40%;
+      background: #f0f0f0; /* soft gray */
+      text-align: left;
+      padding: 3px 5px;
+      border: 1px solid #bbb;
+      font-weight: bold;
+      color: #222; /* black text */
+    }
+    .record.two-col td {
+      width: 60%;
+      background: #fff; /* white cells */
+      padding: 3px 5px;
+      border: 1px solid #bbb;
+      word-wrap: break-word;
+      white-space: normal;
+      color: #000;
+    }
+    .record.two-col tr:nth-child(even) td {
+      background: #f9f9f9; /* subtle striping */
+    }
+
+    /* Optics table */
+    .record {
+      width: 75%;
+      border-collapse: collapse;
+      font-size: 10pt;
+      margin-top: 8px;
+    }
+    .record th, .record td {
+      border: 1px solid #bbb;
+      padding: 5px 6px;
+      text-align: left;
+      color: #000;
+    }
+    .record th {
+      background: #f2f2f2;
+      font-size: 10pt;
+    }
+    .record tr:nth-child(even) td {
+      background: #fafafa;
+    }
+
+    .footer {
+      text-align: center;
+      font-size: 9.5pt;
+      margin-top: 35px;
+      border-top: 1px solid #ccc;
+      padding-top: 8px;
+      color: #777;
+    }
+  </style>
+</head>
+<body>
+
+  <div class="header">
+    <h1>Patient Medical Summary</h1>
+    <p><em>Generated on {{ now|date:"d M Y H:i" }}</em></p>
+  </div>
+
+  <div class="patient-info">
+    <h2>Patient Information</h2>
+    <table class="info-table">
+      <tr>
+        <td><strong>Name:</strong> {{ patient.name }}</td>
+        <td><strong>ID:</strong> {{ patient.patient_id }}</td>
+      </tr>
+      <tr>
+        <td><strong>DOB:</strong> {{ patient.date_of_birth|date:"Y-m-d" }}</td>
+        <td><strong>Gender:</strong> {{ patient.gender }}</td>
+      </tr>
+      <tr>
+        <td><strong>Phone:</strong> {{ patient.phone }}</td>
+        <td><strong>Email:</strong> {{ patient.email }}</td>
+      </tr>
+    </table>
+  </div>
+
+  {% if refractions %}
+  <div class="section">
+    <h2>Refractions</h2>
+    {% for r in refractions %}
+    <table class="record two-col">
+      <tr><th>Date</th><td>{{ r.created_at|date:"Y-m-d H:i" }}</td></tr>
+      <tr><th>Subject</th><td>{{ r.subject }}</td></tr>
+      <tr><th>OD</th><td>{{ r.od }}</td></tr>
+      <tr><th>OS</th><td>{{ r.os }}</td></tr>
+      <tr><th>OD CL</th><td>{{ r.odcl }}</td></tr>
+      <tr><th>OS CL</th><td>{{ r.oscl }}</td></tr>
+      <tr><th>PD</th><td>{{ r.pd }}</td></tr>
+    </table>
+    {% if not forloop.last %}
+    <br>
+    {% endif %}
+    {% endfor %}
+  </div>
+  {% endif %}
+
+  {% if optics %}
+  <div class="section">
+    <h2>Optics Descriptions</h2>
+    <table class="record">
+      <thead>
+        <tr>
+          <th>Date</th>
+          <th>Description</th>
+        </tr>
+      </thead>
+      <tbody>
+        {% for o in optics %}
+        <tr>
+          <td>{{ o.created_at|date:"Y-m-d H:i" }}</td>
+          <td>{{ o.description }}</td>
+        </tr>
+        {% endfor %}
+      </tbody>
+    </table>
+  </div>
+  {% endif %}
+
+  <div class="footer">
+    <p>Confidential medical record &copy; {{ now|date:"Y" }} - {{ request.user.get_full_name }}</p>
+  </div>
+
+</body>
+</html>

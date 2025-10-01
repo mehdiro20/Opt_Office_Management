@@ -12,7 +12,7 @@ class Patient(models.Model):
 
     patient_id = models.CharField(max_length=20, unique=True, editable=False)
     name = models.CharField(max_length=100)
-    family_name = models.CharField(max_length=100)
+    
     phone = models.CharField(max_length=15, blank=True, null=True)
     age = models.PositiveIntegerField()
     gender = models.CharField(max_length=1, choices=[('M', 'Male'), ('F', 'Female')])

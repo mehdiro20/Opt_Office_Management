@@ -21,6 +21,8 @@ urlpatterns = [
     path('remove_from_accepted_profile/<str:patient_id>/', views.remove_from_accepted_profile, name='remove_from_accepted_profile'),
     
     path('patients-fragment/', views.patients_fragment, name='patients_fragment'),
+    path("patient/<str:patient_id>/pdf/", views.download_summary_pdf, name="download_summary_pdf"),
+
 
 ]
 

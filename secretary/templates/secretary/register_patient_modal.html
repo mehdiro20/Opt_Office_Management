@@ -7,11 +7,9 @@
         <form id="registerForm" method="POST" action="{% url 'secretary:register_patient' %}">
             {% csrf_token %}
 
-            <label for="rp_name">Name:</label>
+            <label for="rp_name">Name & Familiy Name:</label>
             <input id="rp_name" type="text" name="name" required>
 
-            <label for="rp_family">Family Name:</label>
-            <input id="rp_family" type="text" name="family_name" required>
 
             <label for="rp_phone">Phone:</label>
             <input id="rp_phone" type="text" name="phone" inputmode="numeric" maxlength="15" placeholder="09123456789">

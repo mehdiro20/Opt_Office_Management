@@ -23,11 +23,20 @@
             <label>Subject:</label>
             <input type="text" name="subject" required>
           </div>
+          
+          <div class="form-row">
+            <label>OD UCVA:</label>
+            <input type="text" name="oducva" class="va-input">
+            <label STYLE="margin-left:15px;">OS UCVA:</label>
+            <input type="text" name="osucva" class="va-input">
+          </div>
 
           <!-- OD -->
           <div class="form-row">
             <label>OD:</label>
             <input type="text" name="od" value="       /        ×   " class="od-input">
+            <label STYLE="margin-left:15px" >OD BCVA:</label>
+            <input type="text" name="odbcva" value="" class="va-input">
             <input type="text" name="odcl" class="odcl" style="display:none">
           </div>
           <div class="form-row">
@@ -38,14 +47,16 @@
           <div class="form-row">
             <label>OS:</label>
             <input type="text" name="os" value="       /        ×   " class="os-input">
+            <label STYLE="margin-left:15px">OS BCVA:</label>
+            <input type="text" name="osbcva" value="" class="va-input">
             <input type="text" name="oscl" class="oscl" style="display:none">
           </div>
           <div class="form-row">
             <div class="input-error os-error" style="display:none; margin-left:100px; color:#c0392b;"></div>
           </div>
-
+          <div class="addition-box">
           <!-- Addition / Axis -->
-          <div class="form-row">
+          <div class="form-row addition-box">
             <label>Addition:</label>
             <input type="text" name="axis" class="addition" maxlength="5" required>
           </div>
@@ -55,7 +66,7 @@
             <label>PD:</label>
             <input type="text" name="pd" class="pd" maxlength="5" required>
           </div>
-
+          </div>
           <!-- Submit -->
           <div class="form-row">
             <input type="submit" value="Submit">
@@ -132,8 +143,14 @@ input[type="text"]:focus {
   border-color: #2980b9;
   outline: none;
 }
-input.pd { width: 60px; }
-input.addition { width: 100px; }
+.addition-box{
+     width:60px;
+      
+
+
+}
+input.pd { margin-left:74px; }
+input.addition { margin-left:30px; }
 input[type="submit"] {
   background: #2980b9;
   color: white;
@@ -142,7 +159,18 @@ input[type="submit"] {
   padding: 8px 14px;
   cursor: pointer;
   transition: background 0.2s ease;
+
 }
+input.va-input {
+  width: 80px;   /* adjust size as needed */
+  flex: 0 0 auto;
+  text-align: center;
+}
+
+
+
+
+
 input[type="submit"]:hover { background: #1c5980; }
 .input-error { font-size: 0.95rem; line-height: 1.2; }
 </style>

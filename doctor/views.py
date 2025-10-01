@@ -1,7 +1,7 @@
 from secretary.models import Patient
 from django.shortcuts import render, get_object_or_404, redirect
 from django.db.models import Q
-from doctor.models import Refraction  # model to store refraction data
+
 from django.utils.dateparse import parse_date
 from django.http import JsonResponse
 # Doctor dashboard: show only accepted patients
@@ -14,14 +14,16 @@ from doctor.models import BrandsSplenss
 from doctor.models import OpticsFeature
 
 import json
-from django.http import JsonResponse
+
 from django.views.decorators.csrf import csrf_exempt
 from doctor.models import Refraction, OpticsDescription
 from django.contrib import messages
 from django.utils import timezone
 
 
-
+from django.http import HttpResponse
+from django.template.loader import get_template
+from xhtml2pdf import pisa
 
 
 @login_required
@@ -212,3 +214,35 @@ def patient_summary(request, patient_id):
         "optics": optics,
     }
     return context
+    
+
+@permission_required('doctor.view_patient', raise_exception=True)
+
+
+def download_summary_pdf(request, patient_id):
+    patient = get_object_or_404(Patient, patient_id=patient_id)
+
+    # Example: get last refraction + optics
+    last_refraction = Refraction.objects.filter(patient=patient).order_by('-created_at')[:2]
+    last_optics = OpticsDescription.objects.filter(patient_id=patient_id).order_by('-created_at')[:2]
+    
+    # Context for template
+    context = {
+    "patient": patient,
+    "refractions": last_refraction,
+    "optics": last_optics
+        }
+    
+    # Render template
+    template = get_template("doctor/patient_summary_pdf.html")  # make sure this exists!
+    html = template.render(context)
+    
+    # Create PDF
+    response = HttpResponse(content_type="application/pdf")
+    response["Content-Disposition"] = f'attachment; filename="patient_{patient.patient_id}_summary.pdf"'
+    
+    pisa_status = pisa.CreatePDF(html, dest=response)
+    
+    if pisa_status.err:
+        return HttpResponse("Error generating PDF", status=500)
+    return response

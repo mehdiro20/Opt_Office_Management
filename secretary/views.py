@@ -5,8 +5,11 @@ from django.utils import timezone
 from datetime import datetime
 from django.contrib import messages
 from django.views.decorators.http import require_POST
-from django.http import JsonResponse
+from django.http import JsonResponse, HttpResponse
 from django.contrib.auth.decorators import login_required, user_passes_test
+from django.template.loader import get_template
+from xhtml2pdf import pisa
+
 
 # -------------------------------
 # Permission check decorator
@@ -24,9 +27,7 @@ def is_secretary_doctor_admin(user):
 @login_required
 @user_passes_test(is_secretary_doctor_admin)
 def dashboard(request):
-    """
-    Secretary dashboard with optional filters by date and status.
-    """
+    """Secretary dashboard with optional filters by date and status."""
     start_date = request.GET.get('start_date')
     end_date = request.GET.get('end_date')
     status = request.GET.get('status')  # "waiting", "accepted", "done" or "all"
@@ -52,10 +53,7 @@ def dashboard(request):
 @login_required
 @user_passes_test(is_secretary_doctor_admin)
 def patients_table_partial(request):
-    """
-    Returns the partial patients table for AJAX refresh.
-    Includes filtering by date and status.
-    """
+    """Returns the partial patients table for AJAX refresh."""
     start_date = request.GET.get('start_date')
     end_date = request.GET.get('end_date')
     status = request.GET.get('status')
@@ -86,7 +84,6 @@ def accept_patient(request, patient_id):
 # -------------------------------
 @login_required
 @user_passes_test(is_secretary_doctor_admin)
-
 def register_patient(request):
     if request.method == 'POST':
         try:
@@ -104,7 +101,7 @@ def register_patient(request):
                 return JsonResponse({'success': False, 'error': msg}, status=status)
 
             # Required fields
-            if not all([name, family_name, age, gender, reason]):
+            if not all([name, age, gender, reason]):
                 msg = "All required fields must be filled!"
                 return ajax_error(msg) if is_ajax else _redirect_with_message(request, msg, error=True)
 
@@ -137,7 +134,7 @@ def register_patient(request):
                     'success': True,
                     'message': msg,
                     'patient_id': patient.patient_id,
-                    'patient_name': f"{patient.name} {patient.family_name}"
+                    'patient_name': f"{patient.name}"
                 })
             else:
                 return _redirect_with_message(request, msg)
@@ -150,7 +147,6 @@ def register_patient(request):
             return _redirect_with_message(request, msg, error=True)
 
     return redirect('secretary:secretary_dashboard')
-
 
 
 @login_required
@@ -237,13 +233,20 @@ def accept_existing_patient(request):
         return JsonResponse({"success": False, "error": "Please provide Patient ID or Melli Code."})
 
     try:
-        patient = Patient.objects.filter(melli_code=melli_code).first() or Patient.objects.filter(patient_id=melli_code).first()
+        patient = (
+            Patient.objects.filter(melli_code=melli_code).first()
+            or Patient.objects.filter(patient_id=melli_code).first()
+        )
         if not patient:
             return JsonResponse({"success": False, "error": "No patient found."})
 
         patient.status = "waiting"
         patient.save()
-
         return JsonResponse({"success": True, 'patient_id': patient.id})
     except Exception as e:
         return JsonResponse({"success": False, "error": str(e)})
+
+
+# -------------------------------
+# PDF Export
+# -------------------------------

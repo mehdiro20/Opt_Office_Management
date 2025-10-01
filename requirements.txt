@@ -56,4 +56,5 @@ openpyxl>=3.1
 captcha
 #jdtime
 jdatetime
-
+#xhtml2pdf
+xhtml2pdf
