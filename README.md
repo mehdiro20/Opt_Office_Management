@@ -91,7 +91,8 @@ From this step please use Anaconda Powershell Prompt (in windows).(it's better t
 ```
 then ...
 ```
-    from django.contrib.auth.models import User
+    from django.contrib.auth import get_user_model
+    User = get_user_model()
     User.objects.get(username='mehdi').delete()
     exit()
 ```
