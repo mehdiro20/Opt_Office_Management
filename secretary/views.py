@@ -88,7 +88,7 @@ def register_patient(request):
     if request.method == 'POST':
         try:
             name = request.POST.get('name')
-            family_name = request.POST.get('family_name')
+            
             phone = request.POST.get('phone')
             age = request.POST.get('age')
             gender = request.POST.get('gender')
@@ -120,7 +120,7 @@ def register_patient(request):
             # ✅ Save Patient
             patient = Patient.objects.create(
                 name=name,
-                family_name=family_name,
+                
                 phone=phone,
                 age=age,
                 gender=gender,
