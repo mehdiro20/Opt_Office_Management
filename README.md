@@ -65,7 +65,7 @@ Open CMD or GITCMD in Windows and enter the commands below.
 ---
 
 ### Step 4: Install Dependencies
-From this step please use Anaconda Powershell Prompt (in windows).
+From this step please use Anaconda Powershell Prompt (in windows).(it's better to use windscribe)
 ```
    cd Desktop
    cd MyProject
