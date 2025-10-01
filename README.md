@@ -62,6 +62,11 @@ Open CMD or GITCMD in Windows and enter the commands below.
 
 
 ```
+or in anaconda powershell after (installing git).
+```
+   cd desktop
+   git clone https://github.com/mehdiro20/Opt_Office_Management MyProject
+```
 ---
 
 ### Step 4: Install Dependencies
