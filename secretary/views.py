@@ -10,6 +10,11 @@ from django.contrib.auth.decorators import login_required, user_passes_test
 from django.template.loader import get_template
 from xhtml2pdf import pisa
 
+from django.http import JsonResponse
+from django.utils import timezone
+import jdatetime
+from .models import Patient
+
 
 # -------------------------------
 # Permission check decorator
@@ -84,12 +89,14 @@ def accept_patient(request, patient_id):
 # -------------------------------
 @login_required
 @user_passes_test(is_secretary_doctor_admin)
+
+
 def register_patient(request):
     if request.method == 'POST':
         try:
             name = request.POST.get('name')
-            
             phone = request.POST.get('phone')
+            dob = request.POST.get('dob')  # ✅ Directly save Jalali string (YYYY/MM/DD)
             age = request.POST.get('age')
             gender = request.POST.get('gender')
             melli_code = request.POST.get('melli_code')
@@ -101,7 +108,7 @@ def register_patient(request):
                 return JsonResponse({'success': False, 'error': msg}, status=status)
 
             # Required fields
-            if not all([name, age, gender, reason]):
+            if not all([name, age, gender, reason, dob]):
                 msg = "All required fields must be filled!"
                 return ajax_error(msg) if is_ajax else _redirect_with_message(request, msg, error=True)
 
@@ -117,11 +124,11 @@ def register_patient(request):
                 msg = "This Melli code is already registered."
                 return ajax_error(msg, status=409) if is_ajax else _redirect_with_message(request, msg, error=True)
 
-            # ✅ Save Patient
+            # ✅ Save Patient with Jalali DOB string
             patient = Patient.objects.create(
                 name=name,
-                
                 phone=phone,
+                dob=dob,     # <-- saved as "1403/07/10"
                 age=age,
                 gender=gender,
                 melli_code=melli_code,
@@ -134,7 +141,7 @@ def register_patient(request):
                     'success': True,
                     'message': msg,
                     'patient_id': patient.patient_id,
-                    'patient_name': f"{patient.name}"
+                    'patient_name': patient.name
                 })
             else:
                 return _redirect_with_message(request, msg)

@@ -19,7 +19,7 @@
             <td>{{ patient.phone }}</td>
             <td>{{ patient.reason }}</td>
             <td class="
-                {% if patient.status == 'waiting' %}status-waiting{% elif patient.status == 'accepted' %}status-accepted{% elif patient.status == 'done' %}status-done{% endif %}
+                {% if patient.status == 'waiting' %}status-waiting{% elif patient.status == 'waiting_out' %}status-waiting_out{% elif patient.status == 'accepted' %}status-accepted{% elif patient.status == 'done' %}status-done{% endif %}
             ">{{ patient.status|capfirst }}</td>
             <td>
                 {% if patient.status == "waiting" %}
@@ -34,6 +34,14 @@
                 <form method="POST" action="{% url 'secretary:get_patient_last_refraction' patient.patient_id %}" style="display:inline;">
                     {% csrf_token %}
                     <button type="submit" class="get-lr-button">Get Last Record</button>
+                </form>
+                {% endif %}
+                
+                {% if patient.status == "waiting_out" %}
+                <!-- Get Last Refraction -->
+                <form method="POST" action="" style="display:inline;">
+                    {% csrf_token %}
+                    <button type="submit" class="get-so-button ">See Orders</button>
                 </form>
                 {% endif %}
             </td>

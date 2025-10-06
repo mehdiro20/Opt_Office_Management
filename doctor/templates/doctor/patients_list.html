@@ -31,6 +31,23 @@
             </button>
           </form>
         {% endif %}
+        
+        {% if patient.status == 'waiting_out' %}
+          <form method="POST" action="" class="d-inline">
+            {% csrf_token %}
+            <button type="submit" class="btn btn-sm btn-outline-danger"
+                    onclick="">
+              <i class="bi bi-check2-circle"></i> waiting
+            </button>
+          </form>
+        {% endif %}
+        
+        
+        
+        
+        
+        
+        
       </div>
     </div>
   {% endfor %}

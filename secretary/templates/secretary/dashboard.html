@@ -82,10 +82,11 @@ th { background-color: #3498db; color: white; }
 tr:nth-child(even) { background-color: #f2f2f2; }
 .status-accepted { color: green; font-weight: bold; }
 .status-waiting { color: red; font-weight: bold; }
+.status-waiting_out { color: #e94e3c;; font-weight: bold; }
 .status-done { color: gray; font-weight: bold; }
 
 /* Buttons inside table */
-.accept-button, .remove-button, .done-button, .get-lr-button {
+.accept-button, .remove-button, .done-button, .get-lr-button ,.get-so-button {
     padding: 6px 12px; border: none; border-radius: 6px; cursor: pointer; font-weight: bold;
     transition: all 0.2s ease; box-shadow: 0 2px 4px rgba(0,0,0,0.15);
 }
@@ -93,6 +94,19 @@ tr:nth-child(even) { background-color: #f2f2f2; }
 .accept-button:hover { background-color: #218838; transform: translateY(-2px); }
 .get-lr-button { background-color: #007bff; color: white; }
 .get-lr-button:hover { background-color: #0069d9; transform: translateY(-2px); }
+.get-so-button {
+  background-color: #e94e3c;   /* soft comfortable red */
+  color: #ffffff;              /* white text */
+  border: none;
+  cursor: pointer;
+  transition: background-color 0.3s ease, transform 0.2s ease;
+}
+
+.get-so-button:hover {
+  background-color: #ef5350;   /* deeper red on hover */
+  transform: translateY(-2px); /* gentle lift */
+}
+
 .remove-button { background-color: #e74c3c; color: white; }
 .remove-button:hover { background-color: #c0392b; transform: translateY(-2px); }
 .done-button { background-color: #2e7d32; color: white; }

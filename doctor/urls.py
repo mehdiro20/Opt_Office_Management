@@ -22,8 +22,8 @@ urlpatterns = [
     
     path('patients-fragment/', views.patients_fragment, name='patients_fragment'),
     path("patient/<str:patient_id>/pdf/", views.download_summary_pdf, name="download_summary_pdf"),
-
-
+    path("patient/<str:patient_id>/wait/", views.move_to_waiting, name="move_to_waiting"),  # <-- NEW
+    path('patient/<str:patient_id>/save_orders/', views.save_orders, name='save_orders'),
 ]
 
 if settings.DEBUG:

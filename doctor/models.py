@@ -11,7 +11,11 @@ class Refraction(models.Model):
     patient = models.ForeignKey(Patient, on_delete=models.CASCADE, related_name='refractions')
     subject = models.CharField(max_length=50)
     od = models.CharField(max_length=50)
+    oducva= models.CharField(max_length=50,null=True, blank=True)
+    odbcva= models.CharField(max_length=50,null=True, blank=True)
     os = models.CharField(max_length=50)
+    osucva= models.CharField(max_length=50,null=True, blank=True)
+    osbcva= models.CharField(max_length=50,null=True, blank=True)
     odcl = models.CharField(max_length=50)
     oscl = models.CharField(max_length=50)
     axis = models.CharField(max_length=50)
@@ -114,3 +118,22 @@ class OpticsDescription(models.Model):
         return f"Optics Description #{self.id}"    
     
     
+# models.py
+from django.db import models
+
+class Order(models.Model):
+    name = models.CharField(max_length=200, unique=True)
+
+    def __str__(self):
+        return self.name
+    
+    
+class Register_Order(models.Model):
+    patient_id = models.CharField(max_length=200)
+    order_name = models.CharField(max_length=200)
+    duration = models.PositiveIntegerField(null=True, blank=True)
+    priority = models.CharField(max_length=20)
+    unique_id = models.CharField(max_length=50, unique=True)    
+    
+    def __str__(self):
+        return self.order_name  # This makes it easier to read in admin or shell

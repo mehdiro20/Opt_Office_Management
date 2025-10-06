@@ -25,12 +25,17 @@ from django.http import HttpResponse
 from django.template.loader import get_template
 from xhtml2pdf import pisa
 
-
+from django.shortcuts import render
+from .models import Order
+from .models import Register_Order
 @login_required
 
 @permission_required('doctor.view_patient', raise_exception=True)
 def doctor_dashboard(request):
-    patients = Patient.objects.filter(status="accepted").order_by('-id')
+    
+    patients = Patient.objects.filter(
+        Q(status="accepted") | Q(status="waiting_out")
+    ).order_by('-id')
     return render(request, "doctor/dashboard.html", {"patients": patients})
 
 
@@ -40,12 +45,17 @@ def patient_profile(request, patient_id):
     patient = get_object_or_404(Patient, patient_id=patient_id)
     last_refraction = Refraction.objects.filter(patient=patient).order_by('-created_at').first()
     # Date filtering
+    orders = Order.objects.all()  # fetch all orders
+
 
     start_date = request.GET.get('start_date')
     end_date = request.GET.get('end_date')
     
     refractions = Refraction.objects.filter(patient=patient)
-    
+    role=None
+    if request.user.is_authenticated:
+
+          role = getattr(request.user, "role", None)
     if start_date:
         refractions = refractions.filter(created_at__date__gte=parse_date(start_date))
     if end_date:
@@ -61,10 +71,11 @@ def patient_profile(request, patient_id):
         "MEDIA_URL": settings.MEDIA_URL,
         "splenss": splens,
         "optics_features": optics_features,
-
+        "role":role,
+        "orders":orders
     }
     context.update(patient_summary(request,patient_id))
-
+    context.update(make_orders(request,patient_id))
     
     return render(request, "doctor/patient_profile.html",context)
 
@@ -83,7 +94,12 @@ def submit_refraction(request, patient_id):
     if request.method == "POST":
         subject=request.POST.get('subject')
         od = request.POST.get('od')
+        oducva= request.POST.get('oducva')
+        odbcva= request.POST.get('odbcva')
+        
         os = request.POST.get('os')
+        osucva= request.POST.get('osucva')
+        osbcva= request.POST.get('osbcva')
         odcl=request.POST.get('odcl')
         oscl=request.POST.get('oscl')
         axis = request.POST.get('axis')  # you had this in form
@@ -93,7 +109,11 @@ def submit_refraction(request, patient_id):
             subject=subject,
             patient=patient,
             od=od,
+            oducva=oducva,
+            odbcva=odbcva,
             os=os,
+            osucva=osucva,
+            osbcva=osbcva,
             odcl=odcl,
             oscl=oscl,
          
@@ -116,6 +136,16 @@ def remove_from_accepted(request, patient_id):
         patient.status = "done"  # move back to secretary list
         patient.save()
     return redirect(request.META.get('HTTP_REFERER', 'doctor:doctor_dashboard'))
+
+@permission_required('doctor.view_patient', raise_exception=True)
+def move_to_waiting(request, patient_id):
+    patient = get_object_or_404(Patient, patient_id=patient_id)
+    if request.method == "POST":
+        patient.status = "waiting_out"  # move back to secretary list
+        patient.save()
+        messages.info(request, f"⏳ Patient {patient.name} moved to waiting list.")
+    return redirect('doctor:doctor_dashboard')
+
 @permission_required('doctor.view_patient', raise_exception=True)
 def remove_from_accepted_profile(request, patient_id):
     patient = get_object_or_404(Patient, patient_id=patient_id)
@@ -142,7 +172,9 @@ def delete_patient(request, patient_id):
 
 @permission_required('doctor.view_patient', raise_exception=True)
 def patients_fragment(request):
-    patients = Patient.objects.filter(status='accepted')  # or whatever your filter is
+    patients = Patient.objects.filter(
+        Q(status="accepted") | Q(status="waiting_out")
+    ).order_by('-id')
     return render(request, 'doctor/patients_list.html', {'patients': patients})
 
 @permission_required('doctor.view_patient', raise_exception=True)
@@ -246,3 +278,53 @@ def download_summary_pdf(request, patient_id):
     if pisa_status.err:
         return HttpResponse("Error generating PDF", status=500)
     return response
+
+@permission_required('doctor.view_patient', raise_exception=True)
+def save_orders(request,patient_id):
+    if request.method == "POST":
+        patient_id = patient_id
+        orders_data = json.loads(request.POST.get("orders_data"))
+        incoming_ids = [o["id"] for o in orders_data]
+
+        # Delete orders that are in DB but not in the new incoming list
+        Register_Order.objects.filter(patient_id=patient_id).exclude(unique_id__in=incoming_ids).delete()
+
+        # Save each order
+        for o in orders_data:
+            Register_Order.objects.update_or_create(
+                unique_id=o['id'],  # lookup by unique_id
+                defaults={
+                    'patient_id': patient_id,
+                    'order_name': o['order'],
+                    'duration': o['duration'],
+                    'priority': o['priority'],
+                }
+          )
+        return redirect('doctor:patient_profile', patient_id=patient_id)  # Redirect back after saving
+    return redirect('doctor:patient_profile', patient_id=patient_id)
+
+
+@permission_required('doctor.view_patient', raise_exception=True)
+def make_orders(request, patient_id):
+ 
+    
+    # Fetch previous orders for this patient
+    existing_orders = Register_Order.objects.filter(patient_id=patient_id)
+    
+    # Convert queryset to a list of dicts for JS
+    orders_for_js = [
+        {
+            "id": o.unique_id,
+            "order": o.order_name,
+            "duration": o.duration,
+            "priority": o.priority
+        }
+        for o in existing_orders
+    ]
+    
+    context = {
+    
+        "orders_ex": existing_orders,  # For datalist if needed
+        "existing_orders_json": json.dumps(orders_for_js)
+    }
+    return context

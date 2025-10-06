@@ -177,6 +177,7 @@
         <li class="has-submenu">General
           <ul>
             <li data-target="general">General info</li>
+            <li data-target="make-orders">Make Orders</li>
           </ul>
         </li>
         <li class="has-submenu">New Records
@@ -187,7 +188,7 @@
             <li data-target="optics">Optics</li>
             <li data-target="acc_bin">Acc & Binocular Examination</li>
             <li data-target="cl">Contact Lens</li>
-            <li data-target="amblyopia">Amblyopia & Therapy</li>
+            <li data-target="amblyopia">Amblyopia Therapy</li>
             <li data-target="vision_therapy">Vision Therapy</li>
             <li data-target="follow_up">Follow Up</li>
             <li data-target="referrals">Referrals</li>
@@ -211,11 +212,13 @@
 
   <!-- Main Content -->
   <div class="main-content">
+    
     {% include "doctor/general_infos.html" %}
     {% include "doctor/refraction.html" %}
     {% include "doctor/past_refraction_list.html" %}
     {% include "doctor/optics.html" %}
      {% include "doctor/patient_summary.html" %}
+     {% include "doctor/make_orders.html" %}
   </div>
 </div>
 
@@ -228,10 +231,10 @@
   </form>
 
   <!-- Wait Outside -->
-  <form method="POST" action="" id="wait-form">
-    {% csrf_token %}
-    <button type="submit" id="wait-btn" class="wait-btn"><i class="fa fa-clock"></i></button>
-  </form>
+  <form method="POST" action="{% url 'doctor:move_to_waiting' patient.patient_id %}" id="wait-form">
+  {% csrf_token %}
+  <button type="submit" id="wait-btn" class="wait-btn"><i class="fa fa-clock"></i></button>
+</form>
 
   <!-- Doctor Dashboard -->
   <a href="{% url 'doctor:doctor_dashboard' %}"><i class="fa fa-user-doctor"></i></a>
@@ -242,11 +245,11 @@
   <div class="footer-container" style="max-width:1200px; margin:0 auto; padding:0 20px;">
     {% if user.is_authenticated %}
       {% if role == "doctor" %}
-        <a href="{% url 'doctor_dashboard' %}" class="dashboard-link">Doctor Dashboard</a>
+        <a href="{% url 'doctor:doctor_dashboard' %}" class="dashboard-link">Doctor Dashboard</a>
       {% elif role == "patient" %}
         <a href="{% url 'patient_dashboard' %}" class="dashboard-link">Patient Dashboard</a>
       {% elif role == "secretary" %}
-        <a href="{% url 'secretary_dashboard' %}" class="dashboard-link">Secretary Dashboard</a>
+        <a href="{% url 'secretary:secretary_dashboard' %}" class="dashboard-link">Secretary Dashboard</a>
       {% endif %}
     {% else %}
       <a href="{% url 'login' %}" class="dashboard-link">Login</a>

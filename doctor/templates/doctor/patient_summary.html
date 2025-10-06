@@ -28,7 +28,7 @@
         <option value="3" {% if rows == 3 %}selected{% endif %}>3 rows</option>
       </select>
 
-      <button type="submit">Apply</button>
+      <button type="submit" class="button-ps">Apply</button>
     </form>
   </div>
 
@@ -64,6 +64,22 @@
   {% endif %}
   
   <form method="get" action="{% url 'doctor:download_summary_pdf' patient.patient_id %}">
-  <button type="submit">Download as PDF</button>
+  <button type="submit" class="button-ps">Download as PDF</button>
 </form>
 </div>
+<style>
+
+.button-ps{
+  background: #2980b9;
+  color: white;
+  border: none;
+  border-radius: 6px;
+  padding: 8px 14px;
+  cursor: pointer;
+  transition: background 0.2s ease;
+
+}
+
+
+
+</style>

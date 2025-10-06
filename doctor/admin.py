@@ -8,6 +8,9 @@ from .models import OpticsFeature
 from .models import BrandsSplenss, BrandPrice
 from .models import OpticsDescription
 import os
+from .models import Order
+    
+from .models import Register_Order
 @admin.register(Refraction)
 class RefractionAdmin(admin.ModelAdmin):
     list_display = ('subject','patient', 'od', 'os','axis','pd', 'created_at')
@@ -82,3 +85,14 @@ class OpticsDescriptionAdmin(admin.ModelAdmin):
     list_filter = ("created_at",)               
             
 
+
+@admin.register(Order)
+class OrderAdmin(admin.ModelAdmin):
+    list_display = ('name',)
+    search_fields = ('name',)
+
+
+@admin.register(Register_Order)
+class RegisterOrderAdmin(admin.ModelAdmin):
+    list_display = ('patient_id','order_name', 'duration', 'priority', 'unique_id')    
+    

@@ -2,7 +2,6 @@ from django.db import models
 from django.utils import timezone
 import jdatetime
 
-
 class Patient(models.Model):
     STATUS_CHOICES = [
         ("waiting", "Waiting (Secretary list)"),
@@ -12,8 +11,9 @@ class Patient(models.Model):
 
     patient_id = models.CharField(max_length=20, unique=True, editable=False)
     name = models.CharField(max_length=100)
-    
+
     phone = models.CharField(max_length=15, blank=True, null=True)
+    dob = models.CharField(max_length=10, null=True, blank=True)  # ✅ Jalali DOB stored as string (YYYY/MM/DD)
     age = models.PositiveIntegerField()
     gender = models.CharField(max_length=1, choices=[('M', 'Male'), ('F', 'Female')])
     melli_code = models.CharField(max_length=10, unique=True, blank=True, null=True)
@@ -37,22 +37,21 @@ class Patient(models.Model):
             else:
                 season_number = 4
 
-            # Start of season (first day of first month in season)
+            # Start of season
             start_of_season = jdatetime.datetime(
                 year, (season_number - 1) * 3 + 1, 1
             ).togregorian()
 
-            # End of season (last day of last month in season)
+            # End of season
             end_month = season_number * 3
             if end_month == 12:
-                # next year, month 1
                 next_month = jdatetime.datetime(year + 1, 1, 1)
             else:
                 next_month = jdatetime.datetime(year, end_month + 1, 1)
 
             end_of_season = (next_month - jdatetime.timedelta(days=1)).togregorian()
 
-            # Count patients in this season
+            # Count patients this season
             count_season = (
                 Patient.objects.filter(
                     created_at__gte=start_of_season,
