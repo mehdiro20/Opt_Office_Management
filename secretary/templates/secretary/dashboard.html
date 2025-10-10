@@ -33,11 +33,11 @@ h1 { color: #2c3e50; margin: 20px; }
 }
 .menu-bar .menu-item:hover { background: #ecf5ff; transform: translateY(-2px); }
 
-/* Submenu */
 .menu-bar .submenu {
-    display: none;
+    visibility: hidden;
+    opacity: 0;
     position: absolute;
-    top: 100%; /* fixed: directly below menu item */
+    top: 100%;
     left: 0;
     background: white;
     border-radius: 8px;
@@ -45,16 +45,16 @@ h1 { color: #2c3e50; margin: 20px; }
     min-width: 230px;
     flex-direction: column;
     z-index: 1000;
-    opacity: 0;
-    transition: opacity 0.3s ease;
+    transition: opacity 0.25s ease, visibility 0.25s ease;
 }
-.menu-bar .menu-item:hover .submenu {
-    display: block;
+.menu-bar .menu-item:hover .submenu,
+.menu-bar .menu-item.active .submenu {
+    visibility: visible;
     opacity: 1;
 }
 .menu-bar .submenu a {
     padding: 10px 16px;
-    display: block; /* makes link fully clickable */
+    display: block;
     text-decoration: none;
     color: #3498db;
     font-weight: normal;
@@ -82,11 +82,11 @@ th { background-color: #3498db; color: white; }
 tr:nth-child(even) { background-color: #f2f2f2; }
 .status-accepted { color: green; font-weight: bold; }
 .status-waiting { color: red; font-weight: bold; }
-.status-waiting_out { color: #e94e3c;; font-weight: bold; }
+.status-waiting_out { color: #e94e3c; font-weight: bold; }
 .status-done { color: gray; font-weight: bold; }
 
 /* Buttons inside table */
-.accept-button, .remove-button, .done-button, .get-lr-button ,.get-so-button {
+.accept-button, .remove-button, .done-button, .get-lr-button, .get-so-button {
     padding: 6px 12px; border: none; border-radius: 6px; cursor: pointer; font-weight: bold;
     transition: all 0.2s ease; box-shadow: 0 2px 4px rgba(0,0,0,0.15);
 }
@@ -94,19 +94,8 @@ tr:nth-child(even) { background-color: #f2f2f2; }
 .accept-button:hover { background-color: #218838; transform: translateY(-2px); }
 .get-lr-button { background-color: #007bff; color: white; }
 .get-lr-button:hover { background-color: #0069d9; transform: translateY(-2px); }
-.get-so-button {
-  background-color: #e94e3c;   /* soft comfortable red */
-  color: #ffffff;              /* white text */
-  border: none;
-  cursor: pointer;
-  transition: background-color 0.3s ease, transform 0.2s ease;
-}
-
-.get-so-button:hover {
-  background-color: #ef5350;   /* deeper red on hover */
-  transform: translateY(-2px); /* gentle lift */
-}
-
+.get-so-button { background-color: #e94e3c; color: white; }
+.get-so-button:hover { background-color: #ef5350; transform: translateY(-2px); }
 .remove-button { background-color: #e74c3c; color: white; }
 .remove-button:hover { background-color: #c0392b; transform: translateY(-2px); }
 .done-button { background-color: #2e7d32; color: white; }
@@ -118,11 +107,44 @@ tr:nth-child(even) { background-color: #f2f2f2; }
     padding: 12px 20px; border-radius: 8px; display: none; z-index: 1000;
 }
 .toast.error { background: #e74c3c; }
+
+/* ================= Modal ================= */
+.modal {
+    display: none;
+    position: fixed;
+    top:0; left:0;
+    width:100%; height:100%;
+    justify-content: center; align-items: center;
+    z-index: 1000;
+  
+}
+.modal-overlay {
+    position: absolute;
+    width: 100%; height: 100%;
+    background: rgba(0,0,0,0.4);
+}
+.modal-content {
+    position: relative;
+    background: white;
+    padding: 20px;
+    border-radius: 8px;
+    z-index: 1001;
+    max-height: 80%;
+    overflow-y: auto;
+}
+.modal-header {
+    display: flex; justify-content: space-between; align-items: center;
+}
+.modal-body { margin-top: 10px; }
 </style>
 
 <h1>Secretary Dashboard</h1>
+<!-- Modals -->
+{% include "secretary/register_patient_modal.html" %}
+{% include "secretary/accept_existing_patient_modal.html" %}
+{% include "secretary/orders_modal.html" %}
 
-<!-- 🔹 Menu Bar with Submenus -->
+<!-- Menu Bar -->
 <div class="menu-bar">
     <div class="menu-item">Patient Management
         <div class="submenu">
@@ -154,7 +176,7 @@ tr:nth-child(even) { background-color: #f2f2f2; }
     </div>
 </div>
 
-<!-- 🔹 Filter -->
+<!-- Filter -->
 <div class="filter">
     <form id="filter-form" method="GET">
         <label>Start Date:</label>
@@ -172,30 +194,67 @@ tr:nth-child(even) { background-color: #f2f2f2; }
     </form>
 </div>
 
+<!-- Patients Table -->
 <h2 style="margin-left:20px;">All Patients</h2>
 <div id="patients-table">
     {% include "secretary/patients_table.html" %}
 </div>
 
-<!-- Modals -->
-{% include "secretary/register_patient_modal.html" %}
-{% include "secretary/accept_existing_patient_modal.html" %}
 
 <!-- Toast -->
 <div id="successToast" class="toast">✅ Action successful.</div>
 
 <script>
+
+
+// ================= Register Patient Modal =================
+function openRegisterModal() {
+  const modal = document.getElementById("registerModal");
+  if (modal) {
+    modal.style.display = "flex";
+    modal.setAttribute("aria-hidden", "false");
+  }
+}
+function closeRegisterModal() {
+  const modal = document.getElementById("registerModal");
+  if (modal) {
+    modal.style.display = "none";
+    modal.setAttribute("aria-hidden", "true");
+  }
+}
+
+// ================= Accept Patient Modal =================
+function openAcceptModal() {
+  const modal = document.getElementById("acceptModal");
+  if (modal) {
+    modal.style.display = "flex";
+    modal.setAttribute("aria-hidden", "false");
+  }
+}
+function closeAcceptModal() {
+  const modal = document.getElementById("acceptModal");
+  if (modal) {
+    modal.style.display = "none";
+    modal.setAttribute("aria-hidden", "true");
+  }
+}
+
+// ================= Overlay Click Close =================
+window.addEventListener("click", function(e) {
+  if (e.target.classList.contains("modal-overlay")) {
+    closeRegisterModal();
+    closeAcceptModal();
+    closeOrdersModal();
+  }
+});
+
 // ================= Refresh Patients Table =================
 function refreshPatientsTable() {
     const params = new URLSearchParams(new FormData(document.getElementById('filter-form'))).toString();
-    fetch("{% url 'secretary:patients_table_partial' %}?" + params, {
-        headers: { "X-Requested-With": "XMLHttpRequest" }
-    })
-    .then(res => res.text())
-    .then(html => {
-        document.getElementById("patients-table").innerHTML = html;
-    })
-    .catch(() => {});
+    fetch("{% url 'secretary:patients_table_partial' %}?" + params, { headers: { "X-Requested-With": "XMLHttpRequest" } })
+        .then(res => res.text())
+        .then(html => { document.getElementById("patients-table").innerHTML = html; })
+        .catch(() => {});
 }
 
 // ================= Toast =================
@@ -206,96 +265,23 @@ function showToast(msg="✅ Action successful.") {
     setTimeout(() => t.style.display = "none", 2500);
 }
 
-// ================= Modal Controls =================
-function openRegisterModal() {
-    const modal = document.getElementById("registerModal");
-    modal.style.display = "flex";
-    modal.setAttribute("aria-hidden", "false");
-    const nameInput = document.getElementById("rp_name");
-    if (nameInput) nameInput.focus();
-}
-function closeRegisterModal() {
-    const modal = document.getElementById("registerModal");
-    modal.style.display = "none";
-    modal.setAttribute("aria-hidden", "true");
-    const err = document.getElementById("formError");
-    if (err) { err.textContent = ""; err.style.display = "none"; }
-    const form = document.getElementById("registerForm");
-    if (form) form.reset();
-}
-function openAcceptModal() {
-    const modal = document.getElementById("acceptModal");
-    modal.style.display = "flex";
-    modal.setAttribute("aria-hidden", "false");
-    const input = document.getElementById("accept_melli");
-    if (input) input.focus();
-}
-function closeAcceptModal() {
-    const modal = document.getElementById("acceptModal");
-    modal.style.display = "none";
-    modal.setAttribute("aria-hidden", "true");
-    const err = document.getElementById("acceptError");
-    if (err) { err.textContent = ""; err.style.display = "none"; }
-    const form = document.getElementById("acceptForm");
-    if (form) form.reset();
-}
-
-// ================= AJAX Form Submissions =================
-document.addEventListener("DOMContentLoaded", () => {
-    const registerForm = document.getElementById("registerForm");
-    if (registerForm) {
-        registerForm.onsubmit = (e) => {
-            e.preventDefault();
-            fetch(registerForm.action, {
-                method: "POST",
-                body: new FormData(registerForm),
-                headers: { "X-Requested-With": "XMLHttpRequest" }
-            }).then(res => res.json())
-            .then(data => {
-                if (data.success) {
-                    closeRegisterModal();
-                    refreshPatientsTable();
-                    showToast("✅ " + (data.message || "Patient registered successfully."));
-                } else {
-                    const err = document.getElementById("formError");
-                    if (err) { err.textContent = data.error || "Registration failed."; err.style.display = "block"; }
-                }
-            }).catch(() => showToast("❌ Error registering patient."));
-        };
-    }
-    const acceptForm = document.getElementById("acceptForm");
-    if (acceptForm) {
-        acceptForm.onsubmit = (e) => {
-            e.preventDefault();
-            fetch(acceptForm.action, {
-                method: "POST",
-                body: new FormData(acceptForm),
-                headers: { "X-Requested-With": "XMLHttpRequest" }
-            }).then(res => res.json())
-            .then(data => {
-                if (data.success) {
-                    closeAcceptModal();
-                    refreshPatientsTable();
-                    showToast("✅ " + (data.message || "Patient accepted successfully."));
-                } else {
-                    const err = document.getElementById("acceptError");
-                    if (err) { err.textContent = data.error || "Accept failed."; err.style.display = "block"; }
-                }
-            }).catch(() => showToast("❌ Error accepting patient."));
-        };
-    }
-});
-
-// ================= Escape + Click Outside =================
-window.addEventListener("keydown", (e) => {
-    if (e.key === "Escape") { closeRegisterModal(); closeAcceptModal(); }
-});
-window.addEventListener("click", (event) => {
-    if (event.target.id === "registerModal") closeRegisterModal();
-    if (event.target.id === "acceptModal") closeAcceptModal();
-});
-
 // ================= Auto-refresh =================
 setInterval(refreshPatientsTable, 5000);
+
+// ================= Menu Toggle for Mobile =================
+document.querySelectorAll('.menu-bar .menu-item').forEach(item => {
+  item.addEventListener('click', function(e) {
+    if (e.target.closest('.submenu')) return;
+    document.querySelectorAll('.menu-bar .menu-item').forEach(i => {
+      if (i !== item) i.classList.remove('active');
+    });
+    this.classList.toggle('active');
+  });
+});
+document.addEventListener('click', function(e) {
+  if (!e.target.closest('.menu-bar')) {
+    document.querySelectorAll('.menu-bar .menu-item').forEach(i => i.classList.remove('active'));
+  }
+});
 </script>
 {% endblock %}

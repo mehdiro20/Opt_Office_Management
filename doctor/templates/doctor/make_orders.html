@@ -32,7 +32,7 @@
     </button>
   </div>
 
-  <!-- Action Buttons (Initially hidden) -->
+  <!-- Action Buttons -->
   <div id="actionButtons" style="margin-bottom: 15px; display: none; gap: 10px;">
     <button onclick="removeSelected()" style="background:red; color:white; padding:6px 12px; border-radius:6px; border:none; cursor:pointer;">❌ Remove</button>
     <button onclick="changePrioritySelected()" style="background:green; color:white; padding:6px 12px; border-radius:6px; border:none; cursor:pointer;">P Change Priority</button>
@@ -41,19 +41,19 @@
   </div>
 
   <!-- Orders Table -->
-  <table border="1" width="100%" id="ordersTable" style="border-collapse: collapse;">
+  <table id="ordersTable" style="width:100%; border-collapse: collapse; border:none;">
     <thead>
       <tr>
-        <th>#</th>
-        <th>Order</th>
-        <th>Duration (minutes)</th>
-        <th class="editColumn" style="display:none;">Edit</th>
+        <th style="border:none;">#</th>
+        <th style="border:none;">Order</th>
+        <th style="border:none;">Duration (min)</th>
+        <th class="editColumn" style="display:none; border:none;">Edit</th>
       </tr>
     </thead>
     <tbody></tbody>
   </table>
 
-  <!-- Save Button (Under Table) -->
+  <!-- Save Button -->
   <div style="margin-top: 15px;">
     <button id="saveButton" onclick="saveOrdersToDB()"
       style="padding:8px 16px; font-size:16px; border-radius:6px; background-color:#3498db; color:white; border:none; cursor:pointer;">
@@ -63,22 +63,16 @@
 </div>
 
 <script>
-let ordersList = {{ existing_orders_json|safe }};  // Preload existing orders
+let ordersList = {{ existing_orders_json|safe }};
 let editMode = false;
 const priorityColors = { high:"#f28b82", moderate:"#fbbc04", low:"#ccff90" };
 const priorityOrder = ["high","moderate","low"];
-const patientID = "{{ patient.id }}"; 
+const patientID = "{{ patient.id }}";
 
-// Render orders on page load
-document.addEventListener("DOMContentLoaded", () => {
-    renderOrders();
-});
+// Utility: generate unique ID
+function generateUniqueID(){ return '_' + Math.random().toString(36).substr(2, 9); }
 
-function generateUniqueID(){
-  return '_' + Math.random().toString(36).substr(2, 9);
-}
-
-// Add Order
+// Add Order & Auto-Save
 function addOrder() {
   const orderInput = document.getElementById("orderInput").value.trim();
   const priority = document.getElementById("prioritySelect").value;
@@ -89,6 +83,7 @@ function addOrder() {
 
   ordersList.push({ id: generateUniqueID(), order: orderInput, priority, duration, checked:false });
   renderOrders();
+  saveOrdersToDB();  // Auto-save after adding
 
   document.getElementById("orderInput").value = "";
   document.getElementById("taskDuration").value = "";
@@ -101,47 +96,39 @@ function renderOrders() {
 
   ordersList.forEach((o,index)=>{
     const row = document.createElement("tr");
-    row.style.backgroundColor = priorityColors[o.priority];
+    row.style.backgroundColor = priorityColors[o.priority] || "#fff";
 
-    // Number
-    const numberCell = document.createElement("td");
-    numberCell.textContent = index+1;
-    numberCell.style.textAlign = "center";
+    // Cells
+    const tdNum = document.createElement("td");
+    tdNum.textContent = index+1; tdNum.style.textAlign="center"; tdNum.style.border="none";
 
-    // Order
-    const orderCell = document.createElement("td");
-    orderCell.textContent = o.order;
+    const tdOrder = document.createElement("td");
+    tdOrder.textContent = o.order; tdOrder.style.border="none";
 
-    // Duration
-    const durationCell = document.createElement("td");
-    durationCell.textContent = o.duration !== null ? o.duration : "-";
+    const tdDur = document.createElement("td");
+    tdDur.textContent = o.duration !== null ? o.duration : "-"; tdDur.style.border="none";
 
-    // Row click editable
-    row.addEventListener("click", (e)=>{
-      if(editMode){
-        const checkbox = row.querySelector("input[type='checkbox']");
-        if(checkbox.checked && (e.target===orderCell || e.target===durationCell)){
-          makeRowEditable(index);
-        }
-      }
-    });
-
-    // Edit checkbox column
-    const editCell = document.createElement("td");
-    editCell.classList.add("editColumn");
-    editCell.style.textAlign = "center";
-    editCell.style.display = editMode ? "table-cell" : "none";
+    const tdEdit = document.createElement("td");
+    tdEdit.classList.add("editColumn");
+    tdEdit.style.textAlign = "center";
+    tdEdit.style.display = editMode ? "table-cell" : "none";
+    tdEdit.style.border="none";
 
     const checkbox = document.createElement("input");
-    checkbox.type = "checkbox";
+    checkbox.type="checkbox";
     checkbox.checked = o.checked;
     checkbox.onchange = ()=>o.checked = checkbox.checked;
-    editCell.appendChild(checkbox);
+    tdEdit.appendChild(checkbox);
 
-    row.appendChild(numberCell);
-    row.appendChild(orderCell);
-    row.appendChild(durationCell);
-    row.appendChild(editCell);
+    // Click to edit
+    row.addEventListener("click",(e)=>{
+      if(editMode && checkbox.checked && (e.target===tdOrder || e.target===tdDur)) makeRowEditable(index);
+    });
+
+    row.appendChild(tdNum);
+    row.appendChild(tdOrder);
+    row.appendChild(tdDur);
+    row.appendChild(tdEdit);
 
     tbody.appendChild(row);
   });
@@ -155,18 +142,15 @@ function makeRowEditable(index){
   const orderInput = document.createElement("input");
   orderInput.value = ordersList[index].order;
   orderInput.style.width = "100%";
-  orderInput.onblur = () => { ordersList[index].order = orderInput.value; renderOrders(); };
-  cells[1].innerHTML = "";
-  cells[1].appendChild(orderInput);
+  orderInput.onblur = () => { ordersList[index].order = orderInput.value; renderOrders(); saveOrdersToDB(); };
+  cells[1].innerHTML=""; cells[1].appendChild(orderInput);
 
   const durationInput = document.createElement("input");
-  durationInput.type = "number";
-  durationInput.min = 1;
+  durationInput.type="number"; durationInput.min=1;
   durationInput.value = ordersList[index].duration ?? "";
-  durationInput.style.width = "80px";
-  durationInput.onblur = () => { ordersList[index].duration = durationInput.value ? parseInt(durationInput.value): null; renderOrders(); };
-  cells[2].innerHTML = "";
-  cells[2].appendChild(durationInput);
+  durationInput.style.width="80px";
+  durationInput.onblur = () => { ordersList[index].duration = durationInput.value?parseInt(durationInput.value):null; renderOrders(); saveOrdersToDB(); };
+  cells[2].innerHTML=""; cells[2].appendChild(durationInput);
 
   orderInput.focus();
 }
@@ -175,77 +159,41 @@ function makeRowEditable(index){
 function toggleEditMode(){
   editMode = !editMode;
   document.getElementById("actionButtons").style.display = editMode ? "flex" : "none";
-  document.querySelectorAll(".editColumn").forEach(col => col.style.display = editMode ? "table-cell" : "none");
+  document.querySelectorAll(".editColumn").forEach(col=>col.style.display = editMode ? "table-cell":"none");
   renderOrders();
 }
 
-// Get selected rows
-function getSelectedIndices(){
-  return ordersList.map((o,i)=>o.checked ? i:-1).filter(i=>i!==-1);
-}
+// Get selected indices
+function getSelectedIndices(){ return ordersList.map((o,i)=>o.checked?i:-1).filter(i=>i!==-1); }
 
 // Action buttons
-function removeSelected(){
-  const indices = getSelectedIndices().sort((a,b)=>b-a);
-  indices.forEach(i=>ordersList.splice(i,1));
-  renderOrders();
-}
+function removeSelected(){ const idx=getSelectedIndices().sort((a,b)=>b-a); idx.forEach(i=>ordersList.splice(i,1)); renderOrders(); saveOrdersToDB(); }
+function changePrioritySelected(){ getSelectedIndices().forEach(i=>{ const curr=ordersList[i].priority; ordersList[i].priority = priorityOrder[(priorityOrder.indexOf(curr)+1)%priorityOrder.length]; }); renderOrders(); saveOrdersToDB(); }
+function moveUpSelected(){ const idx=getSelectedIndices(); idx.forEach(i=>{ if(i===0)return; [ordersList[i-1],ordersList[i]]=[ordersList[i],ordersList[i-1]]; }); renderOrders(); saveOrdersToDB(); }
+function moveDownSelected(){ const idx=getSelectedIndices().slice().reverse(); idx.forEach(i=>{ if(i===ordersList.length-1)return; [ordersList[i+1],ordersList[i]]=[ordersList[i],ordersList[i+1]]; }); renderOrders(); saveOrdersToDB(); }
 
-function changePrioritySelected(){
-  getSelectedIndices().forEach(i=>{
-    const current = ordersList[i].priority;
-    ordersList[i].priority = priorityOrder[(priorityOrder.indexOf(current)+1)%priorityOrder.length];
-  });
-  renderOrders();
-}
-
-function moveUpSelected(){
-  const indices = getSelectedIndices();
-  indices.forEach(i=>{
-    if(i===0) return;
-    [ordersList[i-1],ordersList[i]] = [ordersList[i],ordersList[i-1]];
-  });
-  renderOrders();
-}
-
-function moveDownSelected(){
-  const indices = getSelectedIndices().slice().reverse();
-  indices.forEach(i=>{
-    if(i===ordersList.length-1) return;
-    [ordersList[i+1],ordersList[i]] = [ordersList[i],ordersList[i+1]];
-  });
-  renderOrders();
-}
-
-// Save Orders to DB via POST
+// Save to DB
 function saveOrdersToDB(){
   const form = document.createElement("form");
-  form.method = "POST";
-  form.action = "{% url 'doctor:save_orders' patient.patient_id %}";
+  form.method="POST";
+  form.action="{% url 'doctor:save_orders' patient.patient_id %}";
 
-  // CSRF token for Django
-  const csrfToken = '{{ csrf_token }}';
-  const csrfInput = document.createElement("input");
-  csrfInput.type = "hidden";
-  csrfInput.name = "csrfmiddlewaretoken";
-  csrfInput.value = csrfToken;
+  const csrfInput=document.createElement("input");
+  csrfInput.type="hidden"; csrfInput.name="csrfmiddlewaretoken"; csrfInput.value="{{ csrf_token }}";
   form.appendChild(csrfInput);
 
-  // patient_id
-  const patientInput = document.createElement("input");
-  patientInput.type = "hidden";
-  patientInput.name = "patient_id";
-  patientInput.value = patientID;
+  const patientInput=document.createElement("input");
+  patientInput.type="hidden"; patientInput.name="patient_id"; patientInput.value=patientID;
   form.appendChild(patientInput);
 
-  // orders as JSON string
-  const ordersInput = document.createElement("input");
-  ordersInput.type = "hidden";
-  ordersInput.name = "orders_data";
-  ordersInput.value = JSON.stringify(ordersList);
+  const ordersInput=document.createElement("input");
+  ordersInput.type="hidden"; ordersInput.name="orders_data"; ordersInput.value=JSON.stringify(ordersList);
   form.appendChild(ordersInput);
 
   document.body.appendChild(form);
   form.submit();
 }
+
+// Initial render
+document.addEventListener("DOMContentLoaded",()=>{ renderOrders(); });
 </script>

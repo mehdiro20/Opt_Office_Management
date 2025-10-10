@@ -15,7 +15,10 @@ urlpatterns = [
     path("get_last_refraction/<str:patient_id>/", views.get_patient_last_refraction, name="get_patient_last_refraction"),
 
     path("patients/table/", views.patients_table_partial, name="patients_table_partial"),
-
+    path("get_orders/<str:patient_id>/", views.get_orders, name="get_orders"),
+    path("delete_orders/", views.delete_orders, name="delete_orders"),
+    path("set_times/", views.set_times, name="set_times"),
+    path("get_times/", views.get_times, name="get_times"),
     # ... other urls
 
 ]

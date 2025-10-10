@@ -9,12 +9,13 @@ from django.http import JsonResponse, HttpResponse
 from django.contrib.auth.decorators import login_required, user_passes_test
 from django.template.loader import get_template
 from xhtml2pdf import pisa
-
+import json
 from django.http import JsonResponse
 from django.utils import timezone
 import jdatetime
 from .models import Patient
-
+from doctor.models import Register_Order
+from django.utils.dateparse import parse_datetime
 
 # -------------------------------
 # Permission check decorator
@@ -32,6 +33,7 @@ def is_secretary_doctor_admin(user):
 @login_required
 @user_passes_test(is_secretary_doctor_admin)
 def dashboard(request):
+
     """Secretary dashboard with optional filters by date and status."""
     start_date = request.GET.get('start_date')
     end_date = request.GET.get('end_date')
@@ -58,6 +60,7 @@ def dashboard(request):
 @login_required
 @user_passes_test(is_secretary_doctor_admin)
 def patients_table_partial(request):
+
     """Returns the partial patients table for AJAX refresh."""
     start_date = request.GET.get('start_date')
     end_date = request.GET.get('end_date')
@@ -257,3 +260,130 @@ def accept_existing_patient(request):
 # -------------------------------
 # PDF Export
 # -------------------------------
+@login_required
+@user_passes_test(is_secretary_doctor_admin)
+def get_orders(request, patient_id):
+    print("good morning sir")
+    patient = Patient.objects.get(patient_id=patient_id)
+    orders = Register_Order.objects.filter(patient_id=patient.patient_id)
+    orders_for_js = [
+        {
+            "id": o.unique_id,
+            "order": o.order_name,
+            "duration": o.duration,
+            "priority": o.priority
+        }
+        for o in orders
+    ]
+    
+    context={"orders": orders,
+             
+             "existing_orders_json": json.dumps(orders_for_js),
+             "patient_id": patient_id   # 👈 Pass patient_id here
+             
+             
+             }
+    
+    return render(request, "secretary/orders_partial.html", context)
+
+
+
+@login_required
+@user_passes_test(is_secretary_doctor_admin)
+
+
+
+def delete_orders(request):
+
+    if request.method == "POST":
+        try:
+            print("what done is done")
+            data = json.loads(request.body)  # Receive JSON
+            unique_ids = data.get("ids", [])  # List of IDs to delete
+            print(unique_ids)
+            if not unique_ids:
+                return JsonResponse({"error": "No IDs provided"}, status=400)
+
+            # Delete orders with these unique_ids
+            Register_Order.objects.filter(unique_id__in=unique_ids).delete()
+
+            return JsonResponse({"success": True, "deleted_ids": unique_ids})
+        except Exception as e:
+            return JsonResponse({"error": str(e)}, status=500)
+
+    return JsonResponse({"error": "Invalid request"}, status=400)
+
+
+@login_required
+@user_passes_test(is_secretary_doctor_admin)
+
+
+def set_times(request):
+    if request.method == "POST":
+        try:
+            data = json.loads(request.body)
+            unique_ids = data.get("ids", [])
+            js_time_str = data.get("time")  # frontend should send ISO string
+            if not unique_ids:
+                return JsonResponse({"error": "No IDs provided"}, status=400)
+            if not js_time_str:
+                return JsonResponse({"error": "No time provided"}, status=400)
+
+            js_time = parse_datetime(js_time_str)  # converts "2025-10-09T12:34:56Z" to datetime
+            if not js_time:
+                return JsonResponse({"error": "Invalid datetime format"}, status=400)
+
+            updated_ids = []
+            for uid in unique_ids:
+                try:
+                    reg_order = Register_Order.objects.get(unique_id=uid)
+                    if reg_order.start_time is None:  # only set if null
+                        reg_order.start_time = js_time
+                        reg_order.save(update_fields=["start_time"])
+                        updated_ids.append(uid)
+                except Register_Order.DoesNotExist:
+                    continue
+
+            return JsonResponse({
+                "success": True,
+                "updated_ids": updated_ids
+            })
+
+        except json.JSONDecodeError:
+            return JsonResponse({"error": "Invalid JSON"}, status=400)
+        except Exception as e:
+            return JsonResponse({"error": str(e)}, status=500)
+
+    return JsonResponse({"error": "Invalid method"}, status=405)
+
+
+def get_times(request):
+    if request.method == "POST":
+        try:
+            data = json.loads(request.body)
+            unique_ids = data.get("id")
+            time=0
+            if not unique_ids:
+                return JsonResponse({"error": "No IDs provided"}, status=400)
+            
+            try:
+                
+                reg_order = Register_Order.objects.get(unique_id=unique_ids)
+                time=reg_order.start_time 
+                duration=reg_order.duration 
+                
+            except:
+                return JsonResponse({"error": "reg_order doesnt exist"}, status=400)
+  
+            return JsonResponse({
+                "success": True,
+                "time": time,
+                "duration":duration,
+            })
+
+        except json.JSONDecodeError:
+            return JsonResponse({"error": "Invalid JSON"}, status=400)
+        except Exception as e:
+            return JsonResponse({"error": str(e)}, status=500)
+
+    return JsonResponse({"error": "Invalid method"}, status=405)

@@ -1,0 +1,283 @@
+<!-- orders_modal.html -->
+<div id="ordersModal" class="modal" aria-hidden="true">
+  <div class="modal-content">
+    <!-- Header -->
+    <div class="modal-header">
+      <h3>Orders for Patient</h3>
+      <button class="close" onclick="closeOrdersModal()">&times;</button>
+    </div>
+
+    <!-- Body -->
+    <div class="modal-body" id="ordersModalBody">
+      <p>Loading orders...</p>
+    </div>
+  </div>
+</div>
+
+<style>
+.modal {
+  position: fixed;
+  top: 0; left: 0;
+  width: 100%; height: 100%;
+  background: rgba(0,0,0,0.5);
+  display: none;
+  justify-content: center;
+  align-items: center;
+  z-index: 9999;
+}
+.modal-content {
+  background: white;
+  border-radius: 12px;
+  padding: 20px;
+  width: 600px;
+  max-height: 80%;
+  overflow-y: auto;
+  box-shadow: 0 4px 12px rgba(0,0,0,0.3);
+}
+.modal-header {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  border-bottom: 1px solid #eee;
+  margin-bottom: 10px;
+}
+.modal-header h3 { margin: 0; color: #2c3e50; }
+.modal-header .close {
+  background: transparent;
+  border: none;
+  font-size: 22px;
+  cursor: pointer;
+}
+
+.orders-table {
+  width: 100%;
+  border-collapse: collapse;
+  margin-top: 10px;
+}
+.orders-table th, .orders-table td {
+  padding: 8px;
+  text-align: center;
+  border-bottom: 1px solid #ddd;
+}
+.orders-table th { background: #3498db; color: white; }
+.high { background: #f28b82; }
+.moderate { background: #fbbc04; }
+.low { background: #ccff90; }
+.done-btn {
+  background: #007bff;
+  color: white;
+  border: none;
+  padding: 6px 12px;
+  border-radius: 6px;
+  cursor: pointer;
+  margin-bottom: 10px;
+}
+.dure_table.finished { color: gray; font-weight: bold; }
+</style>
+
+<script>
+
+
+
+const csrftoken = '{{ csrf_token }}';
+// ================= Orders Modal =================
+function openOrdersModal(patientId) {
+    const modal = document.getElementById("ordersModal");
+    const body = document.getElementById("ordersModalBody");
+    modal.style.display = "flex";
+    modal.setAttribute("aria-hidden", "false");
+    body.innerHTML = "<p>Loading orders...</p>";
+
+    let urlTemplate = "{% url 'secretary:get_orders' 0 %}";
+    let url = urlTemplate.replace("0", patientId);
+    
+    fetch(url, { headers: { "X-Requested-With": "XMLHttpRequest" } })
+        .then(res => res.text())
+        .then(html => { body.innerHTML = html;
+                        
+                        startAllTimers();    
+                            const UId_ls = Array.from(document.querySelectorAll(".uid"))
+                              .map(c => c.textContent.trim())
+                              .filter(Boolean);
+
+                            fetch("{% url 'secretary:set_times' %}", {
+                              method: "POST",
+                              headers: { "Content-Type": "application/json", "X-CSRFToken": csrftoken },
+                              body: JSON.stringify({ ids: UId_ls, time: new Date().toISOString() })
+                            })
+                            .then(res => res.json())
+                            .then(data => {
+                              if (!data.success) alert("⚠️ Failed to update orders: " + data.error);
+                            })
+                            .catch(err => console.error(err));
+        
+         })
+        .catch(() => { body.innerHTML = "<p style='color:red;'>⚠️ Failed to load orders.</p>"; });
+}
+function closeOrdersModal() {
+    const modal = document.getElementById("ordersModal");
+    modal.style.display = "none";
+    modal.setAttribute("aria-hidden", "true");
+}
+
+// ===== Helper: format seconds to mm:ss =====
+function formatTime(seconds) {
+  const m = Math.floor(seconds / 60);
+  const s = seconds % 60;
+  return `${m}:${s.toString().padStart(2, '0')}`;
+}
+
+// ===== Restart countdown for a specific cell =====
+function restartCountdown(cell, seconds) {
+  if (cell.dataset.timerId) {
+    clearInterval(cell.dataset.timerId);
+    delete cell.dataset.timerId;
+  }
+
+  let remaining = seconds;
+  if (remaining <= 0) {
+    cell.textContent = "0:00";
+    cell.classList.add("finished");
+    return;
+  }
+
+  cell.textContent = formatTime(remaining);
+  cell.classList.remove("finished");
+
+  const intervalId = setInterval(() => {
+    remaining--;
+    if (remaining <= 0) {
+      clearInterval(intervalId);
+      cell.textContent = "0:00";
+      cell.classList.add("finished");
+      delete cell.dataset.timerId;
+      return;
+    }
+    cell.textContent = formatTime(remaining);
+  }, 1000);
+
+  cell.dataset.timerId = intervalId;
+}
+
+// ===== Start timers for all UIDs (CORNO button) =====
+function startAllTimers() {
+  const uidCells = document.querySelectorAll(".uid");
+  uidCells.forEach(uidCell => {
+    const uid = uidCell.textContent.trim();
+    if (!uid) return;
+
+    // Fetch duration for this UID
+    fetch("{% url 'secretary:get_times' %}", {
+      method: "POST",
+      headers: { "Content-Type": "application/json", "X-CSRFToken": csrftoken },
+      body: JSON.stringify({ id: uid })
+    })
+    .then(res => res.json())
+    .then(data => {
+      const now = new Date();
+      const serverTime = new Date(data.time);
+      const totalSeconds = data.duration * 60;
+      let elapsed = Math.floor((now - serverTime) / 1000);
+      let remaining = totalSeconds - elapsed;
+      if (remaining < 0) remaining = 0;
+
+      const row = uidCell.closest(".order-row");
+      const dureCell = row.querySelector(".dure_table");
+      if (dureCell) restartCountdown(dureCell, remaining);
+    });
+  });
+}
+
+// ===== Enable auto-restart on manual changes =====
+function enableAutoRestart() {
+  const observer = new MutationObserver(mutations => {
+    mutations.forEach(mutation => {
+      const target = mutation.target.nodeType === 3 ? mutation.target.parentNode : mutation.target;
+      if (target.classList.contains("dure_table")) {
+        const txt = target.textContent.trim();
+        let seconds = 0;
+        if (txt.includes(":")) {
+          const parts = txt.split(":").map(Number);
+          seconds = parts[0] * 60 + (parts[1] || 0);
+        } else {
+          seconds = parseInt(txt) || 0;
+        }
+        restartCountdown(target, seconds);
+      }
+    });
+  });
+
+  document.querySelectorAll(".dure_table").forEach(cell => {
+    observer.observe(cell, { childList: true, characterData: true, subtree: true });
+  });
+}
+
+// ===== CORNO button click handler =====
+document.getElementById("ordersModalBody").addEventListener("click", function(e) {
+  if (e.target && e.target.id === "cornobtn") {
+    startAllTimers();
+
+    const UId_ls = Array.from(document.querySelectorAll(".uid"))
+      .map(c => c.textContent.trim())
+      .filter(Boolean);
+
+    fetch("{% url 'secretary:set_times' %}", {
+      method: "POST",
+      headers: { "Content-Type": "application/json", "X-CSRFToken": csrftoken },
+      body: JSON.stringify({ ids: UId_ls, time: new Date().toISOString() })
+    })
+    .then(res => res.json())
+    .then(data => {
+      if (!data.success) alert("⚠️ Failed to update orders: " + data.error);
+    })
+    .catch(err => console.error(err));
+  }
+});
+
+// ===== DONE button click handler =====
+document.getElementById("ordersModalBody").addEventListener("click", function(e) {
+  if (e.target && e.target.id === "doneButton") {
+    const table = this.querySelector(".orders-table tbody");
+    if (!table) return;
+
+    const checkedBoxes = table.querySelectorAll("input.orderCheckbox:checked");
+    if (!checkedBoxes.length) {
+      alert("Please select at least one order.");
+      return;
+    }
+
+    const removedIds = [];
+    checkedBoxes.forEach(cb => {
+      const row = cb.closest("tr");
+      const uidTd = row.querySelector(".uid");
+      const uid = uidTd ? uidTd.textContent.trim() : null;
+      removedIds.push(uid);
+      row.remove();
+    });
+
+    fetch("{% url 'secretary:delete_orders' %}", {
+      method: "POST",
+      headers: { "Content-Type": "application/json", "X-CSRFToken": csrftoken },
+      body: JSON.stringify({ ids: removedIds })
+    })
+    .then(res => res.json())
+    .then(data => {
+      if (!data.success) alert("⚠️ Failed to delete orders: " + data.error);
+    })
+    .catch(err => console.error(err));
+  }
+});
+
+// ===== Close modal =====
+function closeOrdersModal() {
+  const modal = document.getElementById("ordersModal");
+  modal.style.display = "none";
+  modal.setAttribute("aria-hidden", "true");
+}
+
+// ===== Init =====
+document.addEventListener("DOMContentLoaded", () => {
+  startAllTimers();
+  enableAutoRestart();
+});
+</script>

@@ -3,6 +3,14 @@
 {% block title %}Doctor Dashboard{% endblock %}
 
 {% block content %}
+<style>
+/* Cross-browser basic styling */
+* { box-sizing: border-box; }
+body { font-family: Arial, sans-serif; margin: 0; padding: 0; }
+h1, h2 { color: #2c3e50; }
+#patients-list { padding: 0 20px 20px 20px; }
+</style>
+
 <h1>Doctor Dashboard</h1>
 
 {% include "doctor/doctor_menu.html" %}
@@ -13,20 +21,59 @@
     {% include 'doctor/patients_list.html' %}
 </div>
 
+<!-- Success/Error toast -->
+<div id="successToast" style="display:none; position:fixed; bottom:20px; right:20px; background:#28a745; color:#fff; padding:10px 14px; border-radius:6px; z-index:10000;"></div>
+
 <script>
-async function refreshPatients() {
-    try {
-        const response = await fetch("{% url 'doctor:patients_fragment' %}");
-        const html = await response.text();
-        const container = document.querySelector('#patients-list');
-        container.innerHTML = html;
-
-        localStorage.removeItem('dismissedPatients');
-    } catch (error) {
-        console.error('Error refreshing patients:', error);
+(function() {
+    // Cross-browser fetch wrapper with fallback
+    function safeFetch(url, options) {
+        if (window.fetch) {
+            return fetch(url, options);
+        } else {
+            // Fallback for IE or very old browsers
+            return new Promise(function(resolve, reject) {
+                var xhr = new XMLHttpRequest();
+                xhr.open(options.method || 'GET', url, true);
+                if (options.headers) {
+                    for (var key in options.headers) {
+                        xhr.setRequestHeader(key, options.headers[key]);
+                    }
+                }
+                xhr.onload = function() { resolve({ text: function() { return xhr.responseText; } }); };
+                xhr.onerror = function() { reject(new Error('Network error')); };
+                xhr.send(options.body || null);
+            });
+        }
     }
-}
 
-setInterval(refreshPatients, 5000);
+    // Safe DOM ready
+    function onReady(fn) {
+        if (document.readyState != 'loading') fn();
+        else document.addEventListener('DOMContentLoaded', fn);
+    }
+
+    onReady(function() {
+        function refreshPatients() {
+            safeFetch("{% url 'doctor:patients_fragment' %}")
+                .then(function(response) { return response.text(); })
+                .then(function(html) {
+                    var container = document.getElementById('patients-list');
+                    if(container) container.innerHTML = html;
+
+                    if(window.localStorage) localStorage.removeItem('dismissedPatients');
+                })
+                .catch(function(err) {
+                    console.error('Error refreshing patients:', err);
+                });
+        }
+
+        // Initial refresh
+        refreshPatients();
+        // Refresh every 5 seconds
+        setInterval(refreshPatients, 5000);
+    });
+
+})();
 </script>
 {% endblock %}

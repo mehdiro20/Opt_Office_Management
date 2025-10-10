@@ -28,6 +28,7 @@ from xhtml2pdf import pisa
 from django.shortcuts import render
 from .models import Order
 from .models import Register_Order
+
 @login_required
 
 @permission_required('doctor.view_patient', raise_exception=True)
@@ -165,7 +166,9 @@ def doctor_patient_list(request):
 @permission_required('doctor.view_patient', raise_exception=True)
 # Completely delete a patient
 def delete_patient(request, patient_id):
+ 
     patient = get_object_or_404(Patient, id=patient_id)
+    
     if request.method == "POST":
         patient.delete()
     return redirect('doctor:doctor_dashboard')
@@ -284,6 +287,7 @@ def save_orders(request,patient_id):
     if request.method == "POST":
         patient_id = patient_id
         orders_data = json.loads(request.POST.get("orders_data"))
+        print(orders_data)
         incoming_ids = [o["id"] for o in orders_data]
 
         # Delete orders that are in DB but not in the new incoming list

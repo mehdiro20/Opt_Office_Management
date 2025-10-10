@@ -50,8 +50,18 @@
 <style>
   .modal { display: none; position: fixed; z-index: 1000; inset: 0;
     background-color: rgba(0,0,0,0.5); justify-content: center; align-items: center; }
-  .modal-content { background: #fff; padding: 22px; width: 520px; max-width: 95%;
-    border-radius: 12px; position: relative; box-shadow: 0 10px 30px rgba(0,0,0,0.25); }
+    
+    
+    
+  .modal-content { background: #fff; 
+                  padding: 22px;
+                   width: 520px;
+                    max-width: 95%;
+                    border-radius: 12px; 
+                    position: relative;
+                     box-shadow: 0 10px 30px rgba(0,0,0,0.25); }
+                    
+      
   .close-btn { position: absolute; right: 14px; top: 10px; font-size: 22px; font-weight: bold; cursor: pointer; color: #666; }
   .close-btn:hover { color: #000; }
   .modal-content label { display: block; margin-top: 10px; font-weight: bold; color: #34495e; }
@@ -72,24 +82,32 @@
 </style>
 
 <script>
-  $(document).ready(function () {
-    $("#rp_dob").persianDatepicker({
-      format: "YYYY/MM/DD",
-      autoClose: true,
-      initialValue: false,
-      calendarType: "persian",
-      onSelect: function (unix) {
-        const dob = new persianDate(unix).toCalendar('gregorian').toDate();
-        const today = new Date();
-        let age = today.getFullYear() - dob.getFullYear();
-        const m = today.getMonth() - dob.getMonth();
-        if (m < 0 || (m === 0 && today.getDate() < dob.getDate())) {
-          age--;
-        }
-        $("#rp_age").val(age);
+$(document).ready(function () {
+  $("#rp_dob").persianDatepicker({
+    format: "YYYY/MM/DD",
+    autoClose: true,
+    initialValue: false,
+    calendarType: "persian",
+    calendarView: "day",
+    observer: true,
+    // Force RTL
+    persianDigit: true,
+    altField: '#rp_dob', 
+    onSelect: function (unix) {
+      const dob = new persianDate(unix).toCalendar('gregorian').toDate();
+      const today = new Date();
+      let age = today.getFullYear() - dob.getFullYear();
+      const m = today.getMonth() - dob.getMonth();
+      if (m < 0 || (m === 0 && today.getDate() < dob.getDate())) {
+        age--;
       }
-    });
+      $("#rp_age").val(age);
+    }
   });
+
+  // Make the calendar RTL
+  $(".pwt-calendar").attr("dir", "rtl");
+});
 
   document.getElementById("registerForm").addEventListener("submit", function(e){
     e.preventDefault();

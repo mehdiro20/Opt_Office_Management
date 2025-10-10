@@ -1,0 +1,42 @@
+{% if orders %}
+<table class="orders-table" style="width:100%; border-collapse: collapse; margin-top:10px;">
+  <thead>
+    <tr style="background:#3498db; color:white;">
+      <th style="width:30px;"></th>
+      <th>#</th>
+      <th>Order Name</th>
+      <th>Duration (min)</th>
+      <th>Priority</th>
+    </tr>
+  </thead>
+  <tbody>
+    {% for order in orders %}
+    <tr class="order-row {% if order.priority == 'high' %}high{% elif order.priority == 'moderate' %}moderate{% elif order.priority == 'low' %}low{% endif %}">
+      <td style="text-align:center;">
+        <input type="checkbox" class="orderCheckbox">
+      </td>
+      <td>{{ forloop.counter }}</td>
+      <td>{{ order.order_name }}</td>
+      <td style="text-align:center;" class="dure_table" id="dure_table">{{ order.duration|default:"-" }}</td>
+      <td style="text-align:center;">{{ order.priority|capfirst }}</td>
+      <td style="display: none;" id="uid" class="uid">{{ order.unique_id|capfirst }}</td>
+      
+
+    </tr>
+    {% endfor %}
+  </tbody>
+</table>
+
+<button id="doneButton" class="done-button" style="margin-top:10px; padding:6px 14px; background:#3498db; color:white; border:none; border-radius:6px; cursor:pointer;">✅ Done Selected</button>
+
+{% else %}
+<p style="margin-top:10px;">No orders found for this patient.</p>
+{% endif %}
+
+<!-- Row color CSS -->
+<style>
+  .order-row.high { background-color: #f28b82; }      /* Red */
+  .order-row.moderate { background-color: #fbbc04; }  /* Yellow */
+  .order-row.low { background-color: #ccff90; }       /* Green */
+  .orders-table tbody tr:hover { background-color: #dbeeff; }
+</style>

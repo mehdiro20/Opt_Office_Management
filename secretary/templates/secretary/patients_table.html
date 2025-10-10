@@ -39,10 +39,9 @@
                 
                 {% if patient.status == "waiting_out" %}
                 <!-- Get Last Refraction -->
-                <form method="POST" action="" style="display:inline;">
-                    {% csrf_token %}
-                    <button type="submit" class="get-so-button ">See Orders</button>
-                </form>
+                
+                    <button type="submit" class="get-so-button " onclick="openOrdersModal('{{ patient.patient_id }}')">See Orders</button>
+                
                 {% endif %}
             </td>
         </tr>
