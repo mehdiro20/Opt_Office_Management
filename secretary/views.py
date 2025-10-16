@@ -16,6 +16,8 @@ import jdatetime
 from .models import Patient
 from doctor.models import Register_Order
 from django.utils.dateparse import parse_datetime
+from django.db import models
+from datetime import date
 
 # -------------------------------
 # Permission check decorator
@@ -37,17 +39,22 @@ def dashboard(request):
     """Secretary dashboard with optional filters by date and status."""
     start_date = request.GET.get('start_date')
     end_date = request.GET.get('end_date')
-    status = request.GET.get('status')  # "waiting", "accepted", "done" or "all"
+    status = request.GET.get('status')
 
+    # Default to today's date if none provided
+    today_str = date.today().isoformat()
+    if not start_date:
+        start_date = today_str
+    if not end_date:
+        end_date = today_str
+    print(today_str)
     patients = Patient.objects.all().order_by('-id')
 
-    if start_date:
-        patients = patients.filter(created_at__date__gte=start_date)
-    if end_date:
-        patients = patients.filter(created_at__date__lte=end_date)
+    # Apply filters
+    patients = patients.filter(updated_date__date__gte=start_date)
+    patients = patients.filter(updated_date__date__lte=end_date)
     if status and status != "all":
         patients = patients.filter(status=status)
-
     context = {
         "patients": patients,
         "start_date": start_date,
@@ -59,25 +66,29 @@ def dashboard(request):
 
 @login_required
 @user_passes_test(is_secretary_doctor_admin)
-def patients_table_partial(request):
 
+def patients_table_partial(request):
     """Returns the partial patients table for AJAX refresh."""
     start_date = request.GET.get('start_date')
     end_date = request.GET.get('end_date')
     status = request.GET.get('status')
 
+    # Default to today's date if none provided
+    today_str = date.today().isoformat()
+    if not start_date:
+        start_date = today_str
+    if not end_date:
+        end_date = today_str
+    print(today_str)
     patients = Patient.objects.all().order_by('-id')
 
-    if start_date:
-        patients = patients.filter(created_at__date__gte=start_date)
-    if end_date:
-        patients = patients.filter(created_at__date__lte=end_date)
+    # Apply filters
+    patients = patients.filter(updated_date__date__gte=start_date)
+    patients = patients.filter(updated_date__date__lte=end_date)
     if status and status != "all":
         patients = patients.filter(status=status)
 
     return render(request, "secretary/patients_table.html", {"patients": patients})
-
-
 @login_required
 @user_passes_test(is_secretary_doctor_admin)
 def accept_patient(request, patient_id):
@@ -90,6 +101,8 @@ def accept_patient(request, patient_id):
 # -------------------------------
 # Register new patient
 # -------------------------------
+
+
 @login_required
 @user_passes_test(is_secretary_doctor_admin)
 
@@ -104,9 +117,9 @@ def register_patient(request):
             gender = request.POST.get('gender')
             melli_code = request.POST.get('melli_code')
             reason = request.POST.get('reason')
-
+            email=request.POST.get('email')
             is_ajax = request.headers.get('X-Requested-With') == 'XMLHttpRequest'
-
+            updated_date=models.DateTimeField(auto_now=True)  
             def ajax_error(msg, status=400):
                 return JsonResponse({'success': False, 'error': msg}, status=status)
 
@@ -126,8 +139,10 @@ def register_patient(request):
             if melli_code and Patient.objects.filter(melli_code=melli_code).exists():
                 msg = "This Melli code is already registered."
                 return ajax_error(msg, status=409) if is_ajax else _redirect_with_message(request, msg, error=True)
+            if ("@" not in email) or ("." not in email):
+                msg = "register valid email please"
+                return ajax_error(msg, status=409) if is_ajax else _redirect_with_message(request, msg, error=True)
 
-            # ✅ Save Patient with Jalali DOB string
             patient = Patient.objects.create(
                 name=name,
                 phone=phone,
@@ -135,6 +150,8 @@ def register_patient(request):
                 age=age,
                 gender=gender,
                 melli_code=melli_code,
+                email=email,
+
                 reason=reason
             )
 

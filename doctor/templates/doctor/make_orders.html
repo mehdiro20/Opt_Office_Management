@@ -2,37 +2,54 @@
 <div id="make-orders" class="section">
   <h3>Make Orders for this patient</h3>
 
-  <!-- Order Form Row -->
-  <div style="display: flex; gap: 10px; align-items: center; margin-bottom: 15px; flex-wrap: wrap;">
+  <!-- Input Row -->
+  <div style="display: flex; flex-direction: column; flex-wrap: wrap; gap: 10px; margin-bottom: 10px;">
+    <div style="display: flex">
+    <label for="orderInput" style="font-weight:600; margin-bottom:4px;">Type / Select Order:</label>
+  
     <input list="ordersList" id="orderInput" placeholder="Select or type order"
-      style="padding:6px 12px; font-size:14px; border-radius:6px; border:1px solid #ccc; height:36px; min-width:150px;">
+      style="width:200px; padding:6px 12px; font-size:14px; border-radius:6px; border:1px solid #ccc; height:36px; min-width:150px;">
+      
+      
+
     <datalist id="ordersList">
       {% for order in orders %}
         <option value="{{ order.name }}"></option>
       {% endfor %}
     </datalist>
+    </div>
+    <div style="display: flex">
+    <label for="orderInput" style="font-weight:600; margin-bottom:4px;">Priority:</label>
 
-    <select id="prioritySelect" style="padding:6px 12px; font-size:14px; border-radius:6px; border:1px solid #ccc; height:36px;">
+    <select id="prioritySelect"
+      style="width:226px; padding:6px 12px; font-size:14px; border-radius:6px; border:1px solid #ccc; height:36px;">
       <option value="high">High Priority</option>
       <option value="moderate">Moderate Priority</option>
       <option value="low">Low Priority</option>
     </select>
-
+    </div>
+    <div style="display: flex">
+    <label for="orderInput" style="font-weight:600; margin-bottom:4px;">Duration:</label>
     <input type="number" id="taskDuration" placeholder="Duration (min)" min="1"
       style="width:130px; padding:6px 12px; font-size:14px; border-radius:6px; border:1px solid #ccc; height:36px;">
+      
+    </div>  
+  </div>
 
+  <!-- Add/Edit Buttons Row -->
+  <div style="display:flex; gap:10px; margin-bottom:15px; flex-wrap:wrap;">
     <button onclick="addOrder()"
       style="padding:6px 14px; font-size:16px; border-radius:6px; background-color:#4CAF50; color:white; border:none; cursor:pointer; height:36px;">
       ➕ Add Order
     </button>
 
     <button id="editButton" onclick="toggleEditMode()"
-      style="padding:6px 14px; font-size:16px; border-radius:6px; background-color:#f39c12; color:white; border:none; cursor:pointer; height:36px;">
+      style="padding:6px 14px; font-size:16px; border-radius:6px; background-color:#4CAF50; color:white; border:none; cursor:pointer; height:36px;">
       ✏️ Edit
     </button>
   </div>
 
-  <!-- Action Buttons -->
+  <!-- Action Buttons (Shown in Edit Mode) -->
   <div id="actionButtons" style="margin-bottom: 15px; display: none; gap: 10px;">
     <button onclick="removeSelected()" style="background:red; color:white; padding:6px 12px; border-radius:6px; border:none; cursor:pointer;">❌ Remove</button>
     <button onclick="changePrioritySelected()" style="background:green; color:white; padding:6px 12px; border-radius:6px; border:none; cursor:pointer;">P Change Priority</button>

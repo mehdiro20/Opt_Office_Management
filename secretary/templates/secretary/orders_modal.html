@@ -76,16 +76,16 @@
 </style>
 
 <script>
-
-
-
 const csrftoken = '{{ csrf_token }}';
+
 // ================= Orders Modal =================
 function openOrdersModal(patientId) {
     const modal = document.getElementById("ordersModal");
     const body = document.getElementById("ordersModalBody");
+
     modal.style.display = "flex";
     modal.setAttribute("aria-hidden", "false");
+    modal.dataset.patientId = patientId;  // 🔑 store patientId for refresh
     body.innerHTML = "<p>Loading orders...</p>";
 
     let urlTemplate = "{% url 'secretary:get_orders' 0 %}";
@@ -93,27 +93,34 @@ function openOrdersModal(patientId) {
     
     fetch(url, { headers: { "X-Requested-With": "XMLHttpRequest" } })
         .then(res => res.text())
-        .then(html => { body.innerHTML = html;
-                        
-                        startAllTimers();    
-                            const UId_ls = Array.from(document.querySelectorAll(".uid"))
-                              .map(c => c.textContent.trim())
-                              .filter(Boolean);
+        .then(html => { 
+            body.innerHTML = html;
 
-                            fetch("{% url 'secretary:set_times' %}", {
-                              method: "POST",
-                              headers: { "Content-Type": "application/json", "X-CSRFToken": csrftoken },
-                              body: JSON.stringify({ ids: UId_ls, time: new Date().toISOString() })
-                            })
-                            .then(res => res.json())
-                            .then(data => {
-                              if (!data.success) alert("⚠️ Failed to update orders: " + data.error);
-                            })
-                            .catch(err => console.error(err));
-        
-         })
-        .catch(() => { body.innerHTML = "<p style='color:red;'>⚠️ Failed to load orders.</p>"; });
+            // Collect all UIDs
+            const UId_ls = Array.from(document.querySelectorAll(".uid"))
+              .map(c => c.textContent.trim())
+              .filter(Boolean);
+
+            // Save start time in DB
+            fetch("{% url 'secretary:set_times' %}", {
+              method: "POST",
+              headers: { "Content-Type": "application/json", "X-CSRFToken": csrftoken },
+              body: JSON.stringify({ ids: UId_ls, time: new Date().toISOString() })
+            })
+            .then(res => res.json())
+            .then(data => {
+              if (!data.success) alert("⚠️ Failed to update orders: " + data.error);
+            })
+            .catch(err => console.error(err));
+
+            // Start timers
+            startAllTimers();
+        })
+        .catch(() => { 
+            body.innerHTML = "<p style='color:red;'>⚠️ Failed to load orders.</p>"; 
+        });
 }
+
 function closeOrdersModal() {
     const modal = document.getElementById("ordersModal");
     modal.style.display = "none";
@@ -162,11 +169,11 @@ function restartCountdown(cell, seconds) {
 // ===== Start timers for all UIDs (CORNO button) =====
 function startAllTimers() {
   const uidCells = document.querySelectorAll(".uid");
+
   uidCells.forEach(uidCell => {
     const uid = uidCell.textContent.trim();
     if (!uid) return;
 
-    // Fetch duration for this UID
     fetch("{% url 'secretary:get_times' %}", {
       method: "POST",
       headers: { "Content-Type": "application/json", "X-CSRFToken": csrftoken },
@@ -174,6 +181,17 @@ function startAllTimers() {
     })
     .then(res => res.json())
     .then(data => {
+      // 🟢 If no start time, refresh table
+      if (!data.time) {
+      
+        const modal = document.getElementById("ordersModal");
+        const patientId = modal.dataset.patientId;
+        if (patientId) {
+          setTimeout(() => openOrdersModal(patientId), 100); // small delay
+        }
+        return;
+      }
+
       const now = new Date();
       const serverTime = new Date(data.time);
       const totalSeconds = data.duration * 60;
@@ -184,31 +202,8 @@ function startAllTimers() {
       const row = uidCell.closest(".order-row");
       const dureCell = row.querySelector(".dure_table");
       if (dureCell) restartCountdown(dureCell, remaining);
-    });
-  });
-}
-
-// ===== Enable auto-restart on manual changes =====
-function enableAutoRestart() {
-  const observer = new MutationObserver(mutations => {
-    mutations.forEach(mutation => {
-      const target = mutation.target.nodeType === 3 ? mutation.target.parentNode : mutation.target;
-      if (target.classList.contains("dure_table")) {
-        const txt = target.textContent.trim();
-        let seconds = 0;
-        if (txt.includes(":")) {
-          const parts = txt.split(":").map(Number);
-          seconds = parts[0] * 60 + (parts[1] || 0);
-        } else {
-          seconds = parseInt(txt) || 0;
-        }
-        restartCountdown(target, seconds);
-      }
-    });
-  });
-
-  document.querySelectorAll(".dure_table").forEach(cell => {
-    observer.observe(cell, { childList: true, characterData: true, subtree: true });
+    })
+    .catch(err => console.error(err));
   });
 }
 
@@ -268,16 +263,8 @@ document.getElementById("ordersModalBody").addEventListener("click", function(e)
   }
 });
 
-// ===== Close modal =====
-function closeOrdersModal() {
-  const modal = document.getElementById("ordersModal");
-  modal.style.display = "none";
-  modal.setAttribute("aria-hidden", "true");
-}
-
 // ===== Init =====
 document.addEventListener("DOMContentLoaded", () => {
   startAllTimers();
-  enableAutoRestart();
 });
 </script>

@@ -23,15 +23,13 @@ h1, h2 { color: #2c3e50; }
 
 <!-- Success/Error toast -->
 <div id="successToast" style="display:none; position:fixed; bottom:20px; right:20px; background:#28a745; color:#fff; padding:10px 14px; border-radius:6px; z-index:10000;"></div>
-
 <script>
 (function() {
     // Cross-browser fetch wrapper with fallback
-    function safeFetch(url, options) {
+    function safeFetch(url, options = {}) {
         if (window.fetch) {
             return fetch(url, options);
         } else {
-            // Fallback for IE or very old browsers
             return new Promise(function(resolve, reject) {
                 var xhr = new XMLHttpRequest();
                 xhr.open(options.method || 'GET', url, true);
@@ -40,40 +38,67 @@ h1, h2 { color: #2c3e50; }
                         xhr.setRequestHeader(key, options.headers[key]);
                     }
                 }
-                xhr.onload = function() { resolve({ text: function() { return xhr.responseText; } }); };
+                xhr.onload = function() { 
+                    resolve({ text: function() { return xhr.responseText; } }); 
+                };
                 xhr.onerror = function() { reject(new Error('Network error')); };
                 xhr.send(options.body || null);
             });
         }
     }
 
-    // Safe DOM ready
     function onReady(fn) {
-        if (document.readyState != 'loading') fn();
+        if (document.readyState !== 'loading') fn();
         else document.addEventListener('DOMContentLoaded', fn);
     }
 
     onReady(function() {
+        function updateSectionState(sectionClass, storageKey, isHidden) {
+            const section = document.querySelector(`.patient-section.${sectionClass}`);
+            if (!section) return;
+
+            const cards = Array.from(section.querySelectorAll('.patient-card'));
+            cards.forEach(c => c.style.display = isHidden ? 'none' : 'flex');
+
+            const toggleBtnIcon = section.querySelector('.toggle-btn i');
+            if (toggleBtnIcon) {
+                toggleBtnIcon.classList.toggle('bi-chevron-up', isHidden);
+                toggleBtnIcon.classList.toggle('bi-chevron-down', !isHidden);
+            }
+        }
+
         function refreshPatients() {
             safeFetch("{% url 'doctor:patients_fragment' %}")
-                .then(function(response) { return response.text(); })
-                .then(function(html) {
-                    var container = document.getElementById('patients-list');
+                .then(res => res.text())
+                .then(html => {
+                    const container = document.getElementById('patients-list');
                     if(container) container.innerHTML = html;
 
+                    // Restore hidden/shown state for each section
+                    const sections = [
+                        { cls: 'accepted', key: 'invis_accepted' },
+                        { cls: 'waiting-out', key: 'invis_waitingout' },
+                        { cls: 'done', key: 'invis_done' }
+                    ];
+
+                    sections.forEach(s => {
+                        const isHidden = localStorage.getItem(s.key) === 'true';
+                        updateSectionState(s.cls, s.key, isHidden);
+                    });
+
+                    // Optional: remove dismissedPatients storage
                     if(window.localStorage) localStorage.removeItem('dismissedPatients');
                 })
-                .catch(function(err) {
-                    console.error('Error refreshing patients:', err);
-                });
+                .catch(err => console.error('Error refreshing patients:', err));
         }
 
         // Initial refresh
         refreshPatients();
+
         // Refresh every 5 seconds
         setInterval(refreshPatients, 5000);
     });
-
 })();
 </script>
+
 {% endblock %}

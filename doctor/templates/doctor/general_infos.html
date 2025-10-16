@@ -1,91 +1,224 @@
 <!-- General Information Section -->
 <div id="general" class="section" style="display:block;">
-    <h3>General Information</h3>
-    <div class="info-card">
-        <div class="info-row"><span class="label">Name:</span> {{ patient.name }}</div>
-        <div class="info-row"><span class="label">Age:</span> {{ patient.age }}</div>
-        <div class="info-row"><span class="label">Gender:</span> {{ patient.gender }}</div>
-        <div class="info-row"><span class="label">Phone:</span> {{ patient.phone }}</div>
-        <div class="info-row"><span class="label">Email:</span> {{ patient.email }}</div>
-        <div class="info-row"><span class="label">Address:</span> {{ patient.address }}</div>
-        <div class="info-row"><span class="label">Reason:</span> {{ patient.reason }}</div>
-        <div class="info-row"><span class="label">Blood Group:</span> {{ patient.blood_group }}</div>
-        <div class="info-row "><span class="label">Medical Notes:</span> {{ patient.medical_notes }}</div>
+  <h3>General Information</h3>
+
+  <!-- Info Card -->
+  <div class="info-card">
+    <div class="info-row">
+      <span class="label">Name:</span>
+      <span class="editable" data-field="name">{{ patient.name }}</span>
     </div>
+    <div class="info-row">
+      <span class="label">Age:</span>
+      <span class="editable" data-field="age">{{ patient.age }}</span>
+    </div>
+    <div class="info-row">
+      <span class="label">Gender:</span>
+      <span class="editable" data-field="gender">{{ patient.gender }}</span>
+    </div>
+    <div class="info-row">
+      <span class="label">Phone:</span>
+      <span class="editable" data-field="phone">{{ patient.phone }}</span>
+    </div>
+    <div class="info-row">
+      <span class="label">Email:</span>
+      <span class="editable" data-field="email">{{ patient.email }}</span>
+    </div>
+    <div class="info-row">
+      <span class="label">Melli Code:</span>
+      <span class="editable" data-field="melli_code">{{ patient.melli_code }}</span>
+    </div>
+  </div>
+
+  <!-- Buttons -->
+  <button id="editBtn" class="edit-btn">✏️ Edit</button>
+  <button id="cancelBtn" class="edit-btn" style="display:none">❌ Cancel</button>
+
+  <!-- Feedback message -->
+  <div id="updateMessage" class="update-message" style="display:none;"></div>
 </div>
 
-<!-- CSS -->
+<!-- ================= CSS ================= -->
 <style>
-#general {
-    background: #ffffff;
-    border-radius: 16px;
-    padding: 30px 25px;
-    box-shadow: 0 8px 25px rgba(0,0,0,0.1);
-    font-family: "Segoe UI", Arial, sans-serif;
-    max-width: 800px;
-    min-height: 400px; /* stable height */
-    width: 100%;
-    transition: all 0.3s ease;
-}
-
-#general h3 {
-    text-align: center;
-    margin-bottom: 30px;
-    color: #2c3e50;
-    font-size: 1.8rem;
-    border-bottom: 3px solid #16a085;
-    display: inline-block;
-    padding-bottom: 8px;
-}
-
 .info-card {
-    background: linear-gradient(145deg, #f9f9f9, #ffffff);
-    border: 1px solid #e0e0e0;
-    border-radius: 12px;
-    padding: 25px 30px;
-    display: flex;
-    flex-direction: column;
-    gap: 15px;
-    box-shadow: inset 0 0 8px rgba(0,0,0,0.02);
-    transition: all 0.3s ease;
+  background: linear-gradient(145deg, #f9f9f9, #ffffff);
+  border: 1px solid #e0e0e0;
+  border-radius: 12px;
+  padding: 25px 30px;
+  display: flex;
+  flex-direction: column;
+  gap: 15px;
+  box-shadow: inset 0 0 8px rgba(0,0,0,0.02);
+  transition: all 0.3s ease;
 }
 
 .info-card:hover {
-    box-shadow: 0 10px 30px rgba(0,0,0,0.12);
+  box-shadow: 0 10px 30px rgba(0,0,0,0.12);
 }
 
-.info-card .info-row {
-    display: flex;
-    flex-wrap: wrap;
-    font-size: 1rem;
-    color: #34495e;
+.info-row {
+  display: flex;
+  flex-wrap: wrap;
+  font-size: 1rem;
+  color: #34495e;
 }
 
-.info-card .label {
-    font-weight: bold;
-    color: #16a085;
-    margin-right: 12px;
-    min-width: 120px;
+.label {
+  font-weight: bold;
+  color: #16a085;
+  margin-right: 12px;
+  min-width: 120px;
 }
 
-/* Responsive tweaks */
+.edit-btn {
+  background-color: #4CAF50;
+  color: white;
+  border: none;
+  padding: 10px 20px;
+  border-radius: 8px;
+  font-size: 0.95rem;
+  cursor: pointer;
+  transition: background-color 0.3s;
+  margin-top: 15px;
+}
+
+.edit-btn:hover {
+  background-color: #138d75;
+}
+
+
+
+.update-message {
+  margin-top: 10px;
+  padding: 10px 15px;
+  border-radius: 8px;
+  font-weight: bold;
+  font-size: 0.9rem;
+  display: inline-block;
+}
+
+.update-message.success {
+  background-color: #d4efdf;
+  color: #1e8449;
+  border: 1px solid #27ae60;
+}
+
+.update-message.error {
+  background-color: #f9d6d5;
+  color: #a93226;
+  border: 1px solid #cb4335;
+}
+
 @media (max-width: 600px) {
-    .info-card .label { min-width: 100px; }
+  .label { min-width: 100px; }
 }
 </style>
- <script>
-document.querySelectorAll('.editable').forEach(span => {
-    span.addEventListener('click', function() {
-        const currentValue = this.innerText;
+
+<!-- ================= JavaScript ================= -->
+<script>
+document.addEventListener('DOMContentLoaded', function() {
+  // ---- CSRF Token ----
+  function getCookie(name) {
+    let cookieValue = null;
+    if (document.cookie && document.cookie !== '') {
+      const cookies = document.cookie.split(';');
+      for (let cookie of cookies) {
+        cookie = cookie.trim();
+        if (cookie.startsWith(name + '=')) {
+          cookieValue = decodeURIComponent(cookie.slice(name.length + 1));
+          break;
+        }
+      }
+    }
+    return cookieValue;
+  }
+  const csrftoken = getCookie('csrftoken');
+
+  const editBtn = document.getElementById('editBtn');
+  const cancelBtn = document.getElementById('cancelBtn');
+  const editables = document.querySelectorAll('.editable');
+  const messageBox = document.getElementById('updateMessage');
+
+  let originalValues = {}; // Store original text values
+
+  // ---- Edit / Save Logic ----
+  editBtn.addEventListener('click', async function() {
+    const isEditing = this.innerText.includes('Save');
+
+    if (isEditing) {
+      // Save values
+      const updatedData = {};
+      editables.forEach(span => {
+        const input = span.querySelector('input');
+        if (input) updatedData[span.dataset.field] = input.value.trim();
+      });
+
+      editBtn.disabled = true;
+      cancelBtn.disabled = true;
+
+      try {
+        const response = await fetch("{% url 'doctor:update_general_info' patient.patient_id %}", {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json', 'X-CSRFToken': csrftoken },
+          body: JSON.stringify(updatedData)
+        });
+        const result = await response.json();
+
+        if (response.ok && result.success) {
+          // ✅ Update span text only after backend success
+          editables.forEach(span => {
+            const input = span.querySelector('input');
+            if (input) span.textContent = input.value;
+          });
+
+          messageBox.textContent = '✅ ' + result.message;
+          messageBox.className = 'update-message success';
+          editBtn.innerText = '✏️ Edit Info';
+          cancelBtn.style.display = 'none';
+        } else {
+          messageBox.textContent = '⚠️ ' + (result.error || 'Failed to update info.');
+          messageBox.className = 'update-message error';
+        }
+
+        messageBox.style.display = 'block';
+        setTimeout(() => { messageBox.style.display = 'none'; }, 4000);
+
+      } catch (err) {
+        console.error(err);
+        messageBox.textContent = '❌ Error updating info.';
+        messageBox.className = 'update-message error';
+        messageBox.style.display = 'block';
+        setTimeout(() => { messageBox.style.display = 'none'; }, 4000);
+      } finally {
+        editBtn.disabled = false;
+        cancelBtn.disabled = false;
+      }
+
+    } else {
+      // Enter edit mode
+      editables.forEach(span => {
+        originalValues[span.dataset.field] = span.innerText;
         const input = document.createElement('input');
         input.type = 'text';
-        input.value = currentValue;
+        input.value = span.innerText;
         input.style.width = '60%';
-        this.innerText = '';
-        this.appendChild(input);
-        input.focus();
+        span.innerHTML = '';
+        span.appendChild(input);
+      });
 
+      this.innerText = '💾 Save';
+      cancelBtn.style.display = 'inline-block';
+    }
+  });
 
+  // ---- Cancel Button ----
+  cancelBtn.addEventListener('click', function() {
+    editables.forEach(span => {
+      span.textContent = originalValues[span.dataset.field];
     });
+    editBtn.innerText = '✏️ Edit';
+    this.style.display = 'none';
+    messageBox.style.display = 'none';
+  });
 });
 </script>

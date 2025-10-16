@@ -14,12 +14,12 @@ from doctor.models import BrandsSplenss
 from doctor.models import OpticsFeature
 
 import json
-
+from django.views.decorators.http import require_POST
 from django.views.decorators.csrf import csrf_exempt
 from doctor.models import Refraction, OpticsDescription
 from django.contrib import messages
 from django.utils import timezone
-
+from datetime import timedelta
 
 from django.http import HttpResponse
 from django.template.loader import get_template
@@ -33,11 +33,9 @@ from .models import Register_Order
 
 @permission_required('doctor.view_patient', raise_exception=True)
 def doctor_dashboard(request):
-    
-    patients = Patient.objects.filter(
-        Q(status="accepted") | Q(status="waiting_out")
-    ).order_by('-id')
-    return render(request, "doctor/dashboard.html", {"patients": patients})
+
+
+    return render(request, "doctor/dashboard.html")
 
 
 @permission_required('doctor.view_patient', raise_exception=True)
@@ -175,9 +173,11 @@ def delete_patient(request, patient_id):
 
 @permission_required('doctor.view_patient', raise_exception=True)
 def patients_fragment(request):
-    patients = Patient.objects.filter(
-        Q(status="accepted") | Q(status="waiting_out")
-    ).order_by('-id')
+    today = timezone.localdate()  # YYYY-MM-DD
+    
+# Filter patients updated today (ignoring time)
+    patients = Patient.objects.filter(updated_date__date=today)
+    
     return render(request, 'doctor/patients_list.html', {'patients': patients})
 
 @permission_required('doctor.view_patient', raise_exception=True)
@@ -281,6 +281,65 @@ def download_summary_pdf(request, patient_id):
     if pisa_status.err:
         return HttpResponse("Error generating PDF", status=500)
     return response
+
+@permission_required('doctor.view_patient', raise_exception=True)
+@require_POST
+def update_general_info(request, patient_id):
+    """Update general patient info from doctor profile via AJAX."""
+    try:
+        patient = get_object_or_404(Patient, patient_id=patient_id)
+        data = json.loads(request.body.decode("utf-8"))
+
+        allowed_fields = ["name", "age", "gender", "phone", "email","melli_code"]
+        updated_fields = []
+        new_melli_code = data.get("melli_code")
+        if new_melli_code and new_melli_code != patient.melli_code:
+            existing_patient = Patient.objects.filter(melli_code=new_melli_code).exclude(id=patient.id).first()
+            if existing_patient:
+                return JsonResponse({
+                    "success": False,
+                    "error": f"This Melli_Code is already registered to another patient (ID: {existing_patient.patient_id})."
+                }, status=409)
+            
+            
+        new_name = data.get("name")
+        if new_name and new_name != patient.name:
+            existing_patient = Patient.objects.filter(name=new_name).exclude(id=patient.id).first()
+            if existing_patient:
+                return JsonResponse({
+                    "success": False,
+                    "error": f"This Name is already registered to another patient (ID: {existing_patient.patient_id})."
+                }, status=409)
+            
+            
+        melli_c = data.get("melli_code")    
+        if len(str(melli_c))!=10:
+           return JsonResponse({
+               "success": False,
+               "error":"melli code has 10 digits not more or less"
+           }, status=409)
+        
+        for field in allowed_fields:
+            if field in data and data[field] is not None:
+                setattr(patient, field, data[field])
+                updated_fields.append(field)
+
+        if updated_fields:
+            patient.save(update_fields=updated_fields)
+        else:
+            return JsonResponse({"success": False, "error": "No valid fields provided."}, status=400)
+
+        return JsonResponse({
+            "success": True,
+            "message": "Patient info updated successfully!",
+            "updated_fields": updated_fields
+        })
+
+    except json.JSONDecodeError:
+        return JsonResponse({"success": False, "error": "Invalid JSON data."}, status=400)
+    except Exception as e:
+        return JsonResponse({"success": False, "error": "str(e)"}, status=500)
+
 
 @permission_required('doctor.view_patient', raise_exception=True)
 def save_orders(request,patient_id):

@@ -17,8 +17,17 @@ class Patient(models.Model):
     age = models.PositiveIntegerField()
     gender = models.CharField(max_length=1, choices=[('M', 'Male'), ('F', 'Female')])
     melli_code = models.CharField(max_length=10, unique=True, blank=True, null=True)
+    email=models.CharField(max_length=100, blank=True, null=True)
     reason = models.TextField()
+    
     status = models.CharField(max_length=20, choices=STATUS_CHOICES, default='waiting')
+    updated_date = models.DateTimeField(auto_now=True)
+    
+    
+    
+    
+    
+    
     created_at = models.DateTimeField(default=timezone.now)
 
     def save(self, *args, **kwargs):

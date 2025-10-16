@@ -283,5 +283,59 @@ document.addEventListener('click', function(e) {
     document.querySelectorAll('.menu-bar .menu-item').forEach(i => i.classList.remove('active'));
   }
 });
+
+
+document.addEventListener("DOMContentLoaded", () => {
+  const form = document.getElementById("acceptForm");
+  const errorDiv = document.getElementById("acceptError");
+  const submitBtn = document.getElementById("acceptSubmitBtn");
+
+  form.addEventListener("submit", async (e) => {
+    e.preventDefault(); // prevent normal form submit
+
+    errorDiv.textContent = "";
+    submitBtn.disabled = true;
+
+    const formData = new FormData(form);
+
+    try {
+      const response = await fetch(form.action, {
+        method: "POST",
+        headers: {
+          "X-CSRFToken": form.querySelector("[name=csrfmiddlewaretoken]").value,
+        },
+        body: formData,
+      });
+
+      const data = await response.json();
+
+      if (response.ok && data.success) {
+        // ✅ Successfully accepted patient
+        closeAcceptModal();
+        
+        // Optionally refresh table:
+        // refreshPatientsTable();
+      } else {
+        // ❌ Show error message
+        errorDiv.textContent = data.error || "Something went wrong.";
+      }
+    } catch (err) {
+      errorDiv.textContent = "An unexpected error occurred.";
+      console.error(err);
+    } finally {
+      submitBtn.disabled = false;
+    }
+  });
+});
+
+
+
+
+
+
+
+
+
+
 </script>
 {% endblock %}
