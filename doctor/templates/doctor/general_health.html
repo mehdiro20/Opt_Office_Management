@@ -1,0 +1,217 @@
+<div id="general-health" class="section">
+  <h3>General Health Overview</h3>
+
+  <form id="generalHealthForm" method="POST" action="{% url 'doctor:general_health_record' patient.patient_id  %}">
+    {% csrf_token %}
+
+    <!-- Systemic Diseases -->
+    <div class="collapsible-section">
+      <div class="section-header" id="systemicHeader">
+        <span class="section-title">Systemic Diseases</span>
+        <button type="button" class="section-chevron" id="systemicChevron">▼</button>
+      </div>
+      <div class="section-body" id="systemicBody" style="margin-top:8px; padding:6px; display:flex; flex-wrap:wrap; gap:10px;">
+        {% for cond in health_conditions %}
+          <div class="checkbox-label">
+            <label>{{ cond.name }}
+              <input type="checkbox" name="systemic_checkbox" value="{{ cond.name }}"
+                     {% if cond.name in selected_data.systemic %}checked{% endif %}>
+            </label>
+          </div>
+        {% endfor %}
+        <input type="hidden" name="systemic_selected" id="systemic_selected">
+      </div>
+    </div>
+
+    <hr>
+
+    <!-- Ocular History -->
+    <div class="collapsible-section">
+      <div class="section-header" id="ocular_historyHeader">
+        <span class="section-title">Ocular History</span>
+        <button type="button" class="section-chevron" id="ocular_historyChevron">▼</button>
+      </div>
+      <div class="section-body" id="ocular_historyBody" style="margin-top:8px; padding:6px; display:flex; flex-wrap:wrap; gap:10px;">
+        {% for cond in ocular_history %}
+          <div class="checkbox-label">
+            <label>{{ cond.name }}
+              <input type="checkbox" name="ocular_checkbox" value="{{ cond.name }}"
+                     {% if cond.name in selected_data.ocular %}checked{% endif %}>
+            </label>
+          </div>
+        {% endfor %}
+        <input type="hidden" name="ocular_selected" id="ocular_selected">
+      </div>
+    </div>
+
+    <hr>
+
+    <!-- Medications -->
+    <div class="collapsible-section">
+      <div class="section-header" id="medicationsHeader">
+        <span class="section-title">Medications</span>
+        <button type="button" class="section-chevron" id="medicationsChevron">▼</button>
+      </div>
+      <div class="section-body" id="medicationsBody" style="margin-top:8px; padding:6px; display:flex; flex-wrap:wrap; gap:10px;">
+        {% for cond in medications %}
+          <div class="checkbox-label">
+            <label>{{ cond.name }}
+              <input type="checkbox" name="medications_checkbox" value="{{ cond.name }}"
+                     {% if cond.name in selected_data.medications %}checked{% endif %}>
+            </label>
+          </div>
+        {% endfor %}
+        <input type="hidden" name="medications_selected" id="medications_selected">
+      </div>
+    </div>
+
+    <hr>
+
+    <!-- Allergies -->
+    <div class="collapsible-section">
+      <div class="section-header" id="allergiesHeader">
+        <span class="section-title">Allergies</span>
+        <button type="button" class="section-chevron" id="allergiesChevron">▼</button>
+      </div>
+      <div class="section-body" id="allergiesBody" style="margin-top:8px; padding:6px; display:flex; flex-wrap:wrap; gap:10px;">
+        {% for cond in allergies %}
+          <div class="checkbox-label">
+            <label>{{ cond.name }}
+              <input type="checkbox" name="allergies_checkbox" value="{{ cond.name }}"
+                     {% if cond.name in selected_data.allergies %}checked{% endif %}>
+            </label>
+          </div>
+        {% endfor %}
+        <input type="hidden" name="allergies_selected" id="allergies_selected">
+      </div>
+    </div>
+
+    <hr>
+
+    <!-- Familial History -->
+    <div class="collapsible-section">
+      <div class="section-header" id="familial_histroyHeader">
+        <span class="section-title">Familial History</span>
+        <button type="button" class="section-chevron" id="familial_histroyChevron">▼</button>
+      </div>
+      <div class="section-body" id="familial_histroyBody" style="margin-top:8px; padding:6px; display:flex; flex-wrap:wrap; gap:10px;">
+        {% for cond in familial_histroy %}
+          <div class="checkbox-label">
+            <label>{{ cond.name }}
+              <input type="checkbox" name="familial_checkbox" value="{{ cond.name }}"
+                     {% if cond.name in selected_data.familial %}checked{% endif %}>
+            </label>
+          </div>
+        {% endfor %}
+        <input type="hidden" name="familial_selected" id="familial_selected">
+      </div>
+    </div>
+
+    <hr>
+
+    <!-- Genetical History -->
+    <div class="collapsible-section">
+      <div class="section-header" id="genetical_historyHeader">
+        <span class="section-title">Genetical History</span>
+        <button type="button" class="section-chevron" id="genetical_historyChevron">▼</button>
+      </div>
+      <div class="section-body" id="genetical_historyBody" style="margin-top:8px; padding:6px; display:flex; flex-wrap:wrap; gap:10px;">
+        {% for cond in genetical_history %}
+          <div class="checkbox-label">
+            <label>{{ cond.name }}
+              <input type="checkbox" name="genetical_checkbox" value="{{ cond.name }}"
+                     {% if cond.name in selected_data.genetical %}checked{% endif %}>
+            </label>
+          </div>
+        {% endfor %}
+        <input type="hidden" name="genetical_selected" id="genetical_selected">
+      </div>
+    </div>
+
+    <hr>
+
+    <!-- Lifestyle History -->
+    <div class="collapsible-section">
+      <div class="section-header" id="lifestyle_historyHeader">
+        <span class="section-title">Lifestyle History</span>
+        <button type="button" class="section-chevron" id="lifestyle_historyChevron">▼</button>
+      </div>
+      <div class="section-body" id="lifestyle_historyBody" style="margin-top:8px; padding:6px; display:flex; flex-wrap:wrap; gap:10px;">
+        {% for cond in lifestyle_history %}
+          <div class="checkbox-label">
+            <label>{{ cond.name }}
+              <input type="checkbox" name="lifestyle_checkbox" value="{{ cond.name }}"
+                     {% if cond.name in selected_data.lifestyle %}checked{% endif %}>
+            </label>
+          </div>
+        {% endfor %}
+        <input type="hidden" name="lifestyle_selected" id="lifestyle_selected">
+      </div>
+    </div>
+
+    <div style="margin-top:20px; text-align:center;">
+      <button type="submit" style="background-color:#3498db;color:white;padding:10px 20px;border:none;border-radius:8px;cursor:pointer;font-size:16px;">Submit</button>
+    </div>
+  </form>
+</div>
+
+<!-- Styles: unchanged -->
+<style>
+.section-title { font-weight: bold; color: #2c3e50; }
+.section-header { display:flex; justify-content:space-between; align-items:center; background:#f3f4f6; padding:6px 10px; border-radius:6px; cursor:pointer; }
+.section-chevron { border:none; background:none; font-size:20px; font-weight:bold; cursor:pointer; color:#2980b9; transition: transform 0.25s ease, color 0.2s ease; }
+.section-chevron:hover, .section-chevron:focus { color:#1c5980; outline:none; transform: scale(1.15); }
+.section-chevron.rotate { transform:rotate(180deg); }
+.checkbox-label label { display: flex; align-items: center; gap: 6px; padding: 4px 8px; min-width: max-content; cursor: pointer; }
+.checkbox-label input[type="checkbox"] { order: 2; width: 16px; height: 16px; }
+</style>
+
+<!-- Scripts: unchanged logic, preselect-aware -->
+<script>
+document.addEventListener("DOMContentLoaded", function() {
+  function toggleSection(headerId, bodyId, chevronId){
+    const body = document.getElementById(bodyId);
+    const chevron = document.getElementById(chevronId);
+    const hidden = body.style.display === "none";
+    body.style.display = hidden ? "flex" : "none";
+    chevron.classList.toggle("rotate", hidden);
+  }
+
+  const sections = [
+    ["systemicHeader","systemicBody","systemicChevron"],
+    ["ocular_historyHeader","ocular_historyBody","ocular_historyChevron"],
+    ["medicationsHeader","medicationsBody","medicationsChevron"],
+    ["allergiesHeader","allergiesBody","allergiesChevron"],
+    ["familial_histroyHeader","familial_histroyBody","familial_histroyChevron"],
+    ["genetical_historyHeader","genetical_historyBody","genetical_historyChevron"],
+    ["lifestyle_historyHeader","lifestyle_historyBody","lifestyle_historyChevron"]
+  ];
+  sections.forEach(([header, body, chevron])=>{
+    const el = document.getElementById(header);
+    if(el) el.addEventListener("click", ()=>toggleSection(header, body, chevron));
+  });
+
+  function updateHiddenInput(sectionName) {
+    const checkboxes = document.querySelectorAll(`input[name="${sectionName}_checkbox"]`);
+    const hiddenInput = document.getElementById(`${sectionName}_selected`);
+    const selectedValues = Array.from(checkboxes)
+      .filter(cb => cb.checked)
+      .map(cb => cb.value);
+    hiddenInput.value = selectedValues.join(", ");
+  }
+
+  const sectionNames = ["systemic","ocular","medications","allergies","familial","genetical","lifestyle"];
+  sectionNames.forEach(section=>{
+    document.querySelectorAll(`input[name="${section}_checkbox"]`).forEach(cb=>{
+      cb.addEventListener("change", ()=>updateHiddenInput(section));
+    });
+  });
+
+  // Pre-populate hidden inputs
+  sectionNames.forEach(section=>updateHiddenInput(section));
+
+  document.getElementById("generalHealthForm").addEventListener("submit", ()=>{
+    sectionNames.forEach(section=>updateHiddenInput(section));
+  });
+});
+</script>

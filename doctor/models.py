@@ -18,8 +18,10 @@ class Refraction(models.Model):
     osbcva = models.CharField(max_length=50, null=True, blank=True)
     odcl = models.CharField(max_length=50)
     oscl = models.CharField(max_length=50)
-    axis = models.CharField(max_length=50)
+    addition = models.CharField(max_length=50, null=True, blank=True)
     pd = models.CharField(max_length=50)
+    refraction_id = models.CharField(max_length=50, unique=True)
+    
     created_at = models.DateTimeField(auto_now_add=True)
 
     def __str__(self):
@@ -130,3 +132,43 @@ class Register_Order(models.Model):
 
     def __str__(self):
         return f"{self.order_name} for {self.patient.name}"
+class GH_HealthCondition(models.Model):
+    name = models.CharField(max_length=100)
+
+class  GH_Medication(models.Model):
+    name = models.CharField(max_length=100)
+
+class  GH_Allergies(models.Model):
+    name = models.CharField(max_length=100)
+ 
+class  GH_FamilialHistory(models.Model):
+    name = models.CharField(max_length=100)
+   
+class  GH_GeneticalHistory(models.Model):
+    name = models.CharField(max_length=100)
+    
+class  GH_LifestyleHistory(models.Model):
+    name = models.CharField(max_length=100)
+  
+class  GH_OcularHistory(models.Model):
+    name = models.CharField(max_length=100)
+
+class GeneralHealthRecord(models.Model):
+    patient = models.ForeignKey(
+        Patient,
+        to_field='patient_id',
+        db_column='patient_id',
+        on_delete=models.CASCADE,
+        related_name='general_health_records'
+    )
+    systemic_diseases = models.TextField(blank=True, null=True)
+    ocular_history = models.TextField(blank=True, null=True)
+    medications = models.TextField(blank=True, null=True)
+    allergies = models.TextField(blank=True, null=True)
+    familial_history = models.TextField(blank=True, null=True)
+    genetical_history = models.TextField(blank=True, null=True)
+    lifestyle_history = models.TextField(blank=True, null=True)
+    created_at = models.DateTimeField(auto_now_add=True)
+
+    def __str__(self):
+        return f"{self.patient.name} — General Health Record"

@@ -9,11 +9,13 @@ from .models import BrandsSplenss, BrandPrice
 from .models import OpticsDescription
 import os
 from .models import Order
-    
+from django.contrib import admin
+from .models import  GH_HealthCondition,GH_Medication,GH_Allergies,GH_FamilialHistory,GH_GeneticalHistory,GH_LifestyleHistory,GH_OcularHistory    
 from .models import Register_Order
+from .models import GeneralHealthRecord
 @admin.register(Refraction)
 class RefractionAdmin(admin.ModelAdmin):
-    list_display = ('subject','patient', 'od', 'os','axis','pd', 'created_at')
+    list_display = ('subject','patient', 'od', 'os','pd', 'created_at')
     list_filter = ('created_at', 'patient')
     search_fields = ('subject','patient__name', 'patient__patient_id')
     
@@ -96,3 +98,65 @@ class OrderAdmin(admin.ModelAdmin):
 class RegisterOrderAdmin(admin.ModelAdmin):
     list_display = ('patient_id','order_name', 'duration', 'priority', 'unique_id')    
     
+
+
+# Register HealthCondition
+@admin.register( GH_HealthCondition)
+class HealthConditionAdmin(admin.ModelAdmin):
+    list_display = ('id', 'name')
+    search_fields = ('name',)
+
+# Register Medication
+@admin.register( GH_Medication)
+class MedicationAdmin(admin.ModelAdmin):
+    list_display = ('id', 'name')
+    search_fields = ('name',)
+@admin.register( GH_FamilialHistory)
+class FamilialHistoryAdmin(admin.ModelAdmin):
+    list_display = ('id', 'name')
+    search_fields = ('name',)
+
+
+@admin.register( GH_GeneticalHistory)
+class GeneticalHistoryAdmin(admin.ModelAdmin):
+    list_display = ('id', 'name')
+    search_fields = ('name',)
+
+@admin.register(GH_Allergies)
+class AllergiesAdmin(admin.ModelAdmin):
+    list_display = ('id', 'name')
+    search_fields = ('name',)
+    
+    
+@admin.register(GH_OcularHistory)
+class OcularHistoryAdmin(admin.ModelAdmin):
+    list_display = ('id', 'name')
+    search_fields = ('name',)
+    
+@admin.register(GH_LifestyleHistory)
+class LifestyleHistoryAdmin(admin.ModelAdmin):
+    list_display = ('id', 'name')
+    search_fields = ('name',)
+    
+    
+
+
+
+@admin.register(GeneralHealthRecord)
+class GeneralHealthRecordAdmin(admin.ModelAdmin):
+    list_display = (
+        'id',
+        'patient',
+        'systemic_diseases',
+        'ocular_history',
+        'medications',
+        'allergies',
+        'familial_history',
+        'genetical_history',
+        'lifestyle_history',
+        'created_at',
+    )
+    list_filter = ('created_at',)
+    search_fields = ('patient__patient_id', 'patient__name')
+    readonly_fields = ('created_at',)
+    ordering = ('-created_at',)

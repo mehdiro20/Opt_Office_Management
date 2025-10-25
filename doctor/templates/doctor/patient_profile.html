@@ -96,11 +96,11 @@
       transition: all 0.3s ease;
     }
     .section h3 { margin-top: 0; text-align: center; color: #2980b9; font-size: 22px; }
-
+     
     table { width: 100%; border-collapse: collapse; margin-top: 20px; border-radius: 8px; overflow: hidden; box-shadow: 0 2px 5px rgba(0,0,0,0.05); }
     table th, table td { padding: 12px 15px; border-bottom: 1px solid #ddd; text-align: center; }
     table th { background-color: #3498db; color: white; font-weight: 600; }
-
+    
     /* Bottom buttons */
     .bottom-buttons {
       position: fixed;
@@ -182,7 +182,7 @@
         </li>
         <li class="has-submenu">New Records
           <ul>
-            <li data-target="general_health">General Health</li>
+            <li data-target="general-health">General Health</li>
             <li data-target="previous_examination">Previous Examination / Illness</li>
             <li data-target="refraction">VA & Refraction</li>
             <li data-target="optics">Optics</li>
@@ -219,6 +219,7 @@
     {% include "doctor/optics.html" %}
      {% include "doctor/patient_summary.html" %}
      {% include "doctor/make_orders.html" %}
+     {% include "doctor/general_health.html" %}
   </div>
 </div>
 

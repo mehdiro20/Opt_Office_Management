@@ -4,7 +4,6 @@ from django.db.models import Q
 
 from django.utils.dateparse import parse_date
 from django.http import JsonResponse
-# Doctor dashboard: show only accepted patients
 from django.contrib.auth.decorators import login_required
 from django.conf import settings
 from django.core.serializers.json import DjangoJSONEncoder
@@ -28,17 +27,24 @@ from xhtml2pdf import pisa
 from django.shortcuts import render
 from .models import Order
 from .models import Register_Order
+from django.shortcuts import render, get_object_or_404
+from .models import Patient, GH_HealthCondition,GH_Medication,GH_Allergies,GH_FamilialHistory,GH_GeneticalHistory,GH_LifestyleHistory,GH_OcularHistory,GeneralHealthRecord
+from django.contrib.auth.decorators import login_required, user_passes_test
+def is_doctor_admin(user):
+    return (
+        user.is_superuser
+        or user.groups.filter(name__in=["doctor"]).exists()
+    )
 
 @login_required
-
-@permission_required('doctor.view_patient', raise_exception=True)
+@user_passes_test(is_doctor_admin)
 def doctor_dashboard(request):
 
 
     return render(request, "doctor/dashboard.html")
 
-
-@permission_required('doctor.view_patient', raise_exception=True)
+@login_required
+@user_passes_test(is_doctor_admin)
 # Patient profile view
 def patient_profile(request, patient_id):
     patient = get_object_or_404(Patient, patient_id=patient_id)
@@ -75,17 +81,23 @@ def patient_profile(request, patient_id):
     }
     context.update(patient_summary(request,patient_id))
     context.update(make_orders(request,patient_id))
+    context.update(make_refs(request,patient_id))
+    context.update(general_health_view(request,patient_id))
+    context.update(general_health_patient_view(request,patient_id))
+    
     
     return render(request, "doctor/patient_profile.html",context)
 
-
+@login_required
+@user_passes_test(is_doctor_admin)
 def get_patient_data(patient_id):
     patient = get_object_or_404(Patient, patient_id=patient_id)
     last_optics_desc = OpticsDescription.objects.filter(patient_id=patient_id).order_by('-created_at').first()
     
     return {'last_optics_desc': last_optics_desc}
 
-@permission_required('doctor.view_patient', raise_exception=True)
+@login_required
+@user_passes_test(is_doctor_admin)
 # Submit refraction
 def submit_refraction(request, patient_id):
     patient = get_object_or_404(Patient, patient_id=patient_id)
@@ -103,7 +115,8 @@ def submit_refraction(request, patient_id):
         oscl=request.POST.get('oscl')
         axis = request.POST.get('axis')  # you had this in form
         pd = request.POST.get('pd')
-
+        refraction_id = request.POST.get('refraction_id')
+        print(refraction_id)
         Refraction.objects.create(
             subject=subject,
             patient=patient,
@@ -115,7 +128,7 @@ def submit_refraction(request, patient_id):
             osbcva=osbcva,
             odcl=odcl,
             oscl=oscl,
-         
+            refraction_id=refraction_id,
             pd=pd
         )
 
@@ -127,7 +140,8 @@ def submit_refraction(request, patient_id):
         return redirect('patient_profile', patient_id=patient.patient_id)
 
     return redirect('patient_profile', patient_id=patient.patient_id)
-@permission_required('doctor.view_patient', raise_exception=True)
+@login_required
+@user_passes_test(is_doctor_admin)
 # Remove patient from doctor's accepted list
 def remove_from_accepted(request, patient_id):
     patient = get_object_or_404(Patient, patient_id=patient_id)
@@ -135,8 +149,8 @@ def remove_from_accepted(request, patient_id):
         patient.status = "done"  # move back to secretary list
         patient.save()
     return redirect(request.META.get('HTTP_REFERER', 'doctor:doctor_dashboard'))
-
-@permission_required('doctor.view_patient', raise_exception=True)
+@login_required
+@user_passes_test(is_doctor_admin)
 def move_to_waiting(request, patient_id):
     patient = get_object_or_404(Patient, patient_id=patient_id)
     if request.method == "POST":
@@ -145,14 +159,16 @@ def move_to_waiting(request, patient_id):
         messages.info(request, f"⏳ Patient {patient.name} moved to waiting list.")
     return redirect('doctor:doctor_dashboard')
 
-@permission_required('doctor.view_patient', raise_exception=True)
+@login_required
+@user_passes_test(is_doctor_admin)
 def remove_from_accepted_profile(request, patient_id):
     patient = get_object_or_404(Patient, patient_id=patient_id)
     if request.method == "POST":
         patient.status = "done"  # move back to secretary list
         patient.save()
     return redirect('doctor:doctor_dashboard')
-@permission_required('doctor.view_patient', raise_exception=True)
+@login_required
+@user_passes_test(is_doctor_admin)
 # List of all patients with optional search
 def doctor_patient_list(request):
     query = request.GET.get('q', '')
@@ -161,7 +177,8 @@ def doctor_patient_list(request):
         patients = patients.filter(Q(name__icontains=query) | Q(patient_id__icontains=query))
     return render(request, "doctor/patient_list.html", {"patients": patients})
 
-@permission_required('doctor.view_patient', raise_exception=True)
+@login_required
+@user_passes_test(is_doctor_admin)
 # Completely delete a patient
 def delete_patient(request, patient_id):
  
@@ -171,7 +188,8 @@ def delete_patient(request, patient_id):
         patient.delete()
     return redirect('doctor:doctor_dashboard')
 
-@permission_required('doctor.view_patient', raise_exception=True)
+@login_required
+@user_passes_test(is_doctor_admin)
 def patients_fragment(request):
     today = timezone.localdate()  # YYYY-MM-DD
     
@@ -180,7 +198,8 @@ def patients_fragment(request):
     
     return render(request, 'doctor/patients_list.html', {'patients': patients})
 
-@permission_required('doctor.view_patient', raise_exception=True)
+@login_required
+@user_passes_test(is_doctor_admin)
 def optics_page(request, patient_id):
     if request.method == "POST":
         try:
@@ -209,9 +228,8 @@ def optics_page(request, patient_id):
             return redirect("doctor:patient_profile", patient_id=patient_id)
 
     return redirect("doctor:patient_profile", patient_id=patient_id)
-
-
-@permission_required('doctor.view_patient', raise_exception=True)
+@login_required
+@user_passes_test(is_doctor_admin)
 def patient_summary(request, patient_id):
     patient = get_object_or_404(Patient, patient_id=patient_id)
 
@@ -250,8 +268,8 @@ def patient_summary(request, patient_id):
     }
     return context
     
-
-@permission_required('doctor.view_patient', raise_exception=True)
+@login_required
+@user_passes_test(is_doctor_admin)
 
 
 def download_summary_pdf(request, patient_id):
@@ -281,8 +299,8 @@ def download_summary_pdf(request, patient_id):
     if pisa_status.err:
         return HttpResponse("Error generating PDF", status=500)
     return response
-
-@permission_required('doctor.view_patient', raise_exception=True)
+@login_required
+@user_passes_test(is_doctor_admin)
 @require_POST
 def update_general_info(request, patient_id):
     """Update general patient info from doctor profile via AJAX."""
@@ -340,8 +358,8 @@ def update_general_info(request, patient_id):
     except Exception as e:
         return JsonResponse({"success": False, "error": "str(e)"}, status=500)
 
-
-@permission_required('doctor.view_patient', raise_exception=True)
+@login_required
+@user_passes_test(is_doctor_admin)
 def save_orders(request,patient_id):
     if request.method == "POST":
         patient_id = patient_id
@@ -366,8 +384,8 @@ def save_orders(request,patient_id):
         return redirect('doctor:patient_profile', patient_id=patient_id)  # Redirect back after saving
     return redirect('doctor:patient_profile', patient_id=patient_id)
 
-
-@permission_required('doctor.view_patient', raise_exception=True)
+@login_required
+@user_passes_test(is_doctor_admin)
 def make_orders(request, patient_id):
  
     
@@ -391,3 +409,158 @@ def make_orders(request, patient_id):
         "existing_orders_json": json.dumps(orders_for_js)
     }
     return context
+
+@login_required
+@user_passes_test(is_doctor_admin)
+def make_refs(request, patient_id):
+ 
+    
+    # Fetch previous orders for this patient
+    existing_ref = Refraction.objects.filter(patient_id=patient_id)
+    
+    # Convert queryset to a list of dicts for JS
+    orders_for_js = [
+        {
+            "ref_id": o.refraction_id,
+            "ref_subj": o.subject,
+            "ref_od": o.od,
+            "ref_os": o.os,
+            "ref_pd":o.pd,
+            "ref_addition":o.addition
+        }
+        for o in existing_ref
+    ]
+    
+    context = {
+    
+        "ref_ex": existing_ref,  # For datalist if needed
+        "existing_refs_json": json.dumps(orders_for_js)
+    }
+    return context
+@login_required
+@user_passes_test(is_doctor_admin)
+def general_health_view(request, patient_id):
+    patient = get_object_or_404(Patient, patient_id=patient_id)
+
+    # All predefined health conditions
+    health_conditions =  GH_HealthCondition.objects.all()
+
+    medications =  GH_Medication.objects.all()
+
+    allergies= GH_Allergies.objects.all()
+    
+    familial_histroy= GH_FamilialHistory.objects.all()
+    
+    genetical_history= GH_GeneticalHistory.objects.all()
+
+    lifestyle_history= GH_LifestyleHistory.objects.all()
+    
+    ocular_history= GH_OcularHistory.objects.all()
+    
+
+    
+
+    # Notes
+
+    context = {
+
+        'health_conditions': health_conditions,
+
+        'medications': medications,
+        
+        'allergies':allergies,
+        
+        'familial_histroy':familial_histroy,
+        
+        'genetical_history':genetical_history,
+        
+        'lifestyle_history':lifestyle_history,
+        
+        'ocular_history':ocular_history,
+        
+    }
+    return context
+
+
+
+def split_and_strip(value):
+    return [item.strip() for item in value.split(",")] if value else []
+@login_required
+@user_passes_test(is_doctor_admin)
+
+def general_health_patient_view(request, patient_id):
+    
+
+    patient = get_object_or_404(Patient, patient_id=patient_id)
+    
+    # Get the existing record if it exists, otherwise None
+    try:
+        record = GeneralHealthRecord.objects.get(patient=patient)
+    except GeneralHealthRecord.DoesNotExist:
+        record = None
+
+    # Split comma-separated fields into lists for preselecting checkboxes
+    selected_data = {
+    "systemic": split_and_strip(record.systemic_diseases) if record else [],
+    "ocular": split_and_strip(record.ocular_history) if record else [],
+    "medications": split_and_strip(record.medications) if record else [],
+    "allergies": split_and_strip(record.allergies) if record else [],
+    "familial": split_and_strip(record.familial_history) if record else [],
+    "genetical": split_and_strip(record.genetical_history) if record else [],
+    "lifestyle": split_and_strip(record.lifestyle_history) if record else [],
+    }
+
+    context = {
+        "patient": patient,
+        "record": record,            # single instance or None
+        "selected_data": selected_data,  # lists for pre-selecting checkboxes
+        "health_conditions": GH_HealthCondition.objects.all(),
+        "ocular_history": GH_OcularHistory.objects.all(),
+        "medications": GH_Medication.objects.all(),
+        "allergies": GH_Allergies.objects.all(),
+        "familial_histroy": GH_FamilialHistory.objects.all(),
+        "genetical_history": GH_GeneticalHistory.objects.all(),
+        "lifestyle_history": GH_LifestyleHistory.objects.all(),
+    }
+
+    return context
+
+
+@login_required
+@user_passes_test(is_doctor_admin)
+
+
+def general_health_record(request, patient_id):
+    patient = get_object_or_404(Patient, patient_id=patient_id)
+
+    if request.method == "POST":
+        systemic = request.POST.get("systemic_selected", "")
+        ocular = request.POST.get("ocular_selected", "")
+        medications = request.POST.get("medications_selected", "")
+        allergies = request.POST.get("allergies_selected", "")
+        familial = request.POST.get("familial_selected", "")
+        genetical = request.POST.get("genetical_selected", "")
+        lifestyle = request.POST.get("lifestyle_selected", "")
+
+        # Check if a record already exists for this patient
+        record, created = GeneralHealthRecord.objects.get_or_create(patient=patient)
+
+        # Update the existing or newly created record
+        record.systemic_diseases = systemic
+        record.ocular_history = ocular
+        record.medications = medications
+        record.allergies = allergies
+        record.familial_history = familial
+        record.genetical_history = genetical
+        record.lifestyle_history = lifestyle
+        record.save()
+
+        # Redirect back to patient profile
+        return redirect("doctor:patient_profile", patient_id=patient.patient_id)
+
+    # If GET request, render profile or form
+    return render(request, "doctor/patient_profile.html", {"patient": patient})
+
+
+
+
