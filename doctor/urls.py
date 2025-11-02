@@ -27,7 +27,8 @@ urlpatterns = [
     path('patient/<str:patient_id>/update_general_info/', views.update_general_info, name='update_general_info'),
     path('patient/<str:patient_id>/general-health/', views.general_health_view, name='general_health_view'),
     path('patient/<str:patient_id>/general-health-record/', views.general_health_record, name='general_health_record'),
-
+    path('patient/<str:patient_id>/record_imp_menu_part/', views.record_imp_menu_part, name='record_imp_menu_part'),
+    path('rx_print/', views.rx_print, name='rx_print'),
 
 
     

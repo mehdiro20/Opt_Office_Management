@@ -1,0 +1,237 @@
+
+{% load static %}
+
+<div class="sheet">
+  <header>
+    <div class="clinic">
+      <h1>کلینیک اپتومتری</h1>
+      <p>آدرس • تلفن • ایمیل</p>
+    </div>
+    <div class="meta">
+      <strong>نسخه عینک / لنز</strong><br>
+      <span>فرم قابل چاپ (A4 / A5)</span>
+    </div>
+  </header>
+
+  <div class="controls no-print">
+    <button onclick="window.print()">🖨️ چاپ</button>
+  </div>
+
+  <form id="rxForm" method="post">
+    {% csrf_token %}
+
+    <div class="row">
+      <div class="col">
+        <label for="patient">نام بیمار:</label>
+        <input id="patient" name="patient" type="text" value="{{ patient.name|default:'' }}">
+      </div>
+      <div style="width:150px">
+        <label for="date">تاریخ (جلالی):</label>
+        <input id="date" name="date" type="text" class="ltr" value="{{ date|default:'' }}">
+      </div>
+    </div>
+
+    <div class="row">
+      <div class="col">
+        <label for="subject">موضوع:</label>
+        <input id="subject" name="subject" type="text" value="{{ prescription.subject|default:'' }}">
+      </div>
+    </div>
+
+    <table class="prescription-table">
+      <thead>
+        <tr>
+          <th>Eye</th>
+          <th>Sph/Cyl/Axis</th>
+          <th>Add</th>
+          <th>BCVA</th>
+        </tr>
+      </thead>
+      <tbody>
+        <tr>
+          <td>OD (Right)</td>
+          <td><input type="text" name="od_sph" value="{{ prescription.od_sph|default:'' }}"></td>
+      
+    
+          <td style="width:80px"><input type="text" name="od_add" value="{{ prescription.od_add|default:'' }}"></td>
+          <td style="width:80px"><input type="text" name="od_notes" value="{{ prescription.od_notes|default:'' }}"></td>
+        </tr>
+        <tr>
+          <td>OS (Left)</td>
+          <td><input type="text" name="os_sph" value="{{ prescription.os_sph|default:'' }}"></td>
+
+
+          <td style="width:80px"><input type="text" name="os_add"  value="{{ prescription.os_add|default:'' }}"></td>
+          <td style="width:80px"><input type="text" name="os_notes" value="{{ prescription.os_notes|default:'' }}"></td>
+        </tr>
+      </tbody>
+    </table>
+
+    <div style="margin-top:10px; direction:ltr">
+      <label for="pd" style="width:160px;">PD:</label>
+      <input id="pd" name="pd" type="text" style="width:160px;" value="{{ prescription.pd|default:'' }}">
+    </div>
+
+    <div class="row" style="margin-top:14px">
+      <div class="col">
+        <label for="additional">توضیحات اضافی / نوع فریم یا عدسی</label>
+        <textarea id="additional" name="additional" rows="3">{{ prescription.additional|default:'' }}</textarea>
+      </div>
+    </div>
+
+    <div class="signature">
+      <div class="sig-line">امضای اپتومتریست</div>
+      <div class="clinic-stamp">
+        <strong>مهر کلینیک</strong><br>
+        <span>آدرس • تلفن</span>
+      </div>
+    </div>
+
+  </form>
+</div>
+<link href="https://fonts.googleapis.com/css2?family=Vazirmatn:wght@300;400;500;600&display=swap" rel="stylesheet" />
+<style>
+    @page { size: A4 portrait; margin: 18mm; }
+
+    :root {
+      --brand: #0077cc;
+      --muted: #666;
+      --border: #ddd;
+    }
+
+    body {
+      margin: 0;
+      background: #f3f5f9;
+        font-family: 'Vazirmatn', 'Tahoma', sans-serif;
+      color: #222;
+      direction: rtl;
+    }
+
+    .sheet {
+      background: #fff;
+      width: 100%;
+      max-width: 800px;
+      margin: 24px auto;
+      padding: 28px;
+      border: 1px solid var(--border);
+      border-radius: 10px;
+      box-shadow: 0 3px 10px rgba(0,0,0,0.08);
+    }
+
+    header {
+      display: flex;
+      justify-content: space-between;
+      align-items: flex-start;
+      border-bottom: 2px solid var(--brand);
+      padding-bottom: 8px;
+      margin-bottom: 16px;
+    }
+
+    .clinic h1 {
+      margin: 0;
+      font-size: 20px;
+      color: var(--brand);
+    }
+
+    .clinic p {
+      margin: 4px 0 0;
+      font-size: 13px;
+      color: var(--muted);
+    }
+
+    .meta { text-align: left; font-size: 13px; color: var(--muted); }
+
+    label {
+      display: block;
+      font-size: 13px;
+      margin-bottom: 4px;
+      color: var(--muted);
+    }
+
+    input, textarea {
+      width: 100%;
+      padding: 8px 10px;
+      border: 1px solid #ccc;
+      border-radius: 6px;
+      font-size: 14px;
+      box-sizing: border-box;
+      font-family: inherit;
+    }
+
+    /* فیلدهای عددی چپ‌چین */
+    input.ltr, .prescription-table input, #date, #pd {
+      direction: ltr;
+      text-align: left;
+    }
+
+    .row { display: flex; gap: 12px; margin-top: 10px; }
+    .col { flex: 1; }
+
+    .prescription-table {
+      width: 100%;
+      border-collapse: collapse;
+      margin-top: 16px;
+      direction: ltr;
+    }
+
+    .prescription-table th, .prescription-table td {
+      border: 1px solid #ccc;
+      padding: 8px;
+      text-align: center;
+      font-size: 13px;
+    }
+
+    .prescription-table th {
+      background: #eef4ff;
+      color: #222;
+    }
+
+    .signature {
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      margin-top: 24px;
+    }
+
+    .sig-line {
+      border-top: 1px solid #000;
+      width: 55%;
+      padding-top: 6px;
+      text-align: right;
+      font-size: 13px;
+      color: var(--muted);
+    }
+
+    .clinic-stamp {
+      text-align: left;
+      font-size: 13px;
+      color: var(--muted);
+    }
+
+    .controls {
+      display: flex;
+      justify-content: flex-end;
+      margin-bottom: 10px;
+    }
+
+    button {
+      padding: 8px 14px;
+      border: none;
+      border-radius: 6px;
+      background: var(--brand);
+      color: #fff;
+      font-size: 14px;
+      cursor: pointer;
+      display: flex;
+      align-items: center;
+      gap: 6px;
+    }
+
+    button:hover { background: #005fa3; }
+
+    @media print {
+      body { background: transparent; }
+      .sheet { box-shadow: none; border: none; margin: 0; padding: 0; }
+      .controls { display: none; }
+    }
+  </style>

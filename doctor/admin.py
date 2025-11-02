@@ -13,6 +13,7 @@ from django.contrib import admin
 from .models import  GH_HealthCondition,GH_Medication,GH_Allergies,GH_FamilialHistory,GH_GeneticalHistory,GH_LifestyleHistory,GH_OcularHistory    
 from .models import Register_Order
 from .models import GeneralHealthRecord
+from .models import ImpMenuParts
 @admin.register(Refraction)
 class RefractionAdmin(admin.ModelAdmin):
     list_display = ('subject','patient', 'od', 'os','pd', 'created_at')
@@ -160,3 +161,10 @@ class GeneralHealthRecordAdmin(admin.ModelAdmin):
     search_fields = ('patient__patient_id', 'patient__name')
     readonly_fields = ('created_at',)
     ordering = ('-created_at',)
+    
+    
+    
+@admin.register(ImpMenuParts)
+class ImpMenuPartsRecordAdmin(admin.ModelAdmin):
+    list_display = ('patient','imp_menu_parts')
+    search_fields = ('patient__patient_id', 'patient__name')

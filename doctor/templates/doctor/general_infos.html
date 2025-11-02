@@ -1,49 +1,52 @@
-<!-- General Information Section -->
-<div id="general" class="section" style="display:block;">
-  <h3>General Information</h3>
-
-  <!-- Info Card -->
-  <div class="info-card">
-    <div class="info-row">
-      <span class="label">Name:</span>
-      <span class="editable" data-field="name">{{ patient.name }}</span>
-    </div>
-    <div class="info-row">
-      <span class="label">Age:</span>
-      <span class="editable" data-field="age">{{ patient.age }}</span>
-    </div>
-    <div class="info-row">
-      <span class="label">Gender:</span>
-      <span class="editable" data-field="gender">{{ patient.gender }}</span>
-    </div>
-    <div class="info-row">
-      <span class="label">Phone:</span>
-      <span class="editable" data-field="phone">{{ patient.phone }}</span>
-    </div>
-    <div class="info-row">
-      <span class="label">Email:</span>
-      <span class="editable" data-field="email">{{ patient.email }}</span>
-    </div>
-    <div class="info-row">
-      <span class="label">Melli Code:</span>
-      <span class="editable" data-field="melli_code">{{ patient.melli_code }}</span>
-    </div>
+<!-- Full Patient Info Section -->
+<div id="general_info" class="section" style="display:block; border:1px solid #e0e0e0; border-radius:12px; overflow:hidden;">
+  <h3>General Info</h3>
+  <!-- General Info Header -->
+  <div id="generalHeader" class="section-header">
+    <span class="section-title">General Information</span>
+    <span id="generalChevron" class="section-chevron">▼</span>
   </div>
 
-  <!-- Buttons -->
-  <button id="editBtn" class="edit-btn">✏️ Edit</button>
-  <button id="cancelBtn" class="edit-btn" style="display:none">❌ Cancel</button>
+  <!-- General Info Card -->
+  <div class="info-card" style="display:block;">
+   
+    <div class="info-row"><span class="label">Name:</span><span class="editable" data-field="name">{{ patient.name }}</span></div>
+    <div class="info-row"><span class="label">Age:</span><span class="editable" data-field="age">{{ patient.age }}</span></div>
+    <div class="info-row"><span class="label">Gender:</span><span class="editable" data-field="gender">{{ patient.gender }}</span></div>
+    <div class="info-row"><span class="label">Phone:</span><span class="editable" data-field="phone">{{ patient.phone }}</span></div>
+    <div class="info-row"><span class="label">Email:</span><span class="editable" data-field="email">{{ patient.email }}</span></div>
+    <div class="info-row"><span class="label">Melli Code:</span><span class="editable" data-field="melli_code">{{ patient.melli_code }}</span></div>
+     <button id="editBtn" class="edit-btn-gi">✏️</button>
+     
+  </div>
 
-  <!-- Feedback message -->
   <div id="updateMessage" class="update-message" style="display:none;"></div>
+
+
+  <!-- Important Parts Header -->
+  <div id="important_partsHeader" class="section-header">
+    <span class="section-title">Important Items</span>
+    <span id="important_partsChevron" class="section-chevron">▼</span>
+  </div>
+
+  <!-- Important Parts Form -->
+  <form id="importantPartsForm" class="info-card">
+    <div id="importantPartsCard"></div>
+    <button type="button" id="saveImportantBtn" class="add_order_btn" style="align-self:flex-start;">💾 Save Important Parts</button>
+    <div id="importantMessage" class="update-message" style="display:none;"></div>
+  </form>
 </div>
 
-<!-- ================= CSS ================= -->
+<!-- Pass previously selected parts from Django context -->
+<script>
+const previouslySelectedParts = {{ selected_data_imp_menu_part.imp_menu_parts|safe }};
+</script>
+
 <style>
+
 .info-card {
   background: linear-gradient(145deg, #f9f9f9, #ffffff);
-  border: 1px solid #e0e0e0;
-  border-radius: 12px;
+  border-radius: 0 0 12px 12px;
   padding: 25px 30px;
   display: flex;
   flex-direction: column;
@@ -52,15 +55,32 @@
   transition: all 0.3s ease;
 }
 
-.info-card:hover {
-  box-shadow: 0 10px 30px rgba(0,0,0,0.12);
+.info-card label {
+  width: 100px;
+  font-weight: bold;
+  color: #16a085;
+  flex-shrink: 0;
 }
 
+
+.section-title { font-weight: bold; color: #2c3e50; }
+.section-header { display:flex; justify-content:space-between; align-items:center; background:#f3f4f6; padding:6px 10px; border-radius:6px; cursor:pointer; }
+.section-header:hover{  
+
+    background:#e9f5f3;
+
+}
+
+
+.info-card:hover { box-shadow: 0 10px 30px rgba(0,0,0,0.12); }
+
+/* Info Row */
 .info-row {
   display: flex;
   flex-wrap: wrap;
   font-size: 1rem;
   color: #34495e;
+  transition: background-color 0.3s ease;
 }
 
 .label {
@@ -70,24 +90,64 @@
   min-width: 120px;
 }
 
-.edit-btn {
-  background-color: #4CAF50;
-  color: white;
-  border: none;
-  padding: 10px 20px;
+/* Buttons */
+  .add_order_btn ,.edit-btn-gi {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: 6px;
+  height: 36px;
+  padding: 6px 16px;
+  font-size: 15px;
+  font-weight: 600;
   border-radius: 8px;
-  font-size: 0.95rem;
+  border: 2px solid #ccc;
   cursor: pointer;
-  transition: background-color 0.3s;
-  margin-top: 15px;
+  transition: all 0.25s ease;
+  box-shadow: 0 2px 4px rgba(0, 0, 0, 0.1);
+  margin:10px;
+  
+  
+  
 }
 
-.edit-btn:hover {
-  background-color: #138d75;
+.edit-btn-gi {
+  background: white;
+  color: #43a047;
+    border: 2px solid #ccc;
 }
 
+.edit-btn-gi:hover {
+  background: #43a047;
+  color: white;
+  transform: translateY(-1px);
+}
 
+/* 🔴 Active Editing Mode */
+.edit-btn-gi.editing {
+  background: #e74c3c;
+  color: white;
+  border-color: #e74c3c;
+}
 
+.edit-btn-gi.editing:hover {
+  background: #c0392b;
+  border-color: #c0392b;
+}
+
+/* Editable inputs */
+.editable input {
+  border: 1px solid #ccc;
+  border-radius: 6px;
+  padding: 5px 8px;
+  font-size: 1rem;
+  width: 60%;
+  color: #2c3e50;
+  transition: border-color 0.2s ease;
+}
+.editable input:focus { border-color: #2980b9; outline:none; }
+
+/* Messages */
 .update-message {
   margin-top: 10px;
   padding: 10px 15px;
@@ -96,129 +156,184 @@
   font-size: 0.9rem;
   display: inline-block;
 }
+.update-message.success { background-color:#d4efdf; color:#1e8449; border:1px solid #27ae60; }
+.update-message.error { background-color:#f9d6d5; color:#a93226; border:1px solid #cb4335; }
 
-.update-message.success {
-  background-color: #d4efdf;
-  color: #1e8449;
-  border: 1px solid #27ae60;
-}
+/* Changed/Unchanged */
+.info-row.changed { background-color:#fff8dc; }
+.info-row.unchanged { background-color:transparent; }
 
-.update-message.error {
-  background-color: #f9d6d5;
-  color: #a93226;
-  border: 1px solid #cb4335;
-}
 
-@media (max-width: 600px) {
-  .label { min-width: 100px; }
-}
+@media(max-width:600px){ .label { min-width:100px; } }
 </style>
 
-<!-- ================= JavaScript ================= -->
 <script>
 document.addEventListener('DOMContentLoaded', function() {
+
   // ---- CSRF Token ----
-  function getCookie(name) {
+  function getCookie(name){
     let cookieValue = null;
-    if (document.cookie && document.cookie !== '') {
-      const cookies = document.cookie.split(';');
-      for (let cookie of cookies) {
+    if(document.cookie && document.cookie !== ''){
+      document.cookie.split(';').forEach(cookie => {
         cookie = cookie.trim();
-        if (cookie.startsWith(name + '=')) {
-          cookieValue = decodeURIComponent(cookie.slice(name.length + 1));
-          break;
-        }
-      }
+        if(cookie.startsWith(name + '=')) cookieValue = decodeURIComponent(cookie.slice(name.length+1));
+      });
     }
     return cookieValue;
   }
   const csrftoken = getCookie('csrftoken');
 
+  // ---- General Info Edit ----
   const editBtn = document.getElementById('editBtn');
-  const cancelBtn = document.getElementById('cancelBtn');
   const editables = document.querySelectorAll('.editable');
   const messageBox = document.getElementById('updateMessage');
+  let isEditing=false;
+  let originalValues={};
 
-  let originalValues = {}; // Store original text values
-
-  // ---- Edit / Save Logic ----
-  editBtn.addEventListener('click', async function() {
-    const isEditing = this.innerText.includes('Save');
-
-    if (isEditing) {
-      // Save values
-      const updatedData = {};
-      editables.forEach(span => {
-        const input = span.querySelector('input');
-        if (input) updatedData[span.dataset.field] = input.value.trim();
-      });
-
-      editBtn.disabled = true;
-      cancelBtn.disabled = true;
-
-      try {
-        const response = await fetch("{% url 'doctor:update_general_info' patient.patient_id %}", {
-          method: 'POST',
-          headers: { 'Content-Type': 'application/json', 'X-CSRFToken': csrftoken },
-          body: JSON.stringify(updatedData)
-        });
-        const result = await response.json();
-
-        if (response.ok && result.success) {
-          // ✅ Update span text only after backend success
-          editables.forEach(span => {
-            const input = span.querySelector('input');
-            if (input) span.textContent = input.value;
-          });
-
-          messageBox.textContent = '✅ ' + result.message;
-          messageBox.className = 'update-message success';
-          editBtn.innerText = '✏️ Edit Info';
-          cancelBtn.style.display = 'none';
-        } else {
-          messageBox.textContent = '⚠️ ' + (result.error || 'Failed to update info.');
-          messageBox.className = 'update-message error';
-        }
-
-        messageBox.style.display = 'block';
-        setTimeout(() => { messageBox.style.display = 'none'; }, 4000);
-
-      } catch (err) {
-        console.error(err);
-        messageBox.textContent = '❌ Error updating info.';
-        messageBox.className = 'update-message error';
-        messageBox.style.display = 'block';
-        setTimeout(() => { messageBox.style.display = 'none'; }, 4000);
-      } finally {
-        editBtn.disabled = false;
-        cancelBtn.disabled = false;
-      }
-
-    } else {
-      // Enter edit mode
-      editables.forEach(span => {
+  editBtn.addEventListener('click', async function(){
+    if(!isEditing){
+      originalValues = {};
+      editables.forEach(span=>{
         originalValues[span.dataset.field] = span.innerText;
         const input = document.createElement('input');
-        input.type = 'text';
-        input.value = span.innerText;
-        input.style.width = '60%';
-        span.innerHTML = '';
+        input.type='text';
+        input.value=span.innerText.trim();
+        span.innerHTML='';
         span.appendChild(input);
       });
-
-      this.innerText = '💾 Save';
-      cancelBtn.style.display = 'inline-block';
+      editBtn.classList.add('editing');
+      editBtn.textContent='💾';
+      isEditing=true;
+    } else {
+      const updatedData={};
+      editables.forEach(span=>{
+        const input = span.querySelector('input');
+        if(input) updatedData[span.dataset.field]=input.value.trim();
+      });
+      editBtn.disabled=true;
+      try{
+        const response = await fetch("{% url 'doctor:update_general_info' patient.patient_id %}",{
+          method:'POST',
+          headers:{ 'Content-Type':'application/json','X-CSRFToken':csrftoken },
+          body:JSON.stringify(updatedData)
+        });
+        const result = await response.json();
+        if(response.ok && result.success){
+          editables.forEach(span=>{
+            const input = span.querySelector('input');
+            if(input){
+              const newValue = input.value.trim();
+              span.textContent = newValue;
+              const row = span.closest('.info-row');
+              if(originalValues[span.dataset.field]!==newValue){
+                row.classList.add('changed'); row.classList.remove('unchanged');
+              } else {
+                row.classList.add('unchanged'); row.classList.remove('changed');
+              }
+            }
+          });
+          messageBox.textContent='✅ '+result.message;
+          messageBox.className='update-message success';
+        } else {
+          messageBox.textContent='⚠️ '+(result.error || 'Failed to update info.');
+          messageBox.className='update-message error';
+        }
+        messageBox.style.display='block';
+        setTimeout(()=>{messageBox.style.display='none';},4000);
+      } catch(err){
+        console.error(err);
+        messageBox.textContent='❌ Error updating info.';
+        messageBox.className='update-message error';
+        messageBox.style.display='block';
+        setTimeout(()=>{messageBox.style.display='none';},4000);
+      } finally{ editBtn.disabled=false; editBtn.classList.remove('editing'); editBtn.textContent='✏️'; isEditing=false; }
     }
   });
 
-  // ---- Cancel Button ----
-  cancelBtn.addEventListener('click', function() {
-    editables.forEach(span => {
-      span.textContent = originalValues[span.dataset.field];
+  // ---- Chevron toggles ----
+  function toggleSection(headerId, cardId, chevronId){
+    const header=document.getElementById(headerId);
+    const card=document.getElementById(cardId);
+    const chevron=document.getElementById(chevronId);
+    header.addEventListener('click',()=>{
+      const visible = card.style.display!=='none';
+      card.style.display = visible ? 'none':'flex';
+      chevron.style.transform = visible ? 'rotate(180deg)':'rotate(0deg)';
     });
-    editBtn.innerText = '✏️ Edit';
-    this.style.display = 'none';
-    messageBox.style.display = 'none';
+  }
+  toggleSection('generalHeader','#general .info-card','generalChevron');
+  toggleSection('important_partsHeader','importantPartsForm','important_partsChevron');
+
+  // ---- Populate Important Parts Checkboxes ----
+  const sidebarItems = document.querySelectorAll('.sidebar ul li ul li[data-target]');
+  const importantPartsCard = document.getElementById('importantPartsCard');
+  importantPartsCard.innerHTML='';
+
+  sidebarItems.forEach(item=>{
+    const labelText = item.textContent.trim();
+    const row = document.createElement('div');
+    row.className='info-row unchanged';
+    row.style.alignItems='center';
+
+    const textSpan = document.createElement('span');
+    textSpan.textContent=labelText;
+    textSpan.style.flex='1';
+    textSpan.style.fontWeight='500';
+    textSpan.style.color='#16a085';
+
+    const checkbox=document.createElement('input');
+    checkbox.type='checkbox';
+    checkbox.className='important-checkbox';
+    checkbox.value=labelText;
+
+    // Pre-check previously selected
+    if(previouslySelectedParts.includes(labelText)) checkbox.checked=true;
+
+    row.appendChild(textSpan);
+    row.appendChild(checkbox);
+    importantPartsCard.appendChild(row);
   });
+
+  // ---- Save Important Parts ----
+  const saveImportantBtn = document.getElementById('saveImportantBtn');
+  const importantMessage = document.getElementById('importantMessage');
+
+  saveImportantBtn.addEventListener('click',async function(){
+    const checkedLabels = Array.from(document.querySelectorAll('.important-checkbox:checked')).map(cb=>cb.value.trim());
+
+    const importantPartsText = checkedLabels.join(',');
+    saveImportantBtn.disabled=true;
+
+    try{
+      const response = await fetch("{% url 'doctor:record_imp_menu_part' patient.patient_id %}",{
+        method:'POST',
+        headers:{ 'Content-Type':'application/json','X-CSRFToken':csrftoken },
+        body:JSON.stringify({important_parts:importantPartsText})
+      });
+      const result = await response.json();
+      if(response.ok && result.success){
+        importantMessage.textContent='✅ '+result.message;
+        importantMessage.className='update-message success';
+        // Update changed/unchanged for checkboxes
+        document.querySelectorAll('.important-checkbox').forEach(cb=>{
+          const row = cb.closest('.info-row');
+          row.classList.remove('changed','unchanged');
+          if(cb.checked) row.classList.add('changed'); else row.classList.add('unchanged');
+        });
+      } else {
+        importantMessage.textContent='⚠️ '+(result.error || 'Failed to update important parts.');
+        importantMessage.className='update-message error';
+      }
+      importantMessage.style.display='block';
+      setTimeout(()=>{importantMessage.style.display='none';},4000);
+    } catch(err){
+      console.error(err);
+      importantMessage.textContent='❌ Error updating important parts.';
+      importantMessage.className='update-message error';
+      importantMessage.style.display='block';
+      setTimeout(()=>{importantMessage.style.display='none';},4000);
+    } finally{ saveImportantBtn.disabled=false; }
+  });
+
 });
 </script>

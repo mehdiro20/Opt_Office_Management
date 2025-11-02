@@ -1,7 +1,12 @@
 {% if patients %}
   <!-- ACCEPTED PATIENTS -->
   <div class="patient-section accepted">
-    <h5 class="section-title text-success"><i class="bi bi-check-circle"></i> Accepted Patients</h5>
+    <h5 class="section-title text-success">
+      <i class="bi bi-check-circle"></i> Accepted Patients
+
+      <span class="count-badge">{{ accepted_count }}</span>
+
+    </h5>
     <button class="toggle-btn" onclick="invisible_accepted()">
       <i class="bi bi-chevron-down" style="color:gray"></i>
     </button>  
@@ -11,11 +16,7 @@
           <div class="patient-card">
             <div class="card-header d-flex justify-content-between align-items-center">
               <h6 class="card-title mb-0"><i class="bi bi-person-circle"></i> {{ patient.name }}</h6>
-              <button class="btn btn-sm collapse-btn" type="button" data-bs-toggle="collapse" data-bs-target="#accepted-{{ patient.patient_id }}" aria-expanded="true" aria-controls="accepted-{{ patient.patient_id }}">
-                <i class="bi bi-chevron-down"></i>
-              </button>
             </div>
-
             <div id="accepted-{{ patient.patient_id }}" class="collapse show accepted">
               <div class="card-body">
                 <p class="mb-1"><i class="bi bi-card-text"></i> <strong>ID:</strong> {{ patient.patient_id }}</p>
@@ -25,7 +26,6 @@
                 {% endif %}
                 <p class="text-muted small mb-0"><i class="bi bi-file-text"></i> <strong>Reason:</strong> {{ patient.reason }}</p>
               </div>
-
               <div class="card-footer d-flex justify-content-between">
                 <a class="btn btn-sm btn-primary" href="{% url 'doctor:patient_profile' patient.patient_id %}">
                   <i class="bi bi-box-arrow-up-right"></i> Profile
@@ -45,7 +45,10 @@
 
   <!-- WAITING PATIENTS -->
   <div class="patient-section waiting-out">
-    <h5 class="section-title text-warning"><i class="bi bi-hourglass-split"></i> Waiting Patients</h5>
+    <h5 class="section-title text-warning">
+      <i class="bi bi-hourglass-split"></i> Waiting Patients
+       <span class="count-badge">{{ waiting_count }}</span>
+    </h5>
     <button class="toggle-btn" onclick="invisible_waitingout()">
       <i class="bi bi-chevron-down" style="color:gray"></i>
     </button>  
@@ -55,11 +58,7 @@
           <div class="patient-card">
             <div class="card-header d-flex justify-content-between align-items-center">
               <h6 class="card-title mb-0"><i class="bi bi-person-circle"></i> {{ patient.name }}</h6>
-              <button class="btn btn-sm collapse-btn" type="button" data-bs-toggle="collapse" data-bs-target="#waiting-{{ patient.patient_id }}" aria-expanded="true" aria-controls="waiting-{{ patient.patient_id }}">
-                <i class="bi bi-chevron-down"></i>
-              </button>
             </div>
-
             <div id="waiting-{{ patient.patient_id }}" class="collapse show waiting-out">
               <div class="card-body">
                 <p class="mb-1"><i class="bi bi-card-text"></i> <strong>ID:</strong> {{ patient.patient_id }}</p>
@@ -69,7 +68,6 @@
                 {% endif %}
                 <p class="text-muted small mb-0"><i class="bi bi-file-text"></i> <strong>Reason:</strong> {{ patient.reason }}</p>
               </div>
-
               <div class="card-footer d-flex justify-content-between">
                 <a class="btn btn-sm btn-primary" href="{% url 'doctor:patient_profile' patient.patient_id %}">
                   <i class="bi bi-box-arrow-up-right"></i> Profile
@@ -89,7 +87,10 @@
 
   <!-- DONE PATIENTS -->
   <div class="patient-section done">
-    <h5 class="section-title text-secondary"><i class="bi bi-clipboard-check"></i> Done Patients</h5>
+    <h5 class="section-title text-secondary">
+      <i class="bi bi-clipboard-check"></i> Done Patients
+      <span class="count-badge">{{ done_count }}</span>
+    </h5>
     <button class="toggle-btn" onclick="invisible_done()">
       <i class="bi bi-chevron-down" style="color:gray"></i>
     </button>  
@@ -99,11 +100,7 @@
           <div class="patient-card">
             <div class="card-header d-flex justify-content-between align-items-center">
               <h6 class="card-title mb-0"><i class="bi bi-person-circle"></i> {{ patient.name }}</h6>
-              <button class="btn btn-sm collapse-btn" type="button" data-bs-toggle="collapse" data-bs-target="#done-{{ patient.patient_id }}" aria-expanded="true" aria-controls="done-{{ patient.patient_id }}">
-                <i class="bi bi-chevron-down"></i>
-              </button>
             </div>
-
             <div id="done-{{ patient.patient_id }}" class="collapse show done">
               <div class="card-body">
                 <p class="mb-1"><i class="bi bi-card-text"></i> <strong>ID:</strong> {{ patient.patient_id }}</p>
@@ -113,7 +110,6 @@
                 {% endif %}
                 <p class="text-muted small mb-0"><i class="bi bi-file-text"></i> <strong>Reason:</strong> {{ patient.reason }}</p>
               </div>
-
               <div class="card-footer d-flex justify-content-between">
                 <a class="btn btn-sm btn-primary" href="{% url 'doctor:patient_profile' patient.patient_id %}">
                   <i class="bi bi-box-arrow-up-right"></i> Profile
@@ -147,10 +143,8 @@ function toggleSection(sectionClass, storageKey) {
     const isHidden = localStorage.getItem(storageKey) === 'true';
     const newHidden = !isHidden;
 
-    // Show/hide cards
     cards.forEach(c => c.style.display = newHidden ? 'none' : 'flex');
 
-    // Swap chevron
     if (toggleBtnIcon) {
         toggleBtnIcon.classList.toggle('bi-chevron-up', newHidden);
         toggleBtnIcon.classList.toggle('bi-chevron-down', !newHidden);
@@ -159,12 +153,10 @@ function toggleSection(sectionClass, storageKey) {
     localStorage.setItem(storageKey, newHidden);
 }
 
-// Section toggle functions
 function invisible_accepted() { toggleSection('accepted', 'invis_accepted'); }
 function invisible_waitingout() { toggleSection('waiting-out', 'invis_waitingout'); }
 function invisible_done() { toggleSection('done', 'invis_done'); }
 
-// Restore state on page load
 document.addEventListener('DOMContentLoaded', function() {
     ['accepted', 'waiting-out', 'done'].forEach(cls => {
         const storageKey = 'invis_' + cls.replace('-', '');
@@ -175,8 +167,26 @@ document.addEventListener('DOMContentLoaded', function() {
 });
 </script>
 
+
+
 <style>
-.section-title { margin-bottom: 10px; font-weight: 600; }
+.section-title { 
+    margin-bottom: 10px; 
+    font-weight: 600; 
+    display: flex;
+    align-items: center;
+    gap: 6px;
+}
+
+.count-badge {
+    background: #f0f0f0;
+    color: #333;
+    font-size: 0.85rem;
+    font-weight: 600;
+    padding: 3px 8px;
+    border-radius: 12px;
+}
+
 .section-divider { border: none; border-top: 2px solid #e6e6e6; margin: 30px 0; }
 
 .patients-grid {
@@ -199,9 +209,9 @@ document.addEventListener('DOMContentLoaded', function() {
 }
 .patient-card:hover { transform: translateY(-4px); box-shadow: 0 8px 22px rgba(0,0,0,0.12); }
 
-.card-header { padding: 12px; background: #f9f9f9; border-bottom: 1px solid #eee; display: flex; justify-content: space-between; align-items: center; }
+.card-header { padding: 12px; background: #f9f9f9; border-bottom: 1px solid #eee; display: flex; justify-content: space-between; align-items: center; direction:rtl }
 .card-body { padding: 12px; }
-.card-title { font-weight: 600; font-size: 0.95rem; color: #2c3e50; }
+.card-title { font-weight: 600; font-size: 0.95rem; color: #2c3e50;  direction:rtl}
 
 .card-footer { padding: 8px 12px; border-top: 1px solid #f0f0f0; display: flex; justify-content: space-between; align-items: center; background: #fff; }
 
@@ -238,6 +248,11 @@ document.addEventListener('DOMContentLoaded', function() {
 
 
 }
+
+
+.text-success .count-badge { background: #eafaf1; color: #27ae60; }
+.text-warning .count-badge { background: #fff5e6; color: #e67e22; }
+.text-secondary .count-badge { background: #f2f3f4; color: #7f8c8d; }
 
 @media (max-width: 1100px) { .patients-grid { grid-template-columns: repeat(2, 1fr); } }
 @media (max-width: 600px) { .patients-grid { grid-template-columns: 1fr; } }

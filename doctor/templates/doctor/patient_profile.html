@@ -164,6 +164,35 @@
     .footer-links a { color: #1abc9c; text-decoration: none; margin: 0 10px; font-weight: 500; }
     .footer-links a:hover { text-decoration: underline; }
 
+/* Highlighted menu item when changed */
+.sidebar ul li ul li.imp-changed { 
+  background-color: #ffd966 !important;  /* yellow */
+  color: #000 !important;               /* black text for contrast */
+}
+
+/* Default menu item when unchanged */
+.sidebar ul li ul li.imp-unchanged { 
+  background-color: rgba(255,255,255,0.05); /* subtle default */
+  color: #ecf0f1;
+}
+
+/* Hover effect for submenu items */
+.sidebar ul li ul li:hover {
+  background-color: rgba(52,152,219,0.3);
+  color: #fff;
+}
+
+/* Active menu item styling */
+.sidebar ul li ul li.active {
+  background-color: rgba(26,188,156,0.5);
+  font-weight: 600;
+}
+
+/* Optional transition for smooth highlight change */
+.sidebar ul li ul li {
+  transition: background-color 0.3s ease, color 0.3s ease;
+}
+
   </style>
 </head>
 <body>
@@ -176,21 +205,21 @@
       <ul>
         <li class="has-submenu">General
           <ul>
-            <li data-target="general">General info</li>
-            <li data-target="make-orders">Make Orders</li>
+            <li data-target="general_info">General info</li>
+            <li data-target="make_orders">Make Orders</li>
           </ul>
         </li>
         <li class="has-submenu">New Records
           <ul>
-            <li data-target="general-health">General Health</li>
-            <li data-target="previous_examination">Previous Examination / Illness</li>
+            <li data-target="general_health">General Health</li>
             <li data-target="refraction">VA & Refraction</li>
             <li data-target="optics">Optics</li>
+            <li data-target="optics">Pathology & Lab</li>
             <li data-target="acc_bin">Acc & Binocular Examination</li>
             <li data-target="cl">Contact Lens</li>
             <li data-target="amblyopia">Amblyopia Therapy</li>
             <li data-target="vision_therapy">Vision Therapy</li>
-            <li data-target="follow_up">Follow Up</li>
+            <li data-target="follow_up">Follow Up / Appointement</li>
             <li data-target="referrals">Referrals</li>
           </ul>
         </li>
@@ -203,7 +232,6 @@
         <li class="has-submenu">Final Records
           <ul>
             <li data-target="final-records-file">Final Records File</li>
-          
           </ul>
         </li>
       </ul>
@@ -212,14 +240,13 @@
 
   <!-- Main Content -->
   <div class="main-content">
-    
     {% include "doctor/general_infos.html" %}
     {% include "doctor/refraction.html" %}
     {% include "doctor/past_refraction_list.html" %}
     {% include "doctor/optics.html" %}
-     {% include "doctor/patient_summary.html" %}
-     {% include "doctor/make_orders.html" %}
-     {% include "doctor/general_health.html" %}
+    {% include "doctor/patient_summary.html" %}
+    {% include "doctor/make_orders.html" %}
+    {% include "doctor/general_health.html" %}
   </div>
 </div>
 
@@ -233,9 +260,9 @@
 
   <!-- Wait Outside -->
   <form method="POST" action="{% url 'doctor:move_to_waiting' patient.patient_id %}" id="wait-form">
-  {% csrf_token %}
-  <button type="submit" id="wait-btn" class="wait-btn"><i class="fa fa-clock"></i></button>
-</form>
+    {% csrf_token %}
+    <button type="submit" id="wait-btn" class="wait-btn"><i class="fa fa-clock"></i></button>
+  </form>
 
   <!-- Doctor Dashboard -->
   <a href="{% url 'doctor:doctor_dashboard' %}"><i class="fa fa-user-doctor"></i></a>
@@ -266,70 +293,111 @@
 
 <!-- JS -->
 <script>
-  const sections = document.querySelectorAll('.section');
-  const menuItems = document.querySelectorAll('.sidebar ul li[data-target]');
-  const patientId = "{{ patient.patient_id }}";  
-  const storageKey = "activeTab_" + patientId;
+const sections = document.querySelectorAll('.section');
+const menuItems = document.querySelectorAll('.sidebar ul li[data-target]');
+const patientId = "{{ patient.patient_id }}";  
+const storageKey = "activeTab_" + patientId;
 
-  function hideAllSections() {
+// Hide all sections
+function hideAllSections() {
     sections.forEach(sec => sec.style.display = 'none');
-  }
+}
 
-  // Toggle submenu
-  document.querySelectorAll('.sidebar ul li.has-submenu').forEach(parent => {
+// Toggle submenu open/close
+document.querySelectorAll('.sidebar ul li.has-submenu').forEach(parent => {
     parent.addEventListener('click', (e) => {
-      if (!e.target.hasAttribute('data-target')) {
-        parent.classList.toggle('open');
-      }
-    });
-  });
-
-  // Handle menu item click
-  menuItems.forEach(item => {
-    item.addEventListener('click', (e) => {
-      e.stopPropagation();
-      hideAllSections();
-      menuItems.forEach(i => i.classList.remove('active'));
-
-      const target = item.getAttribute('data-target');
-      if (target) {
-        const sec = document.getElementById(target);
-        if (sec) {
-          sec.style.display = 'block';
-          item.classList.add('active');
-          localStorage.setItem(storageKey, target);
+        if (!e.target.hasAttribute('data-target')) {
+            parent.classList.toggle('open');
         }
-      }
     });
-  });
+});
 
-  // Show saved or default section
-  window.addEventListener("DOMContentLoaded", () => {
-    let savedTab = localStorage.getItem(storageKey);
-    if (!savedTab) { savedTab = "general"; }
+// Menu item click handler
+menuItems.forEach(item => {
+    item.addEventListener('click', (e) => {
+        e.stopPropagation();
+        hideAllSections();
+        menuItems.forEach(i => i.classList.remove('active'));
 
+        const target = item.getAttribute('data-target');
+        if (target) {
+            const sec = document.getElementById(target);
+            if (sec) sec.style.display = 'block';
+            item.classList.add('active');
+            localStorage.setItem(storageKey, target);
+        }
+    });
+});
+
+// Apply initial highlights from database and restore last section
+window.addEventListener("DOMContentLoaded", () => {
     hideAllSections();
-    const sec = document.getElementById(savedTab);
-    if (sec) sec.style.display = "block";
 
-    const activeItem = document.querySelector(`[data-target="${savedTab}"]`);
-    if (activeItem) {
-      activeItem.classList.add("active");
+    // Database highlights (passed from Django context)
+    const selectedParts = {{ selected_data_imp_menu_part.imp_menu_parts|safe }}; 
 
-      let parentLi = activeItem.closest('ul').parentElement;
-      while (parentLi && parentLi.tagName === 'LI') {
-        parentLi.classList.add('open');
-        parentLi = parentLi.closest('ul').parentElement;
-      }
+    // Apply initial highlights
+    menuItems.forEach(item => {
+        if (selectedParts.includes(item.textContent.trim())) {
+            item.classList.add('imp-changed');
+            item.classList.remove('imp-unchanged');
+        } else {
+            item.classList.add('imp-unchanged');
+            item.classList.remove('imp-changed');
+        }
+    });
+
+    // Restore last active section
+    let savedTab = localStorage.getItem(storageKey) || menuItems[0]?.getAttribute('data-target');
+    if (savedTab) {
+        const sec = document.getElementById(savedTab);
+        if (sec) sec.style.display = 'block';
+        const activeItem = document.querySelector(`[data-target="${savedTab}"]`);
+        if (activeItem) {
+            activeItem.classList.add('active');
+            // Open parent submenus
+            let parentLi = activeItem.closest('ul').parentElement;
+            while (parentLi && parentLi.tagName === 'LI') {
+                parentLi.classList.add('open');
+                parentLi = parentLi.closest('ul').parentElement;
+            }
+        }
     }
-  });
 
-  // Clear localStorage for this patient on Done
-  document.getElementById('done-btn').addEventListener('click', function(e){
+    // Dynamic highlight change: checkbox listener
+    sections.forEach(sec => {
+        const checkboxes = sec.querySelectorAll('input[type="checkbox"]');
+        checkboxes.forEach(cb => {
+            cb.addEventListener('change', () => {
+                const span = cb.previousElementSibling;
+                const spanText = span ? span.textContent.trim() : '';
+                if (!spanText) return;
+
+                // Find corresponding menu item
+                const menuItem = Array.from(menuItems).find(item => item.textContent.trim() === spanText);
+                if (!menuItem) return;
+
+                if (cb.checked) {
+                    menuItem.classList.add('imp-changed');
+                    menuItem.classList.remove('imp-unchanged');
+                } else {
+                    menuItem.classList.remove('imp-changed');
+                    menuItem.classList.add('imp-unchanged');
+                }
+            });
+        });
+    });
+});
+
+// Clear localStorage on Done
+document.getElementById('done-btn').addEventListener('click', function(e){
     e.preventDefault();
     localStorage.removeItem(storageKey);
     document.getElementById('done-form').submit();
-  });
+});
 </script>
+
+
+
 </body>
 </html>

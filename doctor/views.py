@@ -1,4 +1,4 @@
-from secretary.models import Patient
+
 from django.shortcuts import render, get_object_or_404, redirect
 from django.db.models import Q
 
@@ -12,7 +12,7 @@ from django.contrib.auth.decorators import permission_required
 from doctor.models import BrandsSplenss
 from doctor.models import OpticsFeature
 
-import json
+
 from django.views.decorators.http import require_POST
 from django.views.decorators.csrf import csrf_exempt
 from doctor.models import Refraction, OpticsDescription
@@ -27,6 +27,7 @@ from xhtml2pdf import pisa
 from django.shortcuts import render
 from .models import Order
 from .models import Register_Order
+from .models import ImpMenuParts
 from django.shortcuts import render, get_object_or_404
 from .models import Patient, GH_HealthCondition,GH_Medication,GH_Allergies,GH_FamilialHistory,GH_GeneticalHistory,GH_LifestyleHistory,GH_OcularHistory,GeneralHealthRecord
 from django.contrib.auth.decorators import login_required, user_passes_test
@@ -84,6 +85,7 @@ def patient_profile(request, patient_id):
     context.update(make_refs(request,patient_id))
     context.update(general_health_view(request,patient_id))
     context.update(general_health_patient_view(request,patient_id))
+    context.update(record_imp_menu_view(request,patient_id))
     
     
     return render(request, "doctor/patient_profile.html",context)
@@ -173,6 +175,8 @@ def remove_from_accepted_profile(request, patient_id):
 def doctor_patient_list(request):
     query = request.GET.get('q', '')
     patients = Patient.objects.all().order_by('-id')
+    
+    
     if query:
         patients = patients.filter(Q(name__icontains=query) | Q(patient_id__icontains=query))
     return render(request, "doctor/patient_list.html", {"patients": patients})
@@ -195,8 +199,16 @@ def patients_fragment(request):
     
 # Filter patients updated today (ignoring time)
     patients = Patient.objects.filter(updated_date__date=today)
+    accepted_count = patients.filter(status='accepted').count()
+    waiting_count = patients.filter(status='waiting_out').count()
+    done_count = patients.filter(status='done').count()
+    context={'patients': patients,
+             'accepted_count':accepted_count,
+             'waiting_count':waiting_count,
+             'done_count':done_count
+             }
     
-    return render(request, 'doctor/patients_list.html', {'patients': patients})
+    return render(request, 'doctor/patients_list.html',context)
 
 @login_required
 @user_passes_test(is_doctor_admin)
@@ -564,3 +576,77 @@ def general_health_record(request, patient_id):
 
 
 
+@login_required
+@user_passes_test(is_doctor_admin)
+
+
+def record_imp_menu_part(request, patient_id):
+    """
+    Create or update ImpMenuParts for a given patient.
+    """
+    if request.method != "POST":
+        return JsonResponse({"success": False, "error": "Only POST method is allowed."}, status=405)
+
+    try:
+        # Parse JSON from request body
+        data = json.loads(request.body)
+        important_parts = data.get('important_parts', '').strip()
+
+        if not important_parts:
+           important_parts='';
+
+        # Get patient
+        patient = get_object_or_404(Patient, patient_id=patient_id)
+
+        # Create or update ImpMenuParts record
+        imp_record, created = ImpMenuParts.objects.update_or_create(
+            patient=patient,
+            defaults={"imp_menu_parts": important_parts}
+        )
+
+        message = "record created successfully." if created else "record updated successfully."
+
+        return JsonResponse({
+            "success": True,
+            "message": message,
+            "patient_id": patient_id,
+            "imp_menu_parts": imp_record.imp_menu_parts,
+        })
+
+    except json.JSONDecodeError:
+        return JsonResponse({"success": False, "error": "Invalid JSON."}, status=400)
+    except Patient.DoesNotExist:
+        return JsonResponse({"success": False, "error": "Patient not found."}, status=404)
+    except Exception as e:
+        return JsonResponse({"success": False, "error": str(e)}, status=500)
+    
+def record_imp_menu_view(request, patient_id):
+    patient = get_object_or_404(Patient, patient_id=patient_id)
+    
+    # Get the existing ImpMenuParts record if it exists
+    record = ImpMenuParts.objects.filter(patient=patient).first()  # returns None if not found
+
+    # Preselect checkboxes
+    selected_data = {
+        "imp_menu_parts": split_and_strip(record.imp_menu_parts) if record else [],
+    }
+
+    context = {
+        "patient": patient,
+        "record_": record,  # single instance or None
+        "selected_data_imp_menu_part": selected_data,  # list of strings for pre-selecting checkboxes
+    }
+
+    return context
+
+
+
+from django.shortcuts import render
+import json
+@csrf_exempt  # if you already have csrf token in the form, this is optional
+def rx_print(request):
+    if request.method == "POST":
+        rx_data_json = request.POST.get("rx_data")
+        rx_data = json.loads(rx_data_json)
+        # Now rx_data contains everything you sent
+        return render(request, "doctor/rx_print.html", {"rx": rx_data})

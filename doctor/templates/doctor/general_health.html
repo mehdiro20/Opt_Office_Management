@@ -1,11 +1,11 @@
-<div id="general-health" class="section">
+<div id="general_health" class="section">
   <h3>General Health Overview</h3>
 
   <form id="generalHealthForm" method="POST" action="{% url 'doctor:general_health_record' patient.patient_id  %}">
     {% csrf_token %}
 
     <!-- Systemic Diseases -->
-    <div class="collapsible-section">
+    <div class="info-card collapsible-section">
       <div class="section-header" id="systemicHeader">
         <span class="section-title">Systemic Diseases</span>
         <button type="button" class="section-chevron" id="systemicChevron">▼</button>
@@ -21,12 +21,12 @@
         {% endfor %}
         <input type="hidden" name="systemic_selected" id="systemic_selected">
       </div>
-    </div>
+   </div>
 
-    <hr>
+  <hr style="margin:20px 0; border-top:2px solid #e6e6e6;">
 
     <!-- Ocular History -->
-    <div class="collapsible-section">
+   <div class="info-card collapsible-section">
       <div class="section-header" id="ocular_historyHeader">
         <span class="section-title">Ocular History</span>
         <button type="button" class="section-chevron" id="ocular_historyChevron">▼</button>
@@ -42,12 +42,12 @@
         {% endfor %}
         <input type="hidden" name="ocular_selected" id="ocular_selected">
       </div>
-    </div>
 
-    <hr>
+</div>
+     <hr style="margin:20px 0; border-top:2px solid #e6e6e6;">
 
     <!-- Medications -->
-    <div class="collapsible-section">
+   <div class="info-card collapsible-section">
       <div class="section-header" id="medicationsHeader">
         <span class="section-title">Medications</span>
         <button type="button" class="section-chevron" id="medicationsChevron">▼</button>
@@ -63,12 +63,12 @@
         {% endfor %}
         <input type="hidden" name="medications_selected" id="medications_selected">
       </div>
-    </div>
 
-    <hr>
+</div>
+    <hr style="margin:20px 0; border-top:2px solid #e6e6e6;">
 
     <!-- Allergies -->
-    <div class="collapsible-section">
+   <div class="info-card collapsible-section">
       <div class="section-header" id="allergiesHeader">
         <span class="section-title">Allergies</span>
         <button type="button" class="section-chevron" id="allergiesChevron">▼</button>
@@ -84,12 +84,12 @@
         {% endfor %}
         <input type="hidden" name="allergies_selected" id="allergies_selected">
       </div>
-    </div>
 
-    <hr>
+</div>
+     <hr style="margin:20px 0; border-top:2px solid #e6e6e6;">
 
     <!-- Familial History -->
-    <div class="collapsible-section">
+   <div class="info-card collapsible-section">
       <div class="section-header" id="familial_histroyHeader">
         <span class="section-title">Familial History</span>
         <button type="button" class="section-chevron" id="familial_histroyChevron">▼</button>
@@ -105,12 +105,12 @@
         {% endfor %}
         <input type="hidden" name="familial_selected" id="familial_selected">
       </div>
-    </div>
 
-    <hr>
+</div>
+      <hr style="margin:20px 0; border-top:2px solid #e6e6e6;">
 
     <!-- Genetical History -->
-    <div class="collapsible-section">
+   <div class="info-card collapsible-section">
       <div class="section-header" id="genetical_historyHeader">
         <span class="section-title">Genetical History</span>
         <button type="button" class="section-chevron" id="genetical_historyChevron">▼</button>
@@ -126,12 +126,12 @@
         {% endfor %}
         <input type="hidden" name="genetical_selected" id="genetical_selected">
       </div>
-    </div>
 
-    <hr>
+</div>
+  <hr style="margin:20px 0; border-top:2px solid #e6e6e6;">
 
     <!-- Lifestyle History -->
-    <div class="collapsible-section">
+    <div class="info-card collapsible-section">
       <div class="section-header" id="lifestyle_historyHeader">
         <span class="section-title">Lifestyle History</span>
         <button type="button" class="section-chevron" id="lifestyle_historyChevron">▼</button>
@@ -147,11 +147,13 @@
         {% endfor %}
         <input type="hidden" name="lifestyle_selected" id="lifestyle_selected">
       </div>
-    </div>
+      </div>
+         <div style="margin-top:20px;" >
+           <button type="submit" class="add_order_btn">💾 Submit General Health</button>
+         </div>
+      </div>
 
-    <div style="margin-top:20px; text-align:center;">
-      <button type="submit" style="background-color:#3498db;color:white;padding:10px 20px;border:none;border-radius:8px;cursor:pointer;font-size:16px;">Submit</button>
-    </div>
+ 
   </form>
 </div>
 
@@ -159,11 +161,35 @@
 <style>
 .section-title { font-weight: bold; color: #2c3e50; }
 .section-header { display:flex; justify-content:space-between; align-items:center; background:#f3f4f6; padding:6px 10px; border-radius:6px; cursor:pointer; }
+.section-header:hover{  
+
+    background:#e9f5f3;
+
+
+
+}
+
+
+
+
 .section-chevron { border:none; background:none; font-size:20px; font-weight:bold; cursor:pointer; color:#2980b9; transition: transform 0.25s ease, color 0.2s ease; }
 .section-chevron:hover, .section-chevron:focus { color:#1c5980; outline:none; transform: scale(1.15); }
 .section-chevron.rotate { transform:rotate(180deg); }
 .checkbox-label label { display: flex; align-items: center; gap: 6px; padding: 4px 8px; min-width: max-content; cursor: pointer; }
-.checkbox-label input[type="checkbox"] { order: 2; width: 16px; height: 16px; }
+.checkbox-label input[type="checkbox"] { order: 2; }
+
+input[type="checkbox"]{
+
+  accent-color: #007bff;
+    cursor: pointer;
+     width: 13px;
+     
+      height: 13px;
+
+}
+
+
+
 </style>
 
 <!-- Scripts: unchanged logic, preselect-aware -->

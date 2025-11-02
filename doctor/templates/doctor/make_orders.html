@@ -1,9 +1,9 @@
 <!-- === MAKE ORDERS SECTION === -->
-<div id="make-orders" class="section">
+<div id="make_orders" class="section">
   <h3>Make Orders for this patient</h3>
 
   <!-- Input Row -->
-  <div style="display: flex; flex-direction: column; flex-wrap: wrap; gap: 10px; margin-bottom: 10px;">
+  <div class="info-card">
     <div style="display: flex; align-items: center; gap: 10px;">
       <label for="orderInput" style="font-weight:600; min-width:130px;">Type / Select Order:</label>
       <input list="ordersList" id="orderInput" placeholder="Select or type order"
@@ -30,18 +30,18 @@
       <input type="number" id="taskDuration" placeholder="Duration (min)" min="1"
         style="width:200px; padding:6px 12px; font-size:14px; border-radius:6px; border:1px solid #ccc; height:36px;">
     </div>
-  </div>
+
 
   <!-- Add/Edit Buttons Row -->
-  <div style="display:flex; gap:10px; margin-bottom:15px; flex-wrap:wrap;">
+  <div  style="display:flex; gap:10px; margin-bottom:15px; flex-wrap:wrap;">
     <button onclick="addOrder()"
-      style="padding:6px 14px; font-size:16px; border-radius:6px; background-color:#4CAF50; color:white; border:none; cursor:pointer; height:36px;">
+      class="add_order_btn">
       ➕ Add Order
     </button>
 
     <button id="editButtonorder" onclick="toggleEditMode()"
-      style="padding:6px 14px; font-size:16px; border-radius:6px; background-color:#4CAF50; color:white; border:none; cursor:pointer; height:36px;">
-      ✏️ Edit
+      class="edit-btn-gi">
+      ✏️
     </button>
   </div>
 
@@ -52,9 +52,13 @@
     <button onclick="moveUpSelected()" style="background:#3498db; color:white; padding:6px 12px; border-radius:6px; border:none; cursor:pointer;">⬆️ Move Up</button>
     <button onclick="moveDownSelected()" style="background:#3498db; color:white; padding:6px 12px; border-radius:6px; border:none; cursor:pointer;">⬇️ Move Down</button>
   </div>
+  <div  style="display:flex; gap:10px; margin-bottom:15px; flex-wrap:wrap;">
+  
+  
+  
+  </div>
 
-  <!-- Orders Table -->
-  <table id="ordersTable">
+  <table  id="ordersTable" class="data-table">
     <thead>
       <tr>
         <th>#</th>
@@ -65,18 +69,90 @@
     </thead>
     <tbody></tbody>
   </table>
-
-  <!-- Save Button -->
-  <div style="margin-top: 15px;">
-    <button id="saveButton" onclick="saveOrdersToDB()"
-      style="padding:8px 16px; font-size:16px; border-radius:6px; background-color:#3498db; color:white; border:none; cursor:pointer;">
-      💾 Save Orders
-    </button>
+    <div style="margin-top: 15px;">
+      <button id="saveButton" onclick="saveOrdersToDB()"
+        class="add_order_btn">
+        💾 Save Orders
+      </button>
+    </div>
   </div>
 </div>
+  <!-- Save Button -->
+
 
 <!-- === TABLE STYLES (Blue Headers + Matching Design) === -->
 <style>
+
+/* === TABLE STYLES === */
+.data-table {
+  width: 100%;
+  border-collapse: collapse;
+  table-layout: fixed;
+  word-wrap: break-word;
+  border-radius: 8px;
+  overflow: hidden;
+  margin-top: 10px;
+}
+
+.data-table th,
+.data-table td {
+  border: 1px solid #ddd;
+  padding: 6px 8px;
+  text-align: center;
+  font-size: 0.95rem;
+}
+
+.data-table th {
+  background-color: #007BFF;
+  color: white;
+  font-weight: 600;
+}
+
+.data-table td input.edit-input {
+  width: 95%;
+  box-sizing: border-box;
+  padding: 3px 6px;
+  font-size: 0.9rem;
+  border: 1px solid #ccc;
+  border-radius: 4px;
+  transition: all 0.2s ease;
+}
+
+.data-table td input.edit-input:focus {
+  outline: 2px solid #4a90e2;
+  background-color: #f9fcff;
+}
+
+.data-table td:nth-child(5),
+.data-table td:nth-child(6) {
+  width: 90px;
+}
+
+.data-table td:nth-child(2),
+.data-table td:nth-child(3),
+.data-table td:nth-child(4) {
+  width: 150px;
+}
+
+@media (max-width: 768px) {
+  .data-table td input.edit-input {
+    font-size: 0.8rem;
+    width: 100%;
+  }
+
+  .data-table td:nth-child(2),
+  .data-table td:nth-child(3),
+  .data-table td:nth-child(4) {
+    width: 120px;
+  }
+}
+
+
+
+
+
+
+
   #ordersTable {
     width: 100%;
     border-collapse: collapse;
@@ -131,6 +207,21 @@
   #make-orders select {
     width: 200px !important;
   }
+  
+
+.add_order_btn {
+  background: white;
+  color: #007bff;
+  border: 2px solid #ccc;
+}
+
+.add_order_btn:hover {
+  background: #007bff;
+  color: white;
+  transform: translateY(-1px);
+}
+
+
 </style>
 
 <!-- === SCRIPT === -->
@@ -242,7 +333,18 @@ function toggleEditMode(){
   const btn=document.getElementById("editButtonorder");
 
   editMode = !editMode;
-  btn.style.background=editMode?"red":"#4CAF50"; 
+    if(editMode){ 
+        btn.classList.add("editing")
+        btn.textContent="💾"; 
+      }
+    else { 
+         btn.textContent="✏️"; 
+         btn.classList.remove('editing');
+         
+         }
+                 
+            
+            
   document.getElementById("actionButtons").style.display = editMode ? "flex" : "none";
   document.querySelectorAll(".editColumn").forEach(col=>col.style.display = editMode ? "table-cell":"none");
   renderOrders();

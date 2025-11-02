@@ -172,3 +172,9 @@ class GeneralHealthRecord(models.Model):
 
     def __str__(self):
         return f"{self.patient.name} — General Health Record"
+    
+    
+  
+class  ImpMenuParts(models.Model):
+    patient = models.ForeignKey(Patient, to_field='patient_id', db_column='patient_id', on_delete=models.CASCADE, related_name='ImpMenuParts')
+    imp_menu_parts = models.CharField(max_length=200)
