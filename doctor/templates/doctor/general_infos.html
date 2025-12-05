@@ -8,15 +8,15 @@
   </div>
 
   <!-- General Info Card -->
-  <div class="info-card" style="display:block;">
-   
+  <div class="info-card card-body" style="display:block;">
+    <button id="editBtn" class="edit-btn-gi">✏️</button>
     <div class="info-row"><span class="label">Name:</span><span class="editable" data-field="name">{{ patient.name }}</span></div>
     <div class="info-row"><span class="label">Age:</span><span class="editable" data-field="age">{{ patient.age }}</span></div>
     <div class="info-row"><span class="label">Gender:</span><span class="editable" data-field="gender">{{ patient.gender }}</span></div>
     <div class="info-row"><span class="label">Phone:</span><span class="editable" data-field="phone">{{ patient.phone }}</span></div>
     <div class="info-row"><span class="label">Email:</span><span class="editable" data-field="email">{{ patient.email }}</span></div>
     <div class="info-row"><span class="label">Melli Code:</span><span class="editable" data-field="melli_code">{{ patient.melli_code }}</span></div>
-     <button id="editBtn" class="edit-btn-gi">✏️</button>
+     
      
   </div>
 
@@ -30,7 +30,7 @@
   </div>
 
   <!-- Important Parts Form -->
-  <form id="importantPartsForm" class="info-card">
+  <form id="importantPartsForm" class="info-card card-body">
     <div id="importantPartsCard"></div>
     <button type="button" id="saveImportantBtn" class="add_order_btn" style="align-self:flex-start;">💾 Save Important Parts</button>
     <div id="importantMessage" class="update-message" style="display:none;"></div>
@@ -105,7 +105,7 @@ const previouslySelectedParts = {{ selected_data_imp_menu_part.imp_menu_parts|sa
   cursor: pointer;
   transition: all 0.25s ease;
   box-shadow: 0 2px 4px rgba(0, 0, 0, 0.1);
-  margin:10px;
+  margin-bottom:20px;
   
   
   

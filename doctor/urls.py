@@ -29,9 +29,21 @@ urlpatterns = [
     path('patient/<str:patient_id>/general-health-record/', views.general_health_record, name='general_health_record'),
     path('patient/<str:patient_id>/record_imp_menu_part/', views.record_imp_menu_part, name='record_imp_menu_part'),
     path('rx_print/', views.rx_print, name='rx_print'),
+    path(
+        "delete_patient_item/<str:patient_id>/",
+        views.delete_patient_item,
+        name="delete_patient_item",
+    ),
 
-
-    
+   path("add_patient_item/<str:patient_id>/", views.add_patient_item, name="add_patient_item"),
+    path("find-lens-group", views.find_lens_group, name="find_lens_group"),  
+    path("submit_lens", views.submit_lens, name="submit_lens"),  
+    path(
+        "load_selected_lenses/<str:patient_id>/",
+        views.load_selected_lenses,
+        name="load_selected_lenses"
+    ),
+    path('delete-lens/', views.delete_lens, name='delete_lens'),
 ]
 
 if settings.DEBUG:

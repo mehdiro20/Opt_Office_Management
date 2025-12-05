@@ -1,3 +1,4 @@
+{% load static %}
 <!doctype html>
 <html lang="fa">
 <head>
@@ -10,43 +11,168 @@
 
   <style>
     @page { size: A4 portrait; margin: 35mm; }
-    :root { --brand: #0a74da; --border: #ddd; --text: #222; --muted: #777; --bg: #fff; }
-    body { margin: 0; padding: 0; background: #f2f4f8; font-family: 'Vazirmatn', sans-serif; color: var(--text); direction: rtl; }
-    .sheet { background: var(--bg); 
-            width: 100%;
-             max-width:800px;
-             margin: 24px auto;
-             padding: 28px;
-             border-radius: 10px;
-             border: 1px solid var(--border); 
-             box-shadow: 0 3px 10px rgba(0,0,0,0.06); 
-             min-height: 730px; /* or 1100px, adjust to your needs */
-           
-     }
-header { display: flex; justify-content: space-between; align-items: flex-start; border-bottom: 2px solid var(--brand); padding-bottom: 8px; margin-bottom: 16px; }
-    .clinic h1 { margin: 0; font-size: 20px; color: var(--brand); font-weight: 600; }
-    .clinic p { margin: 4px 0 0; font-size: 13px; color: var(--muted); }
-    .meta { text-align: left; font-size: 13px; color: var(--muted); }
-    label { display: block; font-size: 13px; margin-bottom: 4px; color: var(--muted); }
-    input, textarea { width: 100%; padding: 8px 10px; border: 1px solid #ccc; border-radius: 6px; font-size: 14px; font-family: inherit; box-sizing: border-box; }
-    input[type="text"].ltr, .prescription-table input, #date, #pd { direction: ltr; text-align: left; }
+
+    :root {
+      --brand: #0a74da;
+      --border: #ddd;
+      --text: #222;
+      --muted: #777;
+      --bg: #fff;
+    }
+
+    body {
+      margin: 0;
+      padding: 0;
+      background: #f2f4f8;
+      font-family: 'Vazirmatn', sans-serif;
+      color: var(--text);
+      direction: rtl;
+    }
+
+    .sheet {
+      background: var(--bg);
+      width: 100%;
+      max-width: 800px;
+      margin: 24px auto;
+      padding: 28px;
+      border-radius: 10px;
+      border: 1px solid var(--border);
+      box-shadow: 0 3px 10px rgba(0,0,0,0.06);
+      min-height: 730px;
+    }
+
+    header {
+      display: flex;
+      justify-content: space-between;
+      align-items: flex-start;
+      border-bottom: 2px solid var(--brand);
+      padding-bottom: 8px;
+      margin-bottom: 16px;
+    }
+
+    .clinic h1 {
+      margin: 0;
+      font-size: 20px;
+      color: var(--brand);
+      font-weight: 600;
+    }
+
+    .clinic p {
+      margin: 4px 0 0;
+      font-size: 13px;
+      color: var(--muted);
+    }
+
+    .meta {
+      text-align: left;
+      font-size: 13px;
+      color: var(--muted);
+    }
+
+    label {
+      display: block;
+      font-size: 13px;
+      margin-bottom: 4px;
+      color: var(--muted);
+    }
+
+    input, textarea {
+      width: 100%;
+      padding: 8px 10px;
+      border: 1px solid #ccc;
+      border-radius: 6px;
+      font-size: 14px;
+      font-family: inherit;
+      box-sizing: border-box;
+    }
+
+    input[type="text"].ltr,
+    .prescription-table input,
+    #date,
+    #pd {
+      direction: ltr;
+      text-align: left;
+    }
+
     textarea { resize: vertical; }
+
     .row { display: flex; gap: 12px; margin-top: 10px; }
+
     .col { flex: 1; }
-    .prescription-table { width: 100%; border-collapse: collapse; margin-top: 16px; direction: ltr; }
-    .prescription-table th, .prescription-table td { border: 1px solid #ccc; padding: 8px; text-align: center; font-size: 13px; }
-    .prescription-table th { background: #eef4ff; color: var(--text); }
-    .signature { display: flex; justify-content: space-between; align-items: center; margin-top: 24px; }
-    .sig-line { border-top: 1px solid #000; width: 55%; padding-top: 6px; text-align: right; font-size: 13px; color: var(--muted); }
-    .clinic-stamp { text-align: left; font-size: 13px; color: var(--muted); }
-    .controls { display: flex; justify-content: flex-end; margin-bottom: 10px; }
-    button { padding: 8px 14px; border: none; border-radius: 6px; background: var(--brand); color: #fff; font-size: 14px; cursor: pointer; display: flex; align-items: center; gap: 6px; }
-    button:hover { background: #095cc2; }
-    @media print { body { background: transparent; } .sheet { box-shadow: none; border: none; margin: 0; padding: 0; } .controls { display: none; } }
+
+    .prescription-table {
+      width: 100%;
+      border-collapse: collapse;
+      margin-top: 16px;
+      direction: ltr;
+    }
+
+    .prescription-table th, .prescription-table td {
+      border: 1px solid #ccc;
+      padding: 8px;
+      text-align: center;
+      font-size: 13px;
+    }
+
+    .prescription-table th {
+      background: #eef4ff;
+      color: var(--text);
+    }
+
+    .signature {
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      margin-top: 24px;
+    }
+
+    .sig-line {
+      border-top: 1px solid #000;
+      width: 55%;
+      padding-top: 6px;
+      text-align: right;
+      font-size: 13px;
+      color: var(--muted);
+    }
+
+    .clinic-stamp {
+      text-align: left;
+      font-size: 13px;
+      color: var(--muted);
+    }
+
+    .controls {
+      display: flex;
+      justify-content: flex-end;
+      margin-bottom: 10px;
+    }
+
+    button {
+      padding: 8px 14px;
+      border: none;
+      border-radius: 6px;
+      background: var(--brand);
+      color: #fff;
+      font-size: 14px;
+      cursor: pointer;
+      display: flex;
+      align-items: center;
+      gap: 6px;
+    }
+
+    button:hover {
+      background: #095cc2;
+    }
+
+    @media print {
+      body { background: transparent; }
+      .sheet { box-shadow: none; border: none; margin: 0; padding: 0; }
+      .controls { display: none; }
+    }
   </style>
 </head>
-<body>
 
+<body>
   <div class="sheet">
     <header>
       <div class="clinic">
@@ -60,11 +186,11 @@ header { display: flex; justify-content: space-between; align-items: flex-start;
     </header>
 
     <div class="controls no-print">
-      <button onclick="window.print()">🖨️ چاپ</button>
+      <button type="button" style="margin:5px" onclick="goHome()">🏠 Home</button>
+      <button type="button" style="margin:5px" onclick="window.print()">🖨️ Print</button>
     </div>
 
     <form id="rxForm">
-
       <div class="row">
         <div class="col">
           <label for="patient">نام بیمار:</label>
@@ -88,8 +214,6 @@ header { display: flex; justify-content: space-between; align-items: flex-start;
           <tr>
             <th>Eye</th>
             <th>Refraction</th>
-
-
             <th>Addition</th>
             <th>Notes</th>
           </tr>
@@ -98,30 +222,27 @@ header { display: flex; justify-content: space-between; align-items: flex-start;
           <tr>
             <td>OD (Right)</td>
             <td><input type="text" name="od_ref" value="{{ rx.ref_od|default:'' }}"></td>
-
             <td><input type="text" style="width:80px" name="od_add" value="{{ rx.ref_addition|default:'' }}"></td>
             <td><input type="text" style="width:80px" name="od_notes" value="{{ rx.od_notes|default:'' }}"></td>
           </tr>
           <tr>
             <td>OS (Left)</td>
             <td><input type="text" name="os_ref" value="{{ rx.ref_os|default:'' }}"></td>
-
-
             <td><input type="text" style="width:80px" name="os_add" value="{{ rx.ref_addition|default:'' }}"></td>
             <td><input type="text" style="width:80px" name="os_notes" value="{{ rx.os_notes|default:'' }}"></td>
           </tr>
         </tbody>
       </table>
-      
-      <div style="margin-top:10px ;direction:ltr">
-        <label for="pd" style="width:160px;" >PD:</label>
-        <input id="pd" style="width:160px;"  name="pd" type="text" class="ltr" value="{{ rx.ref_pd|default:'' }}">
+
+      <div style="margin-top:10px; direction:ltr">
+        <label for="pd" style="width:160px;">PD:</label>
+        <input id="pd" style="width:160px;" name="pd" type="text" class="ltr" value="{{ rx.ref_pd|default:'' }}">
       </div>
 
       <div class="row" style="margin-top:14px">
         <div class="col">
           <label for="additional">توضیحات :</label>
-          <textarea id="additional"></textarea>
+          <textarea id="additional">{{ rx.notes|default:'' }}</textarea>
         </div>
       </div>
 
@@ -135,14 +256,39 @@ header { display: flex; justify-content: space-between; align-items: flex-start;
     </form>
   </div>
 
+  <!-- Jalali moment library -->
   <script src="https://cdn.jsdelivr.net/npm/jalali-moment/dist/jalali-moment.browser.js"></script>
+
   <script>
+      let userRole = "{{ user.role|escapejs }}";  // or use user.id, user.email, etc.
+
     document.addEventListener('DOMContentLoaded', () => {
-      if (!document.getElementById('date').value) {
+      const dateInput = document.getElementById('date');
+      if (dateInput && !dateInput.value) {
         const todayJalali = moment().locale('fa').format('YYYY/MM/DD');
-        document.getElementById('date').value = todayJalali;
+        dateInput.value = todayJalali;
       }
     });
+
+    function goHome() {
+      let url = "/";
+
+      switch (userRole) {
+    
+        case "admin":
+          url = "{% url 'doctor:dashboard' %}";
+          break;
+        case "doctor":
+          url = "{% url 'doctor:dashboard' %}";
+          break; 
+        case "secretary":   
+          url = "{% url 'secretary:dashboard' %}";
+          break;
+        default:
+          url = "{% url 'secretary:dashboard' %}";
+      }
+      window.location.href = url;
+    }
   </script>
 </body>
 </html>

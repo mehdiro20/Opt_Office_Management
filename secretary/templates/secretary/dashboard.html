@@ -136,6 +136,8 @@ tr:nth-child(even) { background-color: #f2f2f2; }
     display: flex; justify-content: space-between; align-items: center;
 }
 .modal-body { margin-top: 10px; }
+
+
 </style>
 
 <h1>Secretary Dashboard</h1>
@@ -201,8 +203,7 @@ tr:nth-child(even) { background-color: #f2f2f2; }
 </div>
 
 
-<!-- Toast -->
-<div id="successToast" class="toast">✅ Action successful.</div>
+
 
 <script>
 
@@ -258,12 +259,7 @@ function refreshPatientsTable() {
 }
 
 // ================= Toast =================
-function showToast(msg="✅ Action successful.") {
-    const t = document.getElementById("successToast");
-    t.textContent = msg;
-    t.style.display = "block";
-    setTimeout(() => t.style.display = "none", 2500);
-}
+
 
 // ================= Auto-refresh =================
 setInterval(refreshPatientsTable, 5000);
@@ -327,15 +323,6 @@ document.addEventListener("DOMContentLoaded", () => {
     }
   });
 });
-
-
-
-
-
-
-
-
-
 
 </script>
 {% endblock %}

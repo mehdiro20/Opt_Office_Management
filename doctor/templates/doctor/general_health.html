@@ -1,56 +1,71 @@
 <div id="general_health" class="section">
   <h3>General Health Overview</h3>
 
-  <form id="generalHealthForm" method="POST" action="{% url 'doctor:general_health_record' patient.patient_id  %}">
+  <form id="generalHealthForm" method="POST" action="{% url 'doctor:general_health_record' patient.patient_id %}">
     {% csrf_token %}
-
+         <h1>{{ selected_data.systemic}}</h1>
     <!-- Systemic Diseases -->
-    <div class="info-card collapsible-section">
+    <div class="info-card card-body collapsible-section">
       <div class="section-header" id="systemicHeader">
-        <span class="section-title">Systemic Diseases</span>
-        <button type="button" class="section-chevron" id="systemicChevron">▼</button>
+        <div style="display:flex; gap:6px; align-items:center;">
+          <button type="button" class="add-form" onclick="addPatientItem('systemic',event)">➕</button>
+          <button type="button" class="remove-form" onclick="removePatientItem('systemic',event)">➖</button>
+        </div>
+        <div style="display:flex; align-items:center; gap:6px;">
+          <span class="section-title">Systemic Diseases</span>
+          <button type="button" class="section-chevron" id="systemicChevron">▼</button>
+        </div>
       </div>
       <div class="section-body" id="systemicBody" style="margin-top:8px; padding:6px; display:flex; flex-wrap:wrap; gap:10px;">
         {% for cond in health_conditions %}
+   
           <div class="checkbox-label">
             <label>{{ cond.name }}
               <input type="checkbox" name="systemic_checkbox" value="{{ cond.name }}"
-                     {% if cond.name in selected_data.systemic %}checked{% endif %}>
+                     {% if cond.name in selected_data.health_conditions %}checked{% endif %}>
             </label>
           </div>
         {% endfor %}
         <input type="hidden" name="systemic_selected" id="systemic_selected">
       </div>
-   </div>
-
-  <hr style="margin:20px 0; border-top:2px solid #e6e6e6;">
+    </div>
 
     <!-- Ocular History -->
-   <div class="info-card collapsible-section">
+    <div class="info-card card-body collapsible-section">
       <div class="section-header" id="ocular_historyHeader">
-        <span class="section-title">Ocular History</span>
-        <button type="button" class="section-chevron" id="ocular_historyChevron">▼</button>
+        <div style="display:flex; gap:6px; align-items:center;">
+          <button type="button" class="add-form" onclick="addPatientItem('ocular_history',event)">➕</button>
+          <button type="button" class="remove-form" onclick="removePatientItem('ocular_history',event)">➖</button>
+        </div>
+        <div style="display:flex; align-items:center; gap:6px;">
+          <span class="section-title">Ocular History</span>
+          <button type="button" class="section-chevron" id="ocular_historyChevron">▼</button>
+        </div>
       </div>
       <div class="section-body" id="ocular_historyBody" style="margin-top:8px; padding:6px; display:flex; flex-wrap:wrap; gap:10px;">
         {% for cond in ocular_history %}
           <div class="checkbox-label">
             <label>{{ cond.name }}
-              <input type="checkbox" name="ocular_checkbox" value="{{ cond.name }}"
-                     {% if cond.name in selected_data.ocular %}checked{% endif %}>
+              <input type="checkbox" name="ocular_history_checkbox" value="{{ cond.name }}"
+                     {% if cond.name in selected_data.ocular_history %}checked{% endif %}>
             </label>
           </div>
         {% endfor %}
-        <input type="hidden" name="ocular_selected" id="ocular_selected">
+        <input type="hidden" name="ocular_history_selected" id="ocular_history_selected">
       </div>
-
-</div>
-     <hr style="margin:20px 0; border-top:2px solid #e6e6e6;">
+    </div>
 
     <!-- Medications -->
-   <div class="info-card collapsible-section">
+    <div class="info-card card-body collapsible-section">
       <div class="section-header" id="medicationsHeader">
-        <span class="section-title">Medications</span>
-        <button type="button" class="section-chevron" id="medicationsChevron">▼</button>
+        <div style="display:flex; gap:6px; align-items:center;">
+          <button type="button" class="add-form" onclick="addPatientItem('medications',event)">➕</button>
+          <button type="button" class="remove-form" onclick="removePatientItem('medications',event)">➖</button>
+        </div>
+        <div style="display:flex; align-items:center; gap:6px;">
+          <span class="section-title">Medications</span>
+          <button type="button" class="section-chevron" id="medicationsChevron">▼</button>
+        </div>
       </div>
       <div class="section-body" id="medicationsBody" style="margin-top:8px; padding:6px; display:flex; flex-wrap:wrap; gap:10px;">
         {% for cond in medications %}
@@ -63,15 +78,19 @@
         {% endfor %}
         <input type="hidden" name="medications_selected" id="medications_selected">
       </div>
-
-</div>
-    <hr style="margin:20px 0; border-top:2px solid #e6e6e6;">
+    </div>
 
     <!-- Allergies -->
-   <div class="info-card collapsible-section">
+    <div class="info-card card-body collapsible-section">
       <div class="section-header" id="allergiesHeader">
-        <span class="section-title">Allergies</span>
-        <button type="button" class="section-chevron" id="allergiesChevron">▼</button>
+        <div style="display:flex; gap:6px; align-items:center;">
+          <button type="button" class="add-form" onclick="addPatientItem('allergies',event)">➕</button>
+          <button type="button" class="remove-form" onclick="removePatientItem('allergies',event)">➖</button>
+        </div>
+        <div style="display:flex; align-items:center; gap:6px;">
+          <span class="section-title">Allergies</span>
+          <button type="button" class="section-chevron" id="allergiesChevron">▼</button>
+        </div>
       </div>
       <div class="section-body" id="allergiesBody" style="margin-top:8px; padding:6px; display:flex; flex-wrap:wrap; gap:10px;">
         {% for cond in allergies %}
@@ -84,117 +103,108 @@
         {% endfor %}
         <input type="hidden" name="allergies_selected" id="allergies_selected">
       </div>
-
-</div>
-     <hr style="margin:20px 0; border-top:2px solid #e6e6e6;">
+    </div>
 
     <!-- Familial History -->
-   <div class="info-card collapsible-section">
-      <div class="section-header" id="familial_histroyHeader">
-        <span class="section-title">Familial History</span>
-        <button type="button" class="section-chevron" id="familial_histroyChevron">▼</button>
+    <div class="info-card card-body collapsible-section">
+      <div class="section-header" id="familial_historyHeader">
+        <div style="display:flex; gap:6px; align-items:center;">
+          <button type="button" class="add-form" onclick="addPatientItem('familial_history',event)">➕</button>
+          <button type="button" class="remove-form" onclick="removePatientItem('familial_history',event)">➖</button>
+        </div>
+        <div style="display:flex; align-items:center; gap:6px;">
+          <span class="section-title">Familial History</span>
+          <button type="button" class="section-chevron" id="familial_historyChevron">▼</button>
+        </div>
       </div>
-      <div class="section-body" id="familial_histroyBody" style="margin-top:8px; padding:6px; display:flex; flex-wrap:wrap; gap:10px;">
-        {% for cond in familial_histroy %}
+      <div class="section-body" id="familial_historyBody" style="margin-top:8px; padding:6px; display:flex; flex-wrap:wrap; gap:10px;">
+        {% for cond in familial_history %}
           <div class="checkbox-label">
             <label>{{ cond.name }}
-              <input type="checkbox" name="familial_checkbox" value="{{ cond.name }}"
-                     {% if cond.name in selected_data.familial %}checked{% endif %}>
+              <input type="checkbox" name="familial_history_checkbox" value="{{ cond.name }}"
+                     {% if cond.name in selected_data.familial_history %}checked{% endif %}>
             </label>
           </div>
         {% endfor %}
-        <input type="hidden" name="familial_selected" id="familial_selected">
+        <input type="hidden" name="familial_history_selected" id="familial_history_selected">
       </div>
-
-</div>
-      <hr style="margin:20px 0; border-top:2px solid #e6e6e6;">
+    </div>
 
     <!-- Genetical History -->
-   <div class="info-card collapsible-section">
+    <div class="info-card card-body collapsible-section">
       <div class="section-header" id="genetical_historyHeader">
-        <span class="section-title">Genetical History</span>
-        <button type="button" class="section-chevron" id="genetical_historyChevron">▼</button>
+        <div style="display:flex; gap:6px; align-items:center;">
+          <button type="button" class="add-form" onclick="addPatientItem('genetical_history',event)">➕</button>
+          <button type="button" class="remove-form" onclick="removePatientItem('genetical_history',event)">➖</button>
+        </div>
+        <div style="display:flex; align-items:center; gap:6px;">
+          <span class="section-title">Genetical History</span>
+          <button type="button" class="section-chevron" id="genetical_historyChevron">▼</button>
+        </div>
       </div>
       <div class="section-body" id="genetical_historyBody" style="margin-top:8px; padding:6px; display:flex; flex-wrap:wrap; gap:10px;">
         {% for cond in genetical_history %}
           <div class="checkbox-label">
             <label>{{ cond.name }}
-              <input type="checkbox" name="genetical_checkbox" value="{{ cond.name }}"
-                     {% if cond.name in selected_data.genetical %}checked{% endif %}>
+              <input type="checkbox" name="genetical_history_checkbox" value="{{ cond.name }}"
+                     {% if cond.name in selected_data.genetical_history %}checked{% endif %}>
             </label>
           </div>
         {% endfor %}
-        <input type="hidden" name="genetical_selected" id="genetical_selected">
+        <input type="hidden" name="genetical_history_selected" id="genetical_history_selected">
       </div>
-
-</div>
-  <hr style="margin:20px 0; border-top:2px solid #e6e6e6;">
+    </div>
 
     <!-- Lifestyle History -->
-    <div class="info-card collapsible-section">
+    <div class="info-card card-body collapsible-section">
       <div class="section-header" id="lifestyle_historyHeader">
-        <span class="section-title">Lifestyle History</span>
-        <button type="button" class="section-chevron" id="lifestyle_historyChevron">▼</button>
+        <div style="display:flex; gap:6px; align-items:center;">
+          <button type="button" class="add-form" onclick="addPatientItem('lifestyle_history',event)">➕</button>
+          <button type="button" class="remove-form" onclick="removePatientItem('lifestyle_history',event)">➖</button>
+        </div>
+        <div style="display:flex; align-items:center; gap:6px;">
+          <span class="section-title">Lifestyle History</span>
+          <button type="button" class="section-chevron" id="lifestyle_historyChevron">▼</button>
+        </div>
       </div>
       <div class="section-body" id="lifestyle_historyBody" style="margin-top:8px; padding:6px; display:flex; flex-wrap:wrap; gap:10px;">
         {% for cond in lifestyle_history %}
           <div class="checkbox-label">
             <label>{{ cond.name }}
-              <input type="checkbox" name="lifestyle_checkbox" value="{{ cond.name }}"
-                     {% if cond.name in selected_data.lifestyle %}checked{% endif %}>
+              <input type="checkbox" name="lifestyle_history_checkbox" value="{{ cond.name }}"
+                     {% if cond.name in selected_data.lifestyle_history %}checked{% endif %}>
             </label>
           </div>
         {% endfor %}
-        <input type="hidden" name="lifestyle_selected" id="lifestyle_selected">
+        <input type="hidden" name="lifestyle_history_selected" id="lifestyle_history_selected">
       </div>
-      </div>
-         <div style="margin-top:20px;" >
-           <button type="submit" class="add_order_btn">💾 Submit General Health</button>
-         </div>
-      </div>
+    </div>
 
- 
+    <div style="margin-top:20px;">
+      <button type="submit" class="add_order_btn">💾 Submit General Health</button>
+    </div>
   </form>
 </div>
 
-<!-- Styles: unchanged -->
+<!-- keep same CSS -->
 <style>
 .section-title { font-weight: bold; color: #2c3e50; }
 .section-header { display:flex; justify-content:space-between; align-items:center; background:#f3f4f6; padding:6px 10px; border-radius:6px; cursor:pointer; }
-.section-header:hover{  
-
-    background:#e9f5f3;
-
-
-
-}
-
-
-
-
+.section-header:hover{ background:#e9f5f3; }
 .section-chevron { border:none; background:none; font-size:20px; font-weight:bold; cursor:pointer; color:#2980b9; transition: transform 0.25s ease, color 0.2s ease; }
 .section-chevron:hover, .section-chevron:focus { color:#1c5980; outline:none; transform: scale(1.15); }
 .section-chevron.rotate { transform:rotate(180deg); }
 .checkbox-label label { display: flex; align-items: center; gap: 6px; padding: 4px 8px; min-width: max-content; cursor: pointer; }
 .checkbox-label input[type="checkbox"] { order: 2; }
-
-input[type="checkbox"]{
-
-  accent-color: #007bff;
-    cursor: pointer;
-     width: 13px;
-     
-      height: 13px;
-
-}
-
-
-
+.checkbox-label:hover{ transform: scale(1.05)}
+input[type="checkbox"]{ accent-color: #007bff; cursor: pointer; width: 13px; height: 13px; }
+.add-form, .remove-form { border:none; color:white; font-size:14px; font-weight:bold; padding:2px 6px; border-radius:4px; cursor:pointer; transition: background 0.2s; }
+.add-form:hover {color:#1c5980; outline:none; transform: scale(1.15); }
+.remove-form:hover { color:#1c5980; outline:none; transform: scale(1.15); }
 </style>
-
-<!-- Scripts: unchanged logic, preselect-aware -->
 <script>
 document.addEventListener("DOMContentLoaded", function() {
+  // toggle open/close for collapsible sections
   function toggleSection(headerId, bodyId, chevronId){
     const body = document.getElementById(bodyId);
     const chevron = document.getElementById(chevronId);
@@ -203,41 +213,100 @@ document.addEventListener("DOMContentLoaded", function() {
     chevron.classList.toggle("rotate", hidden);
   }
 
+  // all sections list
   const sections = [
-    ["systemicHeader","systemicBody","systemicChevron"],
-    ["ocular_historyHeader","ocular_historyBody","ocular_historyChevron"],
-    ["medicationsHeader","medicationsBody","medicationsChevron"],
-    ["allergiesHeader","allergiesBody","allergiesChevron"],
-    ["familial_histroyHeader","familial_histroyBody","familial_histroyChevron"],
-    ["genetical_historyHeader","genetical_historyBody","genetical_historyChevron"],
-    ["lifestyle_historyHeader","lifestyle_historyBody","lifestyle_historyChevron"]
+    ["systemicHeader","systemicBody","systemicChevron","systemic"],
+    ["ocular_historyHeader","ocular_historyBody","ocular_historyChevron","ocular_history"],
+    ["medicationsHeader","medicationsBody","medicationsChevron","medications"],
+    ["allergiesHeader","allergiesBody","allergiesChevron","allergies"],
+    ["familial_historyHeader","familial_historyBody","familial_historyChevron","familial_history"],
+    ["genetical_historyHeader","genetical_historyBody","genetical_historyChevron","genetical_history"],
+    ["lifestyle_historyHeader","lifestyle_historyBody","lifestyle_historyChevron","lifestyle_history"]
   ];
+
+  // enable section toggles
   sections.forEach(([header, body, chevron])=>{
     const el = document.getElementById(header);
     if(el) el.addEventListener("click", ()=>toggleSection(header, body, chevron));
   });
 
-  function updateHiddenInput(sectionName) {
-    const checkboxes = document.querySelectorAll(`input[name="${sectionName}_checkbox"]`);
-    const hiddenInput = document.getElementById(`${sectionName}_selected`);
-    const selectedValues = Array.from(checkboxes)
-      .filter(cb => cb.checked)
-      .map(cb => cb.value);
-    hiddenInput.value = selectedValues.join(", ");
+  // return all checked values for a section
+  function getCheckedValues(sectionName){
+    const inputs = document.querySelectorAll(`input[name="${sectionName}_checkbox"]:checked`);
+    return Array.from(inputs).map(inp => inp.value);
   }
 
-  const sectionNames = ["systemic","ocular","medications","allergies","familial","genetical","lifestyle"];
-  sectionNames.forEach(section=>{
-    document.querySelectorAll(`input[name="${section}_checkbox"]`).forEach(cb=>{
-      cb.addEventListener("change", ()=>updateHiddenInput(section));
+  // fill hidden input with comma-separated values (no brackets)
+  function fillHiddenSelected(sectionName){
+    const hidden = document.getElementById(`${sectionName}_selected`);
+    if(!hidden) return;
+    const values = getCheckedValues(sectionName);
+    hidden.value = values.join(", ");  // plain string
+  }
+
+  // before submitting the form, store all selections
+  const form = document.getElementById("generalHealthForm");
+  if(form){
+    form.addEventListener("submit", function(){
+      sections.forEach(([_h,_b,_c,sectionName])=>{
+        fillHiddenSelected(sectionName);
+      });
     });
-  });
-
-  // Pre-populate hidden inputs
-  sectionNames.forEach(section=>updateHiddenInput(section));
-
-  document.getElementById("generalHealthForm").addEventListener("submit", ()=>{
-    sectionNames.forEach(section=>updateHiddenInput(section));
-  });
+  }
 });
+
+// Add new condition dynamically
+function addPatientItem(sectionName, e){
+  e.stopPropagation();
+  const item = prompt("Enter new item for " + sectionName.replaceAll("_"," "));
+  if(!item) return;
+
+  const form = document.createElement("form");
+  form.method="POST";
+  form.action="{% url 'doctor:add_patient_item' patient.patient_id %}";
+
+  const csrf=document.createElement("input");
+  csrf.type="hidden";csrf.name="csrfmiddlewaretoken";csrf.value="{{ csrf_token }}";
+  form.appendChild(csrf);
+
+  const s=document.createElement("input");
+  s.type="hidden";s.name="section_name";s.value=sectionName;
+  form.appendChild(s);
+
+  const n=document.createElement("input");
+  n.type="hidden";n.name="item_name";n.value=item;
+  form.appendChild(n);
+
+  document.body.appendChild(form);
+  form.submit();
+}
+
+// Remove selected item dynamically
+function removePatientItem(sectionName, e){
+  e.stopPropagation();
+  const body=document.getElementById(sectionName+"Body");
+  const checked=body.querySelectorAll(`input[name="${sectionName}_checkbox"]:checked`);
+  if(checked.length===0){alert("No selected item to remove.");return;}
+
+  const itemName=checked[checked.length-1].value;
+
+  const form=document.createElement("form");
+  form.method="POST";
+  form.action="{% url 'doctor:delete_patient_item' patient.patient_id %}";
+
+  const csrf=document.createElement("input");
+  csrf.type="hidden";csrf.name="csrfmiddlewaretoken";csrf.value="{{ csrf_token }}";
+  form.appendChild(csrf);
+
+  const s=document.createElement("input");
+  s.type="hidden";s.name="section_name";s.value=sectionName;
+  form.appendChild(s);
+
+  const n=document.createElement("input");
+  n.type="hidden";n.name="item_name";n.value=itemName;
+  form.appendChild(n);
+
+  document.body.appendChild(form);
+  form.submit();
+}
 </script>

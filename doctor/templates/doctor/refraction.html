@@ -3,17 +3,19 @@
 <div id="refraction" class="section">
   <h3>Refraction</h3>
 
-  <div id="refraction-forms">
-    <!-- First Form -->
-    <div class="refraction-card" id="refractionCard">
-      <div class="card-header" id="cardHeader">
-        <span class="card-title">Refraction Form #1</span>
-        <div class="card-actions">
-          <button type="button" id="refractionChevron" class="toggle-card">▼</button>
-          <button type="button" class="add-form">➕</button>
-          <button type="button" class="remove-form">➖</button>
+      <div id="refraction-forms">
+        <!-- First Form -->
+        <div class="refraction-card" id="refractionCard">
+               <div class="card-header" id="cardHeader">
+          <div style="display:flex; gap:6px; align-items:center;">
+            <button type="button" class="add-form">➕</button>
+            <button type="button" class="remove-form">➖</button>
+          </div>
+          <div style="display:flex; align-items:center; gap:6px;">
+            <span class="card-title">Refraction Form #1</span>
+            <button type="button" id="refractionChevron" class="toggle-card">▼</button>
+          </div>
         </div>
-      </div>
 
       <div class="info-card card-body" id="cardBody">
         <form method="POST" action="{% url 'doctor:submit_refraction' patient.patient_id %}" class="refraction-form">
@@ -66,9 +68,22 @@
           <div class="form-row">
             <div class="input-error os-error" style="display:none; margin-left:100px; color:#c0392b;"></div>
           </div>
-
-          <!-- Addition -->
-          <!-- Addition -->
+            <hr>
+          <div class="form-row">
+            <label>OD KMax:</label>
+            <input type="text" name="odkmax" class="keratominmax">
+            <label style="margin-left:15px;">OD KMin:</label>
+            <input type="text" name="odkmin" class="keratominmax">
+          </div>
+           <div class="form-row">
+             <label>OS KMax:</label>
+             <input type="text" name="oskmax" class="keratominmax">
+             <label style="margin-left:15px;">OS KMin:</label>
+             <input type="text" name="oskmin" class="keratominmax">
+           </div>
+           
+           <hr>
+           
             <div class="form-row addition-box">
               <label>Addition:</label>
               <input type="text" name="addition" class="addition" maxlength="5" value="0" required>
@@ -79,7 +94,8 @@
             <label class="pdbox-lable">PD:</label>
             <input type="text" name="pd" class="pd" maxlength="5" required>
           </div>
-
+          
+           
           <!-- Submit -->
           <div class="form-row submit-row">
             <input type="submit" value="💾 Submit Refraction" class="add_order_btn">
@@ -103,11 +119,14 @@
 
   <div id="refractionRecords" style="margin-top:10px;">
     <div class="records-header" id="recordsHeader">
-      <h4 class="records-title">Refraction Records</h4>
-      <button id="recordsChevron" class="records-chevron">▼</button>
+          <div style="flex:1"></div> <!-- empty div to align text + chevron like form header -->
+          <div style="display:flex; align-items:center; gap:6px;">
+            <h4 class="records-title">Refraction Records</h4>
+            <button id="recordsChevron" class="records-chevron">▼</button>
+          </div>
     </div>
 
-    <div class="info-card" id="recordsContainer" style="display:none; margin-top:10px;">
+    <div class="info-card card-body" id="recordsContainer" style="display:none; margin-top:10px;">
       <button id="editButton" onclick="toggleEditMode_ref()" class="edit-btn-gi">✏️</button>
       <table id="refractionTable" class="data-table">
         <thead>
@@ -131,14 +150,21 @@
   <hr style="margin:20px 0; border-top:2px solid #e6e6e6;">
   <div id="refractionChart" style="margin-top:10px;">
     <div class="records-header" id="chartHeader">
-      <h4 class="records-title">Refraction Chart</h4>
-      <button id="chartChevron" class="records-chevron">▼</button>
+      <div style="flex:1"></div> <!-- empty div for alignment consistency -->
+      <div style="display:flex; align-items:center; gap:6px;">
+        <h4 class="records-title">Refraction Chart</h4>
+        <button id="chartChevron" class="records-chevron">▼</button>
+      </div>
     </div>
-    <div class="info-card" id="chartContainer" style="display:none; margin-top:10px;">
+    <div class="info-card card-body" id="chartContainer" style="display:none; margin-top:10px;">
       <select id="chartSelect" style="padding:4px 8px; border-radius:6px; border:1px solid #ccc;">
         <option value="odSphere">OD Sphere</option>
         <option value="osSphere">OS Sphere</option>
         <option value="pd">PD</option>
+        <option value="odKMax">OD KMax</option>
+        <option value="osKMax">OS KMax</option>
+        <option value="odKMin">OD KMin</option>
+        <option value="osKMin">OS KMin</option>
         <option value="all">All</option>
       </select>
       <canvas id="pdSphereChart" width="400" height="200"></canvas>
@@ -161,6 +187,47 @@
   padding: 10px 14px;
   border-radius: 10px;
   transition: background 0.2s ease;
+}
+
+.card-header {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+}
+
+.card-header > div {
+  display: flex;
+  align-items: center;
+  gap: 6px;
+}
+
+.card-header .card-title {
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+}
+
+.card-header .toggle-card {
+  font-size: 20px;
+  color: #2980b9;
+  border: none;
+  background: none;
+  cursor: pointer;
+  transition: transform 0.25s ease, color 0.2s ease;
+}
+
+.card-header .toggle-card.rotate {
+  transform: rotate(180deg);
+}
+
+.card-header .toggle-card:hover {
+  color: #1c5980;
+
+}
+.toggle-card:hover{
+
+    transform: scale(1.15);
+
 }
 
 .card-header:hover, 
@@ -247,7 +314,7 @@ select:focus {
 /* === INPUT FIELD SPECIALS === */
 .addition,
 .pd,
-.va-input {
+.va-input,.keratominmax {
   max-width: 120px;
   flex: none;
 }
@@ -371,241 +438,418 @@ select:focus {
 
 <!-- ================== FULL SCRIPT ================== -->
 <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+
 <script>
-let refarray = {{ existing_refs_json|safe }};
+
+/* ===========================================================
+   GLOBALS + SAFE INITIALIZATION
+   =========================================================== */
+
 let editModeRef = false;
-let pdSphereChart;
+let pdSphereChart = null;
 let formCounter = 1;
 
-// ------------------------- Multi-chevron toggle -------------------------
-document.addEventListener("DOMContentLoaded", function() {
-  function toggleSection(bodyId, chevronId){
-    const body = document.getElementById(bodyId);
-    const chevron = document.getElementById(chevronId);
-    const hidden = body.style.display === "none";
-    body.style.display = hidden ? "block" : "none";
-    chevron.classList.toggle("rotate", hidden);
-  }
+/* refarray fallback in case Django sends nothing or invalid JSON */
+let refarray;
+try {
+    refarray = {{ existing_refs_json|safe }};
+    if (!Array.isArray(refarray)) throw "bad json";
+} catch (e) {
+    refarray = [];
+}
 
-  const sections = [
-    ["cardHeader", "cardBody", "refractionChevron"],
-    ["recordsHeader", "recordsContainer", "recordsChevron"],
-    ["chartHeader", "chartContainer", "chartChevron"]
-  ];
-
-  sections.forEach(([header, body, chevron])=>{
-    const el = document.getElementById(header);
-    if(el) el.addEventListener("click", ()=>toggleSection(body, chevron));
-  });
-});
-
-// ------------------------- Utility functions -------------------------
-function generateUniqueID(){ return '_' + Math.random().toString(36).substr(2, 9); }
-function normalizeInputText(s){ return String(s||"").replace(/\u00D7/g,"x").trim(); }
-function parsePrescription(v){ 
-  let parts = normalizeInputText(v).split(/[\/x]/i).map(p=>p.trim());
-  while(parts.length<3) parts.push("");
-  let sphere = parts[0].toLowerCase();
-  if(sphere==="0"||sphere==="pl"||sphere==="plano") sphere="plano";
-  return {sphere, cylinder:parts[1], axis:parts[2]};
+/* Utility */
+function generateUniqueID() { 
+    return '_' + Math.random().toString(36).substr(2, 9); 
+}
+function normalizeInputText(s) { 
+    return String(s||"").replace(/\u00D7/g,"x").trim(); 
+}
+function parsePrescription(v){
+    let parts = normalizeInputText(v).split(/[\/x]/i).map(p=>p.trim());
+    while(parts.length < 3) parts.push("");
+    let sphere = parts[0].toLowerCase();
+    if (sphere === "0" || sphere === "pl" || sphere === "plano") sphere = "plano";
+    return { sphere, cylinder: parts[1], axis: parts[2] };
 }
 function spectacleToCL(sph,cyl,axis,vd=0.012){
-  sph=(String(sph).toLowerCase()==="plano")?0:parseFloat(sph)||0;
-  cyl=(String(cyl).toLowerCase()==="plano")?0:parseFloat(cyl)||0;
-  axis=parseInt(axis)||0;
-  const clSph=Math.round((sph/(1-(vd*sph)))*4)/4;
-  const maxpow=Math.round(((sph+cyl)/(1-(vd*(sph+cyl))))*4)/4;
-  const clCyl=Math.round((maxpow-clSph)*4)/4;
-  return {sphere:clSph, cylinder:clCyl, axis:clCyl===0?null:axis};
+    sph = (String(sph).toLowerCase() === "plano") ? 0 : parseFloat(sph)||0;
+    cyl = (String(cyl).toLowerCase() === "plano") ? 0 : parseFloat(cyl)||0;
+    axis = parseInt(axis)||0;
+
+    const clSph = Math.round((sph/(1 - vd*sph))*4)/4;
+    const maxpow = Math.round(((sph+cyl)/(1 - vd*(sph+cyl)))*4)/4;
+    const clCyl = Math.round((maxpow - clSph)*4)/4;
+    return {
+        sphere: clSph,
+        cylinder: clCyl,
+        axis: clCyl === 0 ? null : axis
+    };
 }
 
-// ------------------------- Fill Contact Lens -------------------------
-function fillContactLensFields(form){
-  const odInput=form.querySelector(".od-input"),
-        osInput=form.querySelector(".os-input");
-  const odclInput=form.querySelector(".odcl"),
-        osclInput=form.querySelector(".oscl");
-  const odError=form.querySelector(".od-error"),
-        osError=form.querySelector(".os-error");
-  odError.style.display=osError.style.display="none";
-
-  const od=parsePrescription(odInput.value),
-        os=parsePrescription(osInput.value);
-
-  if(od.cylinder && !od.axis){ odError.textContent="Write axis please"; odError.style.display="block"; return false; }
-  if(os.cylinder && !os.axis){ osError.textContent="Write axis please"; osError.style.display="block"; return false; }
-
-  function sanitize(p){ return p.cylinder ? `${p.sphere}/${p.cylinder}x${p.axis}` : `${p.sphere}`; }
-  odInput.value=sanitize(od);
-  osInput.value=sanitize(os);
-
-  const cl_od=spectacleToCL(od.sphere,od.cylinder,od.axis);
-  const cl_os=spectacleToCL(os.sphere,os.cylinder,os.axis);
-
-  odclInput.value=cl_od.cylinder?`${cl_od.sphere}/${cl_od.cylinder}x${cl_od.axis}`:`${cl_od.sphere}`;
-  osclInput.value=cl_os.cylinder?`${cl_os.sphere}/${cl_os.cylinder}x${cl_os.axis}`:`${cl_os.sphere}`;
-
-  document.getElementById("cl-message").style.display="block";
-  document.getElementById("clodval").textContent="OD CL: "+odclInput.value;
-  document.getElementById("closval").textContent="OS CL: "+osclInput.value;
-  return true;
+/* ===========================================================
+   CARD TOGGLE
+   =========================================================== */
+function attachChevronToggle(card){
+    const chevron = card.querySelector(".toggle-card");
+    const body = card.querySelector(".card-body");
+    chevron.addEventListener("click", () => {
+        const hidden = body.style.display === "none";
+        body.style.display = hidden ? "block" : "none";
+        chevron.classList.toggle("rotate", hidden);
+    });
 }
 
-// ------------------------- Add/Render Refraction -------------------------
+/* ===========================================================
+   CONTACT LENS CALC
+   =========================================================== */
+function fillContactLensFields(form) {
+    const odInput=form.querySelector(".od-input"),
+          osInput=form.querySelector(".os-input");
+    const odclInput=form.querySelector(".odcl"),
+          osclInput=form.querySelector(".oscl");
+    const odError=form.querySelector(".od-error"),
+          osError=form.querySelector(".os-error");
+
+    odError.style.display = osError.style.display = "none";
+
+    const od = parsePrescription(odInput.value);
+    const os = parsePrescription(osInput.value);
+
+    if (od.cylinder && !od.axis) { odError.textContent="Write axis please"; odError.style.display="block"; return false; }
+    if (os.cylinder && !os.axis) { osError.textContent="Write axis please"; osError.style.display="block"; return false; }
+
+    function sanitize(p){
+        return p.cylinder ? `${p.sphere}/${p.cylinder}x${p.axis}` : `${p.sphere}`;
+    }
+
+    odInput.value = sanitize(od);
+    osInput.value = sanitize(os);
+
+    const cl_od = spectacleToCL(od.sphere,od.cylinder,od.axis);
+    const cl_os = spectacleToCL(os.sphere,os.cylinder,os.axis);
+
+    odclInput.value = cl_od.cylinder ? `${cl_od.sphere}/${cl_od.cylinder}x${cl_od.axis}` : `${cl_od.sphere}`;
+    osclInput.value = cl_os.cylinder ? `${cl_os.sphere}/${cl_os.cylinder}x${cl_os.axis}` : `${cl_os.sphere}`;
+
+    document.getElementById("cl-message").style.display = "block";
+    document.getElementById("clodval").textContent = "OD CL: " + odclInput.value;
+    document.getElementById("closval").textContent = "OS CL: " + osclInput.value;
+    return true;
+}
+
+/* ===========================================================
+   ADD / RENDER TABLE
+   =========================================================== */
 function addRefraction(form){
-  const ref_id_input = form.querySelector(".refraction_id");
-  const ref_id = ref_id_input.value || generateUniqueID();
-  ref_id_input.value = ref_id;  // <- THIS IS THE KEY
+    const idInput = form.querySelector(".refraction_id");
+    const id = idInput.value || generateUniqueID();
+    idInput.value = id;
 
-  const ref_subj = form.querySelector("input[name='subject']").value.trim();
-  const ref_od = form.querySelector("input[name='od']").value.trim();
-  const ref_os = form.querySelector("input[name='os']").value.trim();
-  const ref_pd = form.querySelector("input[name='pd']").value.trim() || 0;
-  const ref_addition = form.querySelector("input[name='addition']").value.trim() || 0;
+    const data = {
+        id,
+        ref_subj: form.querySelector("input[name='subject']").value.trim(),
+        ref_od: form.querySelector("input[name='od']").value.trim(),
+        ref_os: form.querySelector("input[name='os']").value.trim(),
+        ref_pd: form.querySelector("input[name='pd']").value.trim() || 0,
+        ref_addition: form.querySelector("input[name='addition']").value.trim() || 0,
+        checked: false
+    };
 
-  const existingIndex = refarray.findIndex(r => r.id === ref_id);
-  const data = { id: ref_id, ref_subj, ref_od, ref_os, ref_pd, ref_addition, checked: false };
-  if(existingIndex > -1) refarray[existingIndex] = data; else refarray.push(data);
+    const idx = refarray.findIndex(r => r.id === id);
+    if (idx > -1) refarray[idx] = data;
+    else refarray.push(data);
 
-  renderRefractionTable();
+    renderRefractionTable();
 }
 
-function renderRefractionTable(){
-  const tbody=document.querySelector("#refractionTable tbody");
-  tbody.innerHTML="";
-  const pdValues=[], odSphere=[], osSphere=[];
-  refarray.forEach((r,index)=>{
-    const tr=document.createElement("tr");
-    tr.innerHTML=`
-      <td>${index+1}</td>
-      <td>${r.ref_subj}</td>
-      <td>${r.ref_od}</td>
-      <td>${r.ref_os}</td>
-      <td>${r.ref_pd}</td>
-      <td>${r.ref_addition}</td>
-      <td><button class="rxBtn" style="border:none;background:none;cursor:pointer;font-size:1.2rem;">📋</button></td>
-    `;
-    if(editModeRef){
-      const tdEdit=document.createElement("td");
-      const checkbox=document.createElement("input");
-      checkbox.type="checkbox"; checkbox.checked=r.checked;
-      checkbox.onchange=()=>{r.checked=checkbox.checked;if(checkbox.checked)makeRowEditable_ref(index);else renderRefractionTable();};
-      tdEdit.appendChild(checkbox); tr.appendChild(tdEdit);
+function renderRefractionTable() {
+    const tbody = document.querySelector("#refractionTable tbody");
+    tbody.innerHTML = "";
+
+    // Arrays for chart
+    const pdValues = [], odSphere = [], osSphere = [];
+    const odKMaxValues = [], osKMaxValues = [];
+    const odKMinValues = [], osKMinValues = [];
+
+    refarray.forEach((r, i) => {
+        const tr = document.createElement("tr");
+        const isSelected = r.checked;
+
+        // Highlight row if selected for editing
+        if (isSelected) tr.classList.add("ref-selected");
+        else tr.classList.remove("ref-selected");
+
+        // Build table row (no KMax/KMin in table)
+        tr.innerHTML = `
+            <td>${i + 1}</td>
+            <td class="subject-cell">${r.ref_subj}</td>
+            <td class="od-cell">${r.ref_od}</td>
+            <td class="os-cell">${r.ref_os}</td>
+            <td class="pd-cell">${r.ref_pd}</td>
+            <td class="addition-cell">${r.ref_addition || 0}</td>
+            <td>
+                <button class="rxBtn" style="border:none;background:none;cursor:pointer;font-size:1.2rem;">📋</button>
+            </td>
+            ${editModeRef ? `<td style="text-align:center;" class="checkbox-cell"></td>` : ""}
+        `;
+
+        tbody.appendChild(tr);
+
+        // Add checkbox for edit mode
+        if (editModeRef) {
+            const checkboxCell = tr.querySelector(".checkbox-cell");
+            const cb = document.createElement("input");
+            cb.type = "checkbox";
+            cb.className = "select-row";
+            cb.dataset.index = i;
+            cb.checked = isSelected;
+
+            cb.addEventListener("change", () => {
+                // Only one row can be selected
+                refarray.forEach(row => row.checked = false);
+                r.checked = cb.checked;
+                renderRefractionTable();
+            });
+
+            checkboxCell.appendChild(cb);
+        }
+
+        // Convert cells to textboxes if row is selected
+        if (isSelected) {
+            ["subject", "od", "os", "pd", "addition"].forEach(field => {
+                const cell = tr.querySelector(`.${field}-cell`);
+                const input = document.createElement("input");
+                input.type = "text";
+                input.value = r["ref_" + field] || "";
+                input.style.width = "100%";
+                input.style.boxSizing = "border-box";
+                input.style.padding = "2px 4px";
+                input.style.fontSize = "0.9rem";
+
+                input.addEventListener("input", () => {
+                    r["ref_" + field] = input.value;
+                });
+
+                cell.innerHTML = "";
+                cell.appendChild(input);
+            });
+        }
+
+        // RX button functionality
+        tr.querySelector(".rxBtn").addEventListener("click", () => {
+            const form = document.createElement("form");
+            form.method = "POST";
+            form.action = "{% url 'doctor:rx_print' %}";
+            form.target = "_blank";
+
+            const csrf = document.createElement("input");
+            csrf.type = "hidden";
+            csrf.name = "csrfmiddlewaretoken";
+            csrf.value = "{{ csrf_token }}";
+            form.appendChild(csrf);
+
+            const input = document.createElement("input");
+            input.type = "hidden";
+            input.name = "rx_data";
+            input.value = JSON.stringify({ ...r, patient: "{{ patient.name }}" });
+            form.appendChild(input);
+
+            document.body.appendChild(form);
+            form.submit();
+            form.remove();
+        });
+
+        // === Collect chart data ===
+        pdValues.push(parseFloat(r.ref_pd) || 0);
+
+        let odS = parsePrescription(r.ref_od).sphere;
+        odS = odS === "plano" ? 0 : parseFloat(odS) || 0;
+        odSphere.push(odS);
+
+        let osS = parsePrescription(r.ref_os).sphere;
+        osS = osS === "plano" ? 0 : parseFloat(osS) || 0;
+        osSphere.push(osS);
+
+        odKMaxValues.push(parseFloat(r.ref_odkmax) || 0);
+        osKMaxValues.push(parseFloat(r.ref_oskmax) || 0);
+
+        odKMinValues.push(parseFloat(r.ref_odkmin) || 0);
+        osKMinValues.push(parseFloat(r.ref_oskmin) || 0);
+    });
+
+    // Call chart update with all arrays
+    updateChart(pdValues, odSphere, osSphere, odKMaxValues, osKMaxValues, odKMinValues, osKMinValues);
+}
+
+
+/* ===========================================================
+   CHART
+   =========================================================== */
+function updateChart(pdValues, odSphere, osSphere, odKMaxValues, osKMaxValues, odKMinValues, osKMinValues) {
+    const canvas = document.getElementById("pdSphereChart");
+    const select = document.getElementById("chartSelect");
+    if (!canvas || !select) return;
+
+    const chartType = select.value;
+    const ctx = canvas.getContext("2d");
+
+    // Initialize chart if not created
+    if (!pdSphereChart) {
+        pdSphereChart = new Chart(ctx, {
+            type: 'line',
+            data: { labels: [], datasets: [] },
+            options: {
+                responsive: true,
+                plugins: { legend: { position: 'top' } },
+                scales: {
+                    x: { title: { display: true, text: "Entry" } },
+                    y: { title: { display: true, text: "Value" }, beginAtZero: false }
+                }
+            }
+        });
     }
-    tr.querySelector(".rxBtn").addEventListener("click",()=>{
-      const rxWithPatient={...r,patient:"{{ patient.name }}"};
-      const rxJson=JSON.stringify(rxWithPatient);
-      const form=document.createElement("form");
-      form.method="POST"; form.action="{% url 'doctor:rx_print' %}"; form.target="_blank";
-      const csrf=document.createElement("input");
-      csrf.type="hidden"; csrf.name="csrfmiddlewaretoken"; csrf.value="{{ csrf_token }}";
-      form.appendChild(csrf);
-      const input=document.createElement("input");
-      input.type="hidden"; input.name="rx_data"; input.value=rxJson;
-      form.appendChild(input); document.body.appendChild(form); form.submit(); form.remove();
-    });
-    tbody.appendChild(tr);
 
-    pdValues.push(parseFloat(r.ref_pd)||0);
-    let odS=parsePrescription(r.ref_od).sphere; odS=odS==="plano"?0:parseFloat(odS)||0; odSphere.push(odS);
-    let osS=parsePrescription(r.ref_os).sphere; osS=osS==="plano"?0:parseFloat(osS)||0; osSphere.push(osS);
-  });
-  updatePDChart(pdValues, odSphere, osSphere);
+    // Labels = entry numbers
+    pdSphereChart.data.labels = refarray.map((_, i) => i + 1);
+
+    // Clear previous datasets
+    pdSphereChart.data.datasets = [];
+
+    // Add datasets depending on dropdown selection
+    if (chartType === "pd" || chartType === "all")
+        pdSphereChart.data.datasets.push({ label: "PD", data: pdValues, borderWidth: 2, borderColor: "#2980b9", fill: false });
+
+    if (chartType === "odSphere" || chartType === "all")
+        pdSphereChart.data.datasets.push({ label: "OD Sphere", data: odSphere, borderWidth: 2, borderColor: "#27ae60", fill: false });
+
+    if (chartType === "osSphere" || chartType === "all")
+        pdSphereChart.data.datasets.push({ label: "OS Sphere", data: osSphere, borderWidth: 2, borderColor: "#c0392b", fill: false });
+
+    if (chartType === "odKMax" || chartType === "all")
+        pdSphereChart.data.datasets.push({ label: "OD KMax", data: odKMaxValues, borderWidth: 2, borderColor: "#8e44ad", fill: false });
+
+    if (chartType === "osKMax" || chartType === "all")
+        pdSphereChart.data.datasets.push({ label: "OS KMax", data: osKMaxValues, borderWidth: 2, borderColor: "#f39c12", fill: false });
+
+    if (chartType === "odKMin" || chartType === "all")
+        pdSphereChart.data.datasets.push({ label: "OD KMin", data: odKMinValues, borderWidth: 2, borderColor: "#16a085", fill: false });
+
+    if (chartType === "osKMin" || chartType === "all")
+        pdSphereChart.data.datasets.push({ label: "OS KMin", data: osKMinValues, borderWidth: 2, borderColor: "#d35400", fill: false });
+
+    // Render chart
+    pdSphereChart.update();
 }
 
-function makeRowEditable_ref(index){
-  const row=document.querySelectorAll("#refractionTable tbody tr")[index];
-  const cells=row.querySelectorAll("td");
-  const fields=["ref_subj","ref_od","ref_os","ref_pd","ref_addition"];
-  const inputs=fields.map((f,i)=>{
-    const inp=document.createElement("input");
-    inp.className="edit-input"; inp.value=refarray[index][f];
-    cells[i+1].innerHTML=""; cells[i+1].appendChild(inp);
-    return inp;
-  });
-  function saveValues(){ 
-  fields.forEach((f,i)=>{
-    let val = inputs[i].value.trim();
-    // Default to 0 for numeric fields
-    if(f === "ref_pd" || f === "ref_addition") val = val || "0";
-    refarray[index][f] = val;
-  });
-}
-  inputs.forEach((input,i)=>{
-    input.addEventListener("keydown",(e)=>{
-      if(e.key==="Enter"||e.key==="Tab"){e.preventDefault();saveValues();if(inputs[i+1])inputs[i+1].focus();else renderRefractionTable();}
-    });
-    input.addEventListener("blur",()=>{saveValues();if(i===inputs.length-1)setTimeout(renderRefractionTable,100);});
-  });
-  setTimeout(()=>inputs[0].focus(),0);
-}
 
-// ------------------------- Chart -------------------------
-function updatePDChart(pdValues, odSphere, osSphere){
-  const select=document.getElementById("chartSelect");
-  const chartType=select.value;
-  const ctx=document.getElementById("pdSphereChart").getContext("2d");
-  if(!pdSphereChart){
-    pdSphereChart=new Chart(ctx,{
-      type:'line',
-      data:{labels:refarray.map((r,i)=>i+1),datasets:[]},
-      options:{
-        responsive:true,
-        plugins:{legend:{position:'top'}},
-        scales:{x:{title:{display:true,text:'Row #'}},y:{title:{display:true,text:'Value'},beginAtZero:false,ticks:{stepSize:0.25}}}
-      }
-    });
-  }
-  pdSphereChart.data.labels=refarray.map((r,i)=>i+1);
-  pdSphereChart.data.datasets=[];
-  if(chartType==="pd"||chartType==="all") pdSphereChart.data.datasets.push({label:"PD",data:pdValues,borderColor:'rgba(75,192,192,1)',backgroundColor:'rgba(75,192,192,0.2)',fill:false,tension:0.1});
-  if(chartType==="odSphere"||chartType==="all") pdSphereChart.data.datasets.push({label:"OD Sphere",data:odSphere,borderColor:'rgba(255,99,132,1)',backgroundColor:'rgba(255,99,132,0.2)',fill:false,tension:0.1});
-  if(chartType==="osSphere"||chartType==="all") pdSphereChart.data.datasets.push({label:"OS Sphere",data:osSphere,borderColor:'rgba(54,162,235,1)',backgroundColor:'rgba(54,162,235,0.2)',fill:false,tension:0.1});
-  pdSphereChart.update();
-}
-
-// ------------------------- Edit Mode -------------------------
+/* ===========================================================
+   EDIT MODE
+   =========================================================== */
 function toggleEditMode_ref(){
-  const btn=document.getElementById("editButton");
-  const header=document.getElementById("edit_column_header");
-  editModeRef=!editModeRef;
-  if(editModeRef){ 
-      btn.classList.add("editing")
-      btn.textContent="💾"; 
+    const btn=document.getElementById("editButton");
+    const header=document.getElementById("edit_column_header");
+    editModeRef = !editModeRef;
 
-        header.style.display=""; 
-    
-    
-    
+    if (editModeRef){
+        btn.classList.add("editing");
+        btn.textContent="💾";
+        header.style.display="";
+    } else {
+        btn.textContent="✏️";
+        header.style.display="none";
+        btn.classList.remove("editing");
+        refarray.forEach(r=>r.checked=false);
     }
-  else { btn.textContent="✏️"; 
-          header.style.display="none";
-          btn.classList.remove('editing');
-           refarray.forEach(r=>r.checked=false); }
-  renderRefractionTable();
+    renderRefractionTable();
 }
 
-// ------------------------- Submit handler -------------------------
-
-// Form submission
-document.addEventListener("submit",e=>{
-    if(!e.target.classList.contains("refraction-form")) return;
+/* ===========================================================
+   FORM SUBMIT HANDLER
+   =========================================================== */
+document.addEventListener("submit", function(e){
+    if (!e.target.classList.contains("refraction-form")) return;
     e.preventDefault();
+
     const form = e.target;
-    if(!fillContactLensFields(form)) return;
+
+    if (!fillContactLensFields(form)) return;
+
     addRefraction(form);
 
     fetch(form.action,{
-        method:"POST", body:new FormData(form), headers:{"X-Requested-With":"XMLHttpRequest"}
+        method:"POST",
+        body:new FormData(form),
+        headers:{"X-Requested-With":"XMLHttpRequest"}
     })
-    .then(r=>r.ok?r.json():Promise.reject())
+    .then(r=>r.json())
     .then(()=>{
-        document.getElementById("success-message").style.display="block"; 
-        form.closest(".card-body").style.display="none";
-        form.closest(".refraction-card").querySelector(".toggle-card").classList.remove("rotate");
+        document.getElementById("success-message").style.display="block";
+        const cardBody = form.closest(".card-body");
+        cardBody.style.display = "none";
     })
-    .catch(()=>alert("Something went wrong!"));
+    .catch(()=>alert("Error saving refraction"));
 });
-document.getElementById("chartSelect").addEventListener("change",()=>renderRefractionTable());
-document.addEventListener("DOMContentLoaded",()=>renderRefractionTable());
+
+/* ===========================================================
+   ADD / REMOVE FORMS
+   =========================================================== */
+document.addEventListener("click", function(e) {
+
+    if (e.target.classList.contains("add-form")) {
+        const container = document.getElementById("refraction-forms");
+        const first = document.querySelector(".refraction-card");
+        const clone = first.cloneNode(true);
+
+        formCounter++;
+        clone.querySelector(".card-title").textContent = `Refraction Form #${formCounter}`;
+        clone.querySelectorAll("input, select").forEach(el => el.value = "");
+        clone.querySelector(".refraction_id").value = "";
+        clone.querySelector(".card-body").style.display = "block";
+        clone.querySelector(".toggle-card").classList.remove("rotate");
+
+        attachChevronToggle(clone);
+        container.appendChild(clone);
+    }
+
+    if (e.target.classList.contains("remove-form")) {
+        const card = e.target.closest(".refraction-card");
+        if (document.querySelectorAll(".refraction-card").length === 1) {
+            alert("You must keep at least one refraction form.");
+            return;
+        }
+        card.remove();
+    }
+
+});
+
+/* ===========================================================
+   DOM READY INITIALIZATION
+   =========================================================== */
+document.addEventListener("DOMContentLoaded", function() {
+
+    document.querySelectorAll(".refraction-card").forEach(attachChevronToggle);
+
+    document.getElementById("recordsHeader").addEventListener("click", () => {
+        const box = document.getElementById("recordsContainer");
+        const chev = document.getElementById("recordsChevron");
+        const hidden = box.style.display === "none";
+        box.style.display = hidden ? "block" : "none";
+        chev.classList.toggle("rotate", hidden);
+    });
+
+    document.getElementById("chartHeader").addEventListener("click", () => {
+        const box = document.getElementById("chartContainer");
+        const chev = document.getElementById("chartChevron");
+        const hidden = box.style.display === "none";
+        box.style.display = hidden ? "block" : "none";
+        chev.classList.toggle("rotate", hidden);
+    });
+
+    const chartSelect = document.getElementById("chartSelect");
+    if (chartSelect) chartSelect.addEventListener("change", () => renderRefractionTable());
+
+    renderRefractionTable();
+});
+
 </script>

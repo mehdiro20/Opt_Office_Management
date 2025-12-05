@@ -1,0 +1,530 @@
+
+
+<!doctype html>
+
+<html>
+<head>
+<meta charset="utf-8" />
+<title>Multi Shape Drawer - Stamp Preview</title>
+<style>
+  body { font-family: system-ui; display:flex; gap:20px; padding:20px; }
+  .controls { width:320px; }
+  canvas { border:1px solid #aaa; touch-action:none; }
+  button { padding:8px 10px; cursor:pointer; font-size:14px; display:flex; align-items:center; gap:6px; }
+  .row { margin:8px 0; display:flex; gap:8px; align-items:center; flex-wrap:wrap; }
+  label { min-width:90px; font-size:13px; }
+  #shapeList { display:flex; flex-wrap:wrap; gap:6px; margin-top:6px; }
+  .shapeItem { border:2px solid transparent; padding:4px; background:#f5f5f5; cursor:pointer; position:relative; }
+  .shapeItem.selected { border-color:#29a; }
+  .shapeItem img { max-width:70px; max-height:70px; display:block; }
+  .deleteBtn { position:absolute; top:-6px; right:-6px; width:18px; height:18px;
+    background:#c33; color:white; border:none; border-radius:50%;
+    font-size:12px; cursor:pointer; line-height:18px; }
+  h4 { margin-bottom:4px; }
+  .small { font-size:12px; color:#666; }
+</style>
+</head>
+<body>
+
+<div class="controls">
+  <h3>Tools</h3>
+
+  <div class="row">
+    <button id="toolDraw">✏️ Free Draw</button>
+    <button id="clearCanvas">🗑 Clear</button>
+  </div>
+
+  <div class="row">
+    <button id="toolCircle">⚪ Circle</button>
+    <button id="toolEraser">🧽 Eraser</button>
+    <button id="toolPattern">✂️ Pattern</button>
+    <button id="toolHand">✋ Hand Tool</button>
+
+  </div>
+
+  <div class="row">
+    <button id="toolStamp">🔳 Shape Stamp</button>
+  </div>
+
+  <div class="row">
+    <label>Brush Size</label>
+    <input id="brushSize" type="range" min="1" max="60" value="4"/>
+    <span id="brushValue" class="small">4</span>
+  </div>
+
+  <div class="row">
+    <label>Color</label>
+    <input id="color" type="color" value="#000000"/>
+  </div>
+
+  <hr>
+
+  <h4>Saved Shapes</h4>
+
+  <div class="row">
+    <button id="saveShape">💾 Save Current Drawing</button>
+  </div>
+
+  <p class="small">Click a shape to stamp it.</p>
+  <div id="shapeList"></div>
+
+  <div class="row">
+    <label>Stamp Scale</label>
+    <input id="placeScale" type="range" min="25" max="300" value="100"/>
+    <span id="scaleValue" class="small">100%</span>
+  </div>
+</div>
+
+<div>
+  <canvas id="canvas" width="900" height="620"></canvas>
+</div>
+
+<script>
+/* ====== Canvas Setup ====== */
+const canvas = document.getElementById("canvas");
+const ctx = canvas.getContext("2d");
+
+/* ====== State ====== */
+let tool = "draw";
+let isDrawing = false;
+let lastX = 0, lastY = 0;
+let tempImage = null;
+let startX = 0, startY = 0;
+
+let history = [];
+let redoStack = [];
+
+let eraserPath = [];
+let patternPoints = [];
+let patternActive = false;
+
+/* Hand Tool */
+let handToolActive = false;
+let savedShapes = [];
+let selectedShape = null;
+let isMovingShape = false;
+let offset = { x:0, y:0 };
+
+/* Stamp Tool */
+let selectedShapeSrc = null;
+let stampPreviewImg = new Image();
+let stampPreviewPos = null;
+
+/* ====== UI Elements ====== */
+const brushSize = document.getElementById("brushSize");
+const brushValue = document.getElementById("brushValue");
+brushSize.oninput = () => brushValue.textContent = brushSize.value;
+brushValue.textContent = brushSize.value;
+
+const colorInput = document.getElementById("color");
+
+const placeScale = document.getElementById("placeScale");
+const scaleValue = document.getElementById("scaleValue");
+scaleValue.textContent = placeScale.value + "%";
+placeScale.oninput = () => scaleValue.textContent = placeScale.value + "%";
+
+/* ====== Tool Buttons ====== */
+const tools = ["Draw","Circle","Eraser","Pattern","Hand","Stamp"];
+tools.forEach(t => {
+    document.getElementById("tool"+t).onclick = () => {
+        if(t === "Hand") {
+            handToolActive = !handToolActive;
+            tool = handToolActive ? null : tool;
+        } else {
+            tool = t.toLowerCase();
+            handToolActive = false;
+        }
+        updateToolUI();
+    }
+});
+
+document.getElementById("clearCanvas").onclick = () => {
+    saveHistory();
+    ctx.clearRect(0,0,canvas.width,canvas.height);
+    savedShapes = [];
+    tempImage = null;
+};
+
+function updateToolUI(){
+    tools.forEach(t => {
+        const el = document.getElementById("tool"+t);
+        const active = (t==="Hand" && handToolActive) || (tool && t.toLowerCase()===tool);
+        el.style.outline = active ? "2px solid #29a" : "none";
+    });
+}
+
+/* ====== Shape Saving ====== */
+document.getElementById("saveShape").onclick = () => {
+    const imgData = canvas.toDataURL();
+    const item = document.createElement("div");
+    item.className = "shapeItem";
+
+    const imgDOM = new Image();
+    imgDOM.src = imgData;
+    item.appendChild(imgDOM);
+
+    const del = document.createElement("button");
+    del.className="deleteBtn";
+    del.innerHTML="×";
+    del.onclick = e => { e.stopPropagation(); item.remove(); };
+    item.appendChild(del);
+
+    item.onclick = () => selectShape(item, imgData);
+
+    document.getElementById("shapeList").appendChild(item);
+    savedShapes.push({ type:"stamp", img:imgDOM, x:0, y:0, width:canvas.width, height:canvas.height });
+};
+
+function selectShape(item, src){
+    selectedShapeSrc = src;
+    stampPreviewImg.src = src;
+    document.querySelectorAll(".shapeItem").forEach(el => el.classList.remove("selected"));
+    item.classList.add("selected");
+}
+
+/* ====== Pointer Helpers ====== */
+function getPos(e){
+    if(e.touches?.length){
+        const r = canvas.getBoundingClientRect();
+        return { x: e.touches[0].clientX - r.left, y: e.touches[0].clientY - r.top };
+    }
+    return { x: e.offsetX, y: e.offsetY };
+}
+
+/* ====== Pointer Events ====== */
+canvas.addEventListener("mousedown", pointerDown);
+canvas.addEventListener("mousemove", pointerMove);
+canvas.addEventListener("mouseup", pointerUp);
+canvas.addEventListener("mouseleave", pointerUp);
+canvas.addEventListener("touchstart", pointerDown, {passive:false});
+canvas.addEventListener("touchmove", pointerMove, {passive:false});
+canvas.addEventListener("touchend", pointerUp, {passive:false});
+
+/* ====== Pointer Down ====== */
+function pointerDown(e){
+    const pos = getPos(e);
+
+        if(handToolActive){
+        const idx = findShapeAtPos(pos);
+        if(idx >= 0){
+            selectedShape = savedShapes[idx];
+            offset.x = pos.x - selectedShape.x;
+            offset.y = pos.y - selectedShape.y;
+            isMovingShape = true;
+        }
+    }
+
+    if(tool === "eraser") {
+        eraserPath = [{x: pos.x, y: pos.y}];
+    }
+
+    if(tool==="stamp" && selectedShapeSrc){
+        placeStamp(pos);
+        return;
+    }
+
+    if(tool==="draw" || tool==="eraser"){
+        saveHistory();
+        isDrawing = true;
+        lastX = pos.x;
+        lastY = pos.y;
+        ctx.lineCap = ctx.lineJoin = "round";
+        ctx.lineWidth = Number(brushSize.value);
+        ctx.strokeStyle = tool==="eraser" ? "rgba(0,0,0,1)" : colorInput.value;
+        ctx.globalCompositeOperation = tool==="eraser" ? "destination-out" : "source-over";
+        ctx.beginPath();
+        ctx.moveTo(lastX,lastY);
+        return;
+    }
+
+    if (tool === "circle") {
+    saveHistory();
+    isDrawing = true;
+    startX = pos.x;
+    startY = pos.y;
+
+    tempImage = ctx.getImageData(0, 0, canvas.width, canvas.height);
+    }
+
+    if (tool === "pattern") {
+            saveHistory();
+        
+            patternActive = true;
+            patternPoints = [pos];
+        
+            tempImage = ctx.getImageData(0, 0, canvas.width, canvas.height);
+        }
+}
+
+/* ====== Pointer Move ====== */
+function pointerMove(e){
+    const pos = getPos(e);
+
+  
+    if(handToolActive && isMovingShape && selectedShape){
+        selectedShape.x = pos.x - offset.x;
+        selectedShape.y = pos.y - offset.y;
+        redrawCanvas();  // redraw everything including moved shape
+    }
+
+    if(isDrawing && tool==="eraser"){
+        eraserPath.push({x:pos.x,y:pos.y});
+        ctx.lineTo(pos.x,pos.y); 
+        ctx.stroke();
+        return;
+    }
+
+    if(isDrawing && tool==="draw"){
+        ctx.lineTo(pos.x,pos.y); ctx.stroke();
+        return;
+    }
+
+    if (tool === "circle" && isDrawing) {
+    // restore exact pixel state (including patterns, erasing, stamps)
+    ctx.putImageData(tempImage, 0, 0);
+
+    const radius = Math.hypot(pos.x - startX, pos.y - startY);
+
+    ctx.beginPath();
+    ctx.arc(startX, startY, radius, 0, Math.PI * 2);
+    ctx.strokeStyle = colorInput.value;
+    ctx.lineWidth = Number(brushSize.value);
+    ctx.stroke();
+    return;
+}
+
+
+    if (tool === "pattern" && patternActive) {
+
+        patternPoints.push(pos);
+    
+        // Restore original canvas
+        ctx.putImageData(tempImage, 0, 0);
+    
+        // Draw preview over restored canvas
+        ctx.beginPath();
+        ctx.moveTo(patternPoints[0].x, patternPoints[0].y);
+        for (let i = 1; i < patternPoints.length; i++) {
+            ctx.lineTo(patternPoints[i].x, patternPoints[i].y);
+        }
+        ctx.strokeStyle = colorInput.value;
+        ctx.lineWidth = Number(brushSize.value);
+        ctx.stroke();
+    }
+
+    if(tool==="stamp" && selectedShapeSrc){
+        redrawCanvas();
+        stampPreviewPos = pos;
+        drawStampPreview(pos);
+        return;
+    }
+}
+
+/* ====== Pointer Up ====== */
+function pointerUp(e){
+    if(isDrawing && tool==="draw"){
+        isDrawing=false;
+        ctx.globalCompositeOperation="source-over";
+    }
+
+    if(tool==="eraser" && eraserPath.length>0){
+        isDrawing=false;
+        savedShapes.push({type:"eraser", path: eraserPath.slice(), lineWidth:Number(brushSize.value)});
+        eraserPath=[];
+        ctx.globalCompositeOperation="source-over";
+    }
+
+    if (tool === "circle" && isDrawing) {
+    isDrawing = false;
+
+    // final mouse position
+    const pos = getPos(e);
+    const radius = Math.hypot(pos.x - startX, pos.y - startY);
+
+    // --- draw final circle on actual canvas ---
+    ctx.putImageData(tempImage, 0, 0);
+    ctx.beginPath();
+    ctx.arc(startX, startY, radius, 0, Math.PI * 2);
+    ctx.strokeStyle = colorInput.value;
+    ctx.lineWidth = Number(brushSize.value);
+    ctx.stroke();
+
+    // --- save vector shape for redraws ---
+    savedShapes.push({
+        type: "circle",
+        x: startX,
+        y: startY,
+        radius,
+        color: colorInput.value,
+        lineWidth: Number(brushSize.value),
+        width: radius * 2,
+        height: radius * 2
+    });
+
+    saveHistory();
+}
+
+
+    if (tool === "pattern" && patternActive) {
+        patternActive = false;
+    
+        // Restore exact canvas before preview
+        ctx.putImageData(tempImage, 0, 0);
+    
+        // Draw final pattern
+        ctx.beginPath();
+        ctx.moveTo(patternPoints[0].x, patternPoints[0].y);
+        for (let i = 1; i < patternPoints.length; i++) {
+            ctx.lineTo(patternPoints[i].x, patternPoints[i].y);
+        }
+        ctx.strokeStyle = colorInput.value;
+        ctx.lineWidth = Number(brushSize.value);
+        ctx.stroke();
+    
+        // Save in shapes array
+        savedShapes.push({
+            type: "pattern",
+            points: patternPoints.slice(),
+            color: colorInput.value,
+            lineWidth: Number(brushSize.value)
+        });
+    
+        // Apply cutting AFTER storing shape
+        removePointsInsidePattern();
+    
+        saveHistory();
+}
+
+
+    if(handToolActive && isMovingShape){
+        isMovingShape=false;
+        selectedShape=null;
+    }
+
+    saveHistory();
+}
+
+/* ====== Stamp Functions ====== */
+function placeStamp(pos){
+    saveHistory();
+    const img = new Image();
+    img.onload = () => {
+        const scale = Number(placeScale.value)/100;
+        const w = img.width*scale, h = img.height*scale;
+        const x = pos.x - w/2, y = pos.y - h/2;
+        ctx.drawImage(img,x,y,w,h);
+        savedShapes.push({type:"stamp", img, x,y,width:w,height:h});
+    };
+    img.src=selectedShapeSrc;
+}
+
+function drawStampPreview(pos){
+    if(!selectedShapeSrc) return;
+    const scale = Number(placeScale.value)/100;
+    const w = stampPreviewImg.width*scale, h = stampPreviewImg.height*scale;
+    ctx.save();
+    ctx.globalAlpha = 0.5;
+    ctx.drawImage(stampPreviewImg,pos.x-w/2,pos.y-h/2,w,h);
+    ctx.restore();
+}
+
+/* ====== Pattern Preview ====== */
+function drawPatternPreview(){
+    ctx.beginPath();
+    ctx.moveTo(patternPoints[0].x,patternPoints[0].y);
+    for(let i=1;i<patternPoints.length;i++) ctx.lineTo(patternPoints[i].x,patternPoints[i].y);
+    ctx.strokeStyle=colorInput.value;
+    ctx.lineWidth=Number(brushSize.value);
+    ctx.stroke();
+}
+
+
+function removePointsInsidePattern(){
+    const imageData = ctx.getImageData(0,0,canvas.width,canvas.height);
+    const data = imageData.data;
+
+    const inside = (x,y)=>{
+        let c=0;
+        for(let i=0;i<patternPoints.length;i++){
+            const j=(i+1)%patternPoints.length;
+            if((patternPoints[i].y>y)!==(patternPoints[j].y>y) &&
+               x<((patternPoints[j].x-patternPoints[i].x)*(y-patternPoints[i].y)/(patternPoints[j].y-patternPoints[i].y)+patternPoints[i].x)) c++;
+        }
+        return c%2===1;
+    };
+
+    for(let y=0;y<canvas.height;y++){
+        for(let x=0;x<canvas.width;x++){
+            if(inside(x,y)) data[(y*canvas.width+x)*4+3]=0;
+        }
+    }
+
+    ctx.putImageData(imageData,0,0);
+}
+
+/* ====== Hand Tool Hit Detection ====== */
+function findShapeAtPos(pos, type=null){
+    for(let i=savedShapes.length-1;i>=0;i--){
+        const s=savedShapes[i];
+        if(type && s.type!==type) continue;
+        if(s.type==="circle"){
+            const dx=pos.x-s.x, dy=pos.y-s.y;
+            if(dx*dx+dy*dy<=s.radius*s.radius) return i;
+        } else if(pos.x>=s.x && pos.x<=s.x+s.width && pos.y>=s.y && pos.y<=s.y+s.height){
+            return i;
+        }
+    }
+    return -1;
+}
+
+/* ====== Redraw Canvas ====== */
+function redrawCanvas(){
+    ctx.clearRect(0,0,canvas.width,canvas.height);
+    for(const s of savedShapes){
+        if(s.type==="stamp") ctx.drawImage(s.img,s.x,s.y,s.width,s.height);
+        if(s.type==="eraser"){
+            ctx.globalCompositeOperation="destination-out";
+            ctx.beginPath();
+            ctx.moveTo(s.path[0].x,s.path[0].y);
+            for(let i=1;i<s.path.length;i++) ctx.lineTo(s.path[i].x,s.path[i].y);
+            ctx.lineWidth=s.lineWidth;
+            ctx.stroke();
+            ctx.globalCompositeOperation="source-over";
+        }
+        if(s.type==="circle"){
+            ctx.beginPath();
+            ctx.arc(s.x,s.y,s.radius,0,Math.PI*2);
+            ctx.strokeStyle=s.color;
+            ctx.lineWidth=s.lineWidth;
+            ctx.stroke();
+        }
+        if(s.type==="pattern"){
+            ctx.beginPath();
+            ctx.moveTo(s.points[0].x,s.points[0].y);
+            for(let i=1;i<s.points.length;i++) ctx.lineTo(s.points[i].x,s.points[i].y);
+            ctx.strokeStyle=s.color;
+            ctx.lineWidth=s.lineWidth;
+            ctx.stroke();
+            
+           
+      
+        }
+    }
+}
+
+/* ====== Undo / Redo ====== */
+function saveHistory(){ history.push(JSON.parse(JSON.stringify(savedShapes))); redoStack=[]; }
+function undo(){ if(history.length<=1) return; redoStack.push(history.pop()); savedShapes=JSON.parse(JSON.stringify(history[history.length-1])); redrawCanvas(); }
+function redo(){ if(!redoStack.length) return; savedShapes=JSON.parse(JSON.stringify(redoStack.pop())); redrawCanvas(); }
+
+window.addEventListener("keydown", e=>{
+    const key=e.code;
+    if(e.ctrlKey && !e.shiftKey && key==="KeyZ"){ e.preventDefault(); undo(); return; }
+    if(e.ctrlKey && e.shiftKey && key==="KeyZ"){ e.preventDefault(); redo(); return; }
+    if(e.ctrlKey && key==="KeyY"){ e.preventDefault(); redo(); return; }
+});
+</script>
+
+
+</body>
+</html> 

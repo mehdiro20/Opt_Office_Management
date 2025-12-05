@@ -44,7 +44,7 @@
 </div>
 
 <!-- Success toast -->
-<div id="successToast" class="success-toast">Patient registered successfully.</div>
+<div id="successToast2" class="success-toast">Patient registered successfully.</div>
 
 <!-- Persian Datepicker Assets -->
 <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/persian-datepicker@1.2.0/dist/css/persian-datepicker.min.css">
@@ -79,10 +79,31 @@
   }
   .modal-content button[type="submit"]:hover { background-color: #2980b9; }
   .error-message { color: #e74c3c; margin-top: 10px; font-size: 14px; display: none; }
-  .success-toast {
-    position: fixed; right: 20px; bottom: 20px; background: #28a745; color: #fff;
-    padding: 10px 14px; border-radius: 6px; display: none; z-index: 1100;
-  }
+   .success-toast {
+  position: fixed;
+  top: 20px;
+  right: 20px;
+  background: #28a745;
+  color: #fff;
+  padding: 10px 14px;
+  border-radius: 6px;
+  display: none; /* hidden by default */
+  z-index: 1100;
+  width: auto;
+  max-width: 300px;
+  display: inline-block;
+  box-shadow: 0 4px 10px rgba(0, 0, 0, 0.2);
+  opacity: 0;               /* start transparent */
+  transform: translateY(-20px); /* start slightly above */
+  transition: opacity 0.4s ease, transform 0.4s ease;
+}
+
+/* When active (visible) */
+.success-toast.show {
+  display: inline-block;
+  opacity: 1;
+  transform: translateY(0);
+}
 </style>
 
 <script>
@@ -158,7 +179,7 @@ document.getElementById("registerForm").addEventListener("submit", function(e){
   })
   .then(data => {
     closeRegisterModal();
-    showToast();
+  showToast();
     if (typeof refreshPatientsTable === "function") refreshPatientsTable();
   })
   .catch(err => {
@@ -177,8 +198,8 @@ function closeRegisterModal() {
   document.getElementById("registerModal").style.display = "none";
 }
 function showToast() {
-  const toast = document.getElementById("successToast");
-  toast.style.display = "block";
+  const toast = document.getElementById("successToast2");
+    toast.classList.add("show");
   setTimeout(() => { toast.style.display = "none"; }, 3000);
 }
 </script>

@@ -1,36 +1,53 @@
-
 from django.shortcuts import render, get_object_or_404, redirect
-from django.db.models import Q
-
+from django.db.models import F, Q
 from django.utils.dateparse import parse_date
-from django.http import JsonResponse
-from django.contrib.auth.decorators import login_required
+from django.http import JsonResponse, HttpResponse
+from django.contrib.auth.decorators import login_required, permission_required, user_passes_test
 from django.conf import settings
 from django.core.serializers.json import DjangoJSONEncoder
-import json
-from django.contrib.auth.decorators import permission_required
-from doctor.models import BrandsSplenss
-from doctor.models import OpticsFeature
-
-
-from django.views.decorators.http import require_POST
+from django.views.decorators.http import require_POST, require_GET
 from django.views.decorators.csrf import csrf_exempt
-from doctor.models import Refraction, OpticsDescription
+from django.template.loader import get_template
 from django.contrib import messages
 from django.utils import timezone
-from datetime import timedelta
 
-from django.http import HttpResponse
-from django.template.loader import get_template
+import json
+from datetime import timedelta
+from decimal import Decimal, InvalidOperation
+from itertools import chain
+from collections import defaultdict
+
 from xhtml2pdf import pisa
 
-from django.shortcuts import render
-from .models import Order
-from .models import Register_Order
-from .models import ImpMenuParts
-from django.shortcuts import render, get_object_or_404
-from .models import Patient, GH_HealthCondition,GH_Medication,GH_Allergies,GH_FamilialHistory,GH_GeneticalHistory,GH_LifestyleHistory,GH_OcularHistory,GeneralHealthRecord
-from django.contrib.auth.decorators import login_required, user_passes_test
+# Models
+from doctor.models import (
+    BrandsSplenss,
+    OpticsFeature,
+    Refraction,
+    OpticsDescription,
+)
+
+from .models import (
+    Order,
+    Register_Order,
+    ImpMenuParts,
+    Patient,
+    GH_HealthCondition,
+    GH_Medication,
+    GH_Allergies,
+    GH_FamilialHistory,
+    GH_GeneticalHistory,
+    GH_LifestyleHistory,
+    GH_OcularHistory,
+    GeneralHealthRecord,
+    SelectedSpectacleLens,
+    LensPowerRange,
+    SpectacleLens
+)
+
+
+
+
 def is_doctor_admin(user):
     return (
         user.is_superuser
@@ -118,6 +135,10 @@ def submit_refraction(request, patient_id):
         axis = request.POST.get('axis')  # you had this in form
         pd = request.POST.get('pd')
         refraction_id = request.POST.get('refraction_id')
+        odkmax=request.POST.get('odkmax')
+        odkmin=request.POST.get('odkmin')
+        oskmax=request.POST.get('oskmax')
+        oskmin=request.POST.get('oskmin')
         print(refraction_id)
         Refraction.objects.create(
             subject=subject,
@@ -131,7 +152,11 @@ def submit_refraction(request, patient_id):
             odcl=odcl,
             oscl=oscl,
             refraction_id=refraction_id,
-            pd=pd
+            pd=pd,
+            odkmax=odkmax,
+            odkmin=odkmin,
+            oskmax=oskmax,
+            oskmin=oskmin
         )
 
         # If AJAX → return JSON
@@ -438,6 +463,10 @@ def make_refs(request, patient_id):
             "ref_od": o.od,
             "ref_os": o.os,
             "ref_pd":o.pd,
+            "ref_odkmax":o.odkmax,
+            "ref_odkmin":o.odkmin,
+            "ref_oskmax":o.oskmax,
+            "ref_oskmin":o.oskmin,
             "ref_addition":o.addition
         }
         for o in existing_ref
@@ -461,7 +490,7 @@ def general_health_view(request, patient_id):
 
     allergies= GH_Allergies.objects.all()
     
-    familial_histroy= GH_FamilialHistory.objects.all()
+    familial_history= GH_FamilialHistory.objects.all()
     
     genetical_history= GH_GeneticalHistory.objects.all()
 
@@ -482,7 +511,7 @@ def general_health_view(request, patient_id):
         
         'allergies':allergies,
         
-        'familial_histroy':familial_histroy,
+        'familial_history':familial_history,
         
         'genetical_history':genetical_history,
         
@@ -513,26 +542,71 @@ def general_health_patient_view(request, patient_id):
 
     # Split comma-separated fields into lists for preselecting checkboxes
     selected_data = {
-    "systemic": split_and_strip(record.systemic_diseases) if record else [],
-    "ocular": split_and_strip(record.ocular_history) if record else [],
+    "health_conditions": split_and_strip(record.systemic_diseases) if record else [],
+    "ocular_history": split_and_strip(record.ocular_history) if record else [],
     "medications": split_and_strip(record.medications) if record else [],
     "allergies": split_and_strip(record.allergies) if record else [],
-    "familial": split_and_strip(record.familial_history) if record else [],
-    "genetical": split_and_strip(record.genetical_history) if record else [],
-    "lifestyle": split_and_strip(record.lifestyle_history) if record else [],
+    "familial_history": split_and_strip(record.familial_history) if record else [],
+    "genetical_history": split_and_strip(record.genetical_history) if record else [],
+    "lifestyle_history": split_and_strip(record.lifestyle_history) if record else [],
     }
+    
+    
+    
+    # Allergies
+    allergies_all = GH_Allergies.objects.filter(related_px_id__isnull=True)
+    allergies_ps = GH_Allergies.objects.filter(related_px_id=patient_id)
+    
+    # Health Conditions
+    health_conditions_all = GH_HealthCondition.objects.filter(related_px_id__isnull=True)
+    health_conditions_ps = GH_HealthCondition.objects.filter(related_px_id=patient_id)
+    
+    # Ocular History
+    ocular_history_all = GH_OcularHistory.objects.filter(related_px_id__isnull=True)
+    ocular_history_ps = GH_OcularHistory.objects.filter(related_px_id=patient_id)
+    
+    # Medications
+    medications_all = GH_Medication.objects.filter(related_px_id__isnull=True)
+    medications_ps = GH_Medication.objects.filter(related_px_id=patient_id)
+    
+    # Familial History
+    familial_history_all = GH_FamilialHistory.objects.filter(related_px_id__isnull=True)
+    familial_history_ps = GH_FamilialHistory.objects.filter(related_px_id=patient_id)
+    
+    # Genetical History
+    genetical_history_all = GH_GeneticalHistory.objects.filter(related_px_id__isnull=True)
+    genetical_history_ps = GH_GeneticalHistory.objects.filter(related_px_id=patient_id)
+    
+    # Lifestyle History
+    lifestyle_history_all = GH_LifestyleHistory.objects.filter(related_px_id__isnull=True)
+    lifestyle_history_ps = GH_LifestyleHistory.objects.filter(related_px_id=patient_id)
+
+    
+    allergies = list({a.name: a for a in chain(allergies_all, allergies_ps)}.values())
+    health_conditions = list({h.name: h for h in chain(health_conditions_all, health_conditions_ps)}.values())
+    ocular_history = list({o.name: o for o in chain(ocular_history_all, ocular_history_ps)}.values())
+    medications = list({m.name: m for m in chain(medications_all, medications_ps)}.values())
+    familial_history = list({f.name: f for f in chain(familial_history_all, familial_history_ps)}.values())
+    genetical_history = list({g.name: g for g in chain(genetical_history_all, genetical_history_ps)}.values())
+    lifestyle_history = list({l.name: l for l in chain(lifestyle_history_all, lifestyle_history_ps)}.values())
+        
+
+    combined_allergies = list({a.name: a for a in chain(allergies_all, allergies_ps)}.values())
+    
 
     context = {
         "patient": patient,
-        "record": record,            # single instance or None
-        "selected_data": selected_data,  # lists for pre-selecting checkboxes
-        "health_conditions": GH_HealthCondition.objects.all(),
-        "ocular_history": GH_OcularHistory.objects.all(),
-        "medications": GH_Medication.objects.all(),
-        "allergies": GH_Allergies.objects.all(),
-        "familial_histroy": GH_FamilialHistory.objects.all(),
-        "genetical_history": GH_GeneticalHistory.objects.all(),
-        "lifestyle_history": GH_LifestyleHistory.objects.all(),
+        "record": record,           
+        "selected_data": selected_data,  
+        "health_conditions": health_conditions,
+        "ocular_history": ocular_history,
+        "medications":medications,
+        "allergies":allergies,
+       
+
+        "familial_history": familial_history,
+        "genetical_history": genetical_history,
+        "lifestyle_history": lifestyle_history,
     }
 
     return context
@@ -546,40 +620,82 @@ def general_health_record(request, patient_id):
     patient = get_object_or_404(Patient, patient_id=patient_id)
 
     if request.method == "POST":
-        systemic = request.POST.get("systemic_selected", "")
-        ocular = request.POST.get("ocular_selected", "")
-        medications = request.POST.get("medications_selected", "")
-        allergies = request.POST.get("allergies_selected", "")
-        familial = request.POST.get("familial_selected", "")
-        genetical = request.POST.get("genetical_selected", "")
-        lifestyle = request.POST.get("lifestyle_selected", "")
+  
+        data = {
+            "systemic": request.POST.get("systemic_selected", ""),
+            "ocular_history": request.POST.get("ocular_history_selected", ""),
+            "medications": request.POST.get("medications_selected", ""),
+            "allergies": request.POST.get("allergies_selected", ""),
+            "familial_history": request.POST.get("familial_history_selected", ""),
+            "genetical_history": request.POST.get("genetical_history_selected", ""),
+            "lifestyle_history": request.POST.get("lifestyle_history_selected", ""),
+        }
 
-        # Check if a record already exists for this patient
+        # ✅ Map section names to their respective models
+        section_models = {
+            "systemic": GH_HealthCondition,
+            "ocular_history": GH_OcularHistory,
+            "medications": GH_Medication,
+            "allergies": GH_Allergies,
+            "familial_history": GH_FamilialHistory,
+            "genetical_history": GH_GeneticalHistory,
+            "lifestyle_history": GH_LifestyleHistory,
+        }
+
+        # ✅ Create or update the General Health Record for this patient
         record, created = GeneralHealthRecord.objects.get_or_create(patient=patient)
 
-        # Update the existing or newly created record
-        record.systemic_diseases = systemic
-        record.ocular_history = ocular
-        record.medications = medications
-        record.allergies = allergies
-        record.familial_history = familial
-        record.genetical_history = genetical
-        record.lifestyle_history = lifestyle
+        record.systemic_diseases = data["systemic"]
+        record.ocular_history = data["ocular_history"]
+        record.medications = data["medications"]
+        record.allergies = data["allergies"]
+        record.familial_history = data["familial_history"]
+        record.genetical_history = data["genetical_history"]
+        record.lifestyle_history = data["lifestyle_history"]
         record.save()
 
-        # Redirect back to patient profile
+        # ✅ Ensure all selected items exist in their respective section tables
+        for section, model in section_models.items():
+            items = [x.strip() for x in data.get(section, "").split(",") if x.strip()]
+            for item in items:
+                model.objects.get_or_create(name=item, related_px_id=patient_id)
+
+        # ✅ Redirect back to the patient profile after saving
         return redirect("doctor:patient_profile", patient_id=patient.patient_id)
 
-    # If GET request, render profile or form
+    # Fallback for GET requests
     return render(request, "doctor/patient_profile.html", {"patient": patient})
+
+@login_required
+@user_passes_test(is_doctor_admin)
+@require_POST
+def delete_patient_item(request, patient_id, section_name):
+    item_name = request.POST.get("item_name", "").strip()
+    if not item_name:
+        return JsonResponse({"status": "error", "message": "No item_name"})
+
+    section_models = {
+        "systemic": GH_HealthCondition,
+        "ocular": GH_OcularHistory,
+        "medications": GH_Medication,
+        "allergies": GH_Allergies,
+        "familial": GH_FamilialHistory,
+        "genetical": GH_GeneticalHistory,
+        "lifestyle": GH_LifestyleHistory,
+    }
+    model = section_models.get(section_name)
+    if not model:
+        return JsonResponse({"status": "error", "message": "Invalid section"})
+
+    deleted, _ = model.objects.filter(name=item_name, related_px_id=patient_id).delete()
+    if deleted:
+        return JsonResponse({"status": "success"})
 
 
 
 
 @login_required
 @user_passes_test(is_doctor_admin)
-
-
 def record_imp_menu_part(request, patient_id):
     """
     Create or update ImpMenuParts for a given patient.
@@ -641,12 +757,339 @@ def record_imp_menu_view(request, patient_id):
 
 
 
-from django.shortcuts import render
-import json
 @csrf_exempt  # if you already have csrf token in the form, this is optional
+@require_POST
 def rx_print(request):
     if request.method == "POST":
         rx_data_json = request.POST.get("rx_data")
         rx_data = json.loads(rx_data_json)
         # Now rx_data contains everything you sent
         return render(request, "doctor/rx_print.html", {"rx": rx_data})
+    
+    
+@require_POST
+
+
+def delete_patient_item(request, patient_id):
+    if request.method == "POST":
+        section = request.POST.get("section_name")
+        item_name = request.POST.get("item_name")
+
+        model_map = {
+            "systemic": GH_HealthCondition,
+            "ocular_history": GH_OcularHistory,
+            "medications": GH_Medication,
+            "allergies": GH_Allergies,
+            "familial_history": GH_FamilialHistory,
+            "genetical_history": GH_GeneticalHistory,
+            "lifestyle_history": GH_LifestyleHistory,
+        }
+
+        model_class = model_map.get(section)
+        if not model_class:
+            messages.error(request, "Invalid section name.")
+            return redirect("doctor:general_health_record", patient_id)
+
+        deleted_count, _ = model_class.objects.filter(
+            related_px__patient_id=patient_id, name=item_name
+        ).delete()
+
+        msg = (
+            f"Item Removed from {section.replace('_', ' ').title()} section."
+            if deleted_count
+            else "No matching Item found for this patient."
+        )
+        messages.success(request, msg)
+
+    return redirect("doctor:patient_profile", patient_id)
+
+
+def add_patient_item(request, patient_id):
+    if request.method == "POST":
+        section = request.POST.get("section_name")
+        item_name = request.POST.get("item_name")
+
+        model_map = {
+            "systemic": GH_HealthCondition,
+            "ocular_history": GH_OcularHistory,
+            "medications": GH_Medication,
+            "allergies": GH_Allergies,
+            "familial_history": GH_FamilialHistory,
+            "genetical_history": GH_GeneticalHistory,
+            "lifestyle_history": GH_LifestyleHistory,
+        }
+
+        model_class = model_map.get(section)
+        if not model_class:
+            messages.error(request, "Invalid section name.")
+            return redirect("doctor:patient_profile", patient_id)
+
+        # Check if item already exists for this patient
+        existing = model_class.objects.filter(
+            related_px__patient_id=patient_id, name=item_name
+        ).exists()
+
+        if existing:
+            messages.warning(request, f"Item already exists in {section.replace('_', ' ').title()} section.")
+        else:
+            model_class.objects.create(related_px_id=patient_id, name=item_name)
+            messages.success(request, f"Item added to {section.replace('_', ' ').title()} section.")
+
+    return redirect("doctor:patient_profile", patient_id)
+
+# views.py (inside the same app)
+
+@require_GET
+def find_lens_group(request):
+    """
+    Expects query params: od_sph, od_cyl, os_sph, os_cyl
+    Returns JSON: { status: "no_match" } or { status: "ok", od_matches: [...], os_matches: [...] }
+    Finds the nearest lens power range for each eye independently.
+    """
+    def parse_decimal(val):
+        try:
+            return Decimal(str(val))
+        except (InvalidOperation, TypeError, ValueError):
+            return None
+
+    od_sph = parse_decimal(request.GET.get("od_sph"))
+    od_cyl = parse_decimal(request.GET.get("od_cyl"))
+    os_sph = parse_decimal(request.GET.get("os_sph"))
+    os_cyl = parse_decimal(request.GET.get("os_cyl"))
+
+    if None in (od_sph, od_cyl, os_sph, os_cyl):
+        return JsonResponse({"status": "error", "message": "invalid parameters"}, status=400)
+    
+    qs = LensPowerRange.objects.select_related("lens", "lens__brand").all()
+    
+   
+
+   
+
+   
+
+    def nearest_for_eye(sph, cyl):
+        inside_candidates = []
+    
+        for r in qs:
+            try:
+                min_sph = Decimal(r.minus_sphere_group)
+                max_sph = Decimal(r.plus_sphere_group)
+                min_cyl = Decimal(r.minus_cylinder_group)
+                max_cyl = Decimal(r.plus_cylinder_group)
+            except (AttributeError, TypeError, InvalidOperation):
+                continue
+    
+            if cyl == 0:
+                if min_cyl != 0 or max_cyl != 0:
+                    continue
+            else:
+                if min_cyl == 0 and max_cyl == 0:
+                    continue
+    
+            in_sph = min_sph <= sph <= max_sph
+            in_cyl = min_cyl <= cyl <= max_cyl
+    
+            if in_sph and in_cyl:
+                range_width = (max_sph - min_sph) + (max_cyl - min_cyl)
+                inside_candidates.append((range_width, r))
+    
+        if not inside_candidates:
+            return []
+    
+        best_width = min(width for width, _ in inside_candidates)
+        selected = [r for width, r in inside_candidates if width == best_width]
+    
+        results = []
+        for r in selected:
+            price_raw = str(getattr(r, "price", "0") or "0").replace(",", "").strip()
+            try:
+                price_dec = Decimal(price_raw)
+            except (InvalidOperation, ValueError):
+                price_dec = Decimal(0)
+    
+            data = {
+                "brand": str(getattr(r.lens.brand, "name", "")) or "",
+                "range_id": r.id,
+                "lens_model": getattr(r.lens, "model_name", str(r.lens)),
+                "title": str(getattr(r.lens, "title", "")) or "",
+                "design": str(getattr(r.lens, "design", "")) or "",
+                "availability": str(getattr(r.lens, "availability", "")) or "",
+                "plus_sphere_group": f"{float(r.plus_sphere_group):,}" if r.plus_sphere_group is not None else "N/A",
+                "minus_sphere_group": f"{float(r.minus_sphere_group):,}" if r.minus_sphere_group is not None else "N/A",
+                "plus_cylinder_group": f"{float(r.plus_cylinder_group):,}" if r.plus_cylinder_group is not None else "N/A",
+                "minus_cylinder_group": f"{float(r.minus_cylinder_group):,}" if r.minus_cylinder_group is not None else "N/A",
+                "ri": str(getattr(r.lens, "refractive_index", "")) or "",
+                "price":f"{int(price_dec):,}" if price_dec else "0",
+                "unique_slens_id": str(getattr(r, "unique_slens_id", "")) or "",
+                "notes": getattr(r, "notes", "") or "",
+                }
+                
+           
+            
+            # Conditional fields based on occupational lens
+            if getattr(r.lens, "occupational_lens", True):
+                data["occupational_lens"] = True
+                data["best_occupational_use"] = getattr(r.lens, "best_occupational_use", "") or ""
+            else:
+                data["occupational_lens"] = False
+                data["best_occupational_use"] = "This lens is not intended for a particular occupation."
+            if getattr(r.lens, "photochromic", True):
+                data["photochromic"] = True
+                data["transition"]=True if getattr(r.lens, "transition", True) else False
+                data["rayblock_precentage"] = getattr(r.lens, "rayblock_precentage", "") or ""
+                
+            else:
+                data["photochromic"] = False
+                data["rayblock_precentage"] = ""
+                
+            if getattr(r.lens, "antireflex", True):
+                data["antireflex"] = True
+                data["antireflexcolor"] = getattr(r.lens, "antireflexcolor", "") or ""
+                data["antireflexfeature"] = getattr(r.lens, "antireflexfeature", "") or ""
+            else:
+                data["antireflex"] = False
+                data["antireflexcolor"] =""
+                data["antireflexfeature"] =""
+                     
+            if getattr(r.lens, "polarized", True):
+                data["polarized"] = True
+                
+            else:
+                data["polarized"] = False
+         
+     
+            
+            # Append to results
+            results.append(data)
+        
+        
+            
+        return results
+    
+
+        
+
+
+
+    od_match = nearest_for_eye(od_sph, od_cyl)
+    os_match = nearest_for_eye(os_sph, os_cyl)
+    print(os_match)
+    if not od_match and not os_match:
+        return JsonResponse({"status": "no_match"})
+
+    return JsonResponse({
+        "status": "ok",
+        "od_matches": od_match,
+        "os_matches": os_match
+    }) 
+
+
+
+@csrf_exempt
+def submit_lens(request):
+
+    if request.method == "POST" and request.headers.get("X-Requested-With") == "XMLHttpRequest":
+        try:
+            data = json.loads(request.body)
+        except json.JSONDecodeError:
+            return JsonResponse({"success": False, "error": "Invalid JSON"})
+
+        patient_id = data.get("patient_id")
+        refraction_id = data.get("refraction_id")
+        unique_slens_id = data.get("unique_slens_id")
+        eye = data.get("eye")
+        selected_slens_title = data.get("selected_slens_title")
+
+        # Required fields check
+        if not patient_id or not refraction_id or not unique_slens_id or not eye or not selected_slens_title:
+            return JsonResponse({"success": False, "error": "Missing required fields"})
+
+        # Validate Refraction exists
+        try:
+            Refraction.objects.get(refraction_id=refraction_id)
+        except Refraction.DoesNotExist:
+            return JsonResponse({"success": False, "error": "Refraction not found"})
+
+        # Prevent duplicate title for this refraction
+        if SelectedSpectacleLens.objects.filter(refraction_id=refraction_id, title=selected_slens_title,eye=eye).exists():
+            return JsonResponse({
+                "success": False,
+                "error": "This title was selected previously for this refraction."
+            })
+
+        # Create record
+        SelectedSpectacleLens.objects.create(
+            title=selected_slens_title,
+            patient_id=patient_id,
+            refraction_id=refraction_id,
+            unique_slens_id=unique_slens_id,
+            eye=eye,
+        )
+
+        return JsonResponse({"success": True})
+
+    return JsonResponse({"success": False, "error": "Invalid request"})
+
+def load_selected_lenses(request, patient_id):
+    selected_lenses = SelectedSpectacleLens.objects.filter(patient_id=patient_id)
+    result = []
+
+    for sel in selected_lenses:
+        # Try to get LensPowerRange and linked SpectacleLens
+        try:
+            optic = LensPowerRange.objects.select_related("lens__brand").get(unique_slens_id=sel.unique_slens_id)
+            lens = optic.lens
+        except LensPowerRange.DoesNotExist:
+            optic = None
+            lens = None
+
+        result.append({
+            "title": sel.title,
+            "eye": sel.eye,
+            "unique_slens_id": sel.unique_slens_id,
+            "refraction_id": sel.refraction_id,
+
+            # From optic database
+            "brand": lens.brand.name if lens else None,
+            "lens_model": lens.model_name if lens else None,
+            "ri": str(lens.refractive_index) if lens else None,
+     
+            "occupational_lens": bool(lens.occupational_lens) if lens else False,
+            "antireflex": bool(lens.antireflex) if lens else False,
+            "polarized": bool(lens.polarized) if lens else False,
+            "photochromic": bool(lens.photochromic) if lens else False,
+
+            # From LensPowerRange
+            "price": optic.price if optic else None,
+        })
+        print(lens.antireflex)
+
+    return JsonResponse({"lenses": result})
+from django.views.decorators.csrf import csrf_exempt
+from django.http import JsonResponse
+import json
+
+
+def delete_lens(request):
+    if request.method == "POST" and request.headers.get('X-Requested-With') == 'XMLHttpRequest':
+        try:
+            data = json.loads(request.body)
+            unique_slens_id = data.get("unique_slens_id")
+            patient_id = data.get("patient_id")
+            eye=data.get("eye")
+            title=data.get("title")
+            SelectedSpectacleLens.objects.filter(
+            unique_slens_id=unique_slens_id, 
+            patient_id=patient_id,
+            eye=eye,
+            title=title
+            
+            
+            ).delete()
+            return JsonResponse({"success": True})
+        except SelectedSpectacleLens.DoesNotExist:
+            return JsonResponse({"success": False, "error": "Lens not found"})
+        except Exception as e:
+            return JsonResponse({"success": False, "error": str(e)})
+    return JsonResponse({"success": False, "error": "Invalid request"})

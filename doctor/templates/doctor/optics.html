@@ -1,367 +1,789 @@
-{% load static %}
-  <div id="optics" class="section">
-    <h3 class="mb-3">Optics</h3>
+<div id="optics" class="section">
+  <h3>Optics</h3>
 
-<form method="post" action="{% url 'doctor:optics_page' patient.patient_id  %}">
-  {% csrf_token %}
-
-
-    <!-- Optics Features -->
-    <div class="optics-features mb-4">
-      <label class="form-label fw-bold">Select Optical Features:</label>
-      <div class="features-list">
-        {% for feature in optics_features %}
-          <label class="feature-checkbox">
-            <input type="checkbox" name="optics_features" value="{{ feature.name }}">
-            <span class="feature-text">{{ feature.name }}</span>
-          </label>
-        {% empty %}
-          <p style="color:#888;">No optical features configured by admin.</p>
-        {% endfor %}
+  <div id="refractionRecordsOptics">
+    <!-- Header -->
+    <div class="records-header" id="recordsHeaderOptics">
+      <div style="flex:1"></div>
+      <div style="display:flex; align-items:center; gap:6px;">
+        <h4 class="records-title">Optical Lens Selection</h4>
+        <button id="recordsChevronOptics" class="records-chevron">▲</button>
       </div>
     </div>
 
-    <!-- Brand select -->
-    <label class="form-label fw-bold">Select Lens Brand:</label>
-    <div class="custom-select-wrapper">
-      <div id="selectedBrand" class="custom-select-box">
-        <span class="placeholder">-- Select a brand --</span>
-        <i class="arrow">&#9662;</i>
-      </div>
+    <!-- Card -->
+    <div class="info-card" id="recordsContainerOptics" style="display:block; margin-top:10px;">
+      <div id="groupFilterSection"
+        class="info-card card-body gf-card">
+        <h4>Search</h4>
 
-      <div id="brandOptions" class="brand-options">
-        <div class="search-box">
-          <input type="text" id="brandSearch" class="form-control" placeholder="Search brand, material, color...">
+        <input type="text" id="searchFreeText" placeholder="Search everything...">
+
+        <div style="display:flex; gap:8px; flex-wrap:wrap;">
+          <input type="text" id="searchBrand" placeholder="Brand" style="flex:1; padding:6px;">
+          <input type="text" id="searchModel" placeholder="Lens Model" style="flex:1; padding:6px;">
+          <input type="text" id="searchCoating" placeholder="Coating" style="flex:1; padding:6px;">
+          <input type="text" id="searchRI" placeholder="Refractive Index" style="flex:1; padding:6px;">
+          <input type="text" id="searchoccupationaluse" placeholder="Occupational Use" style="flex:1; padding:6px;">
         </div>
 
-        {% for brand in splenss %}
-        <div class="brand-option"
-             data-img="{{ brand.brand_img.url }}" 
-             data-name="{{ brand.brand_name }}"
-             data-material="{{ brand.brand_material }}" 
-             data-color="{{ brand.brand_color }}" 
-             data-coating="{{ brand.brand_coating }}"
-             data-prices='[ {% for p in brand.prices.all %} {"description": "{{ p.description }}", "price": "{{ p.price }}"}{% if not forloop.last %},{% endif %} {% endfor %} ]'>
-          <img src="{{ brand.brand_img.url }}" alt="brand" class="option-img clickable">
-          <div class="option-info">
-            <div class="option-title">{{ brand.brand_name }}</div>
-            <div class="option-sub">
-              Material: {{ brand.brand_material }} | Color: {{ brand.brand_color }}
-            </div>
-          </div>
+        <div class="btn-row" style="margin-top:8px;">
+          <button id="applyGroupFilterBtn" class="add_order_btn">🔍 Apply Filter</button>
+          <button id="clearGroupFilterBtn" class="add_order_btn">🧹 Clear Filter</button>
         </div>
-        {% endfor %}
       </div>
-    </div>
+      <!-- Table -->
+      <table id="refractionTableOptics" class="data-table">
+        <thead>
+          <tr style="background:#f3f4f6;">
+            <th>#</th>
+            <th>Subject</th>
+            <th>OD</th>
+            <th>OS</th>
+            <th>PD</th>
+            <th>Add</th>
+            <th>Lens Selection</th>
+            <th>Frame Selection</th>
+            <th>Optical Calculations</th>
+          </tr>
+        </thead>
+        <tbody></tbody>
+      </table>
 
-    <!-- Details card -->
-    <div id="brandDetails" class="optics-card" style="display:none;">
-      <div class="image-wrapper">
-        <img id="brandImg" src="" alt="Brand Image" class="clickable">
-      </div>
-      <div class="details-text">
-        <p><strong>Material:</strong> <span id="brandMaterial"></span></p>
-        <p><strong>Color:</strong> <span id="brandColor"></span></p>
-        <p><strong>Coating:</strong> <span id="brandCoating"></span></p>
+      <!-- Filter Section -->
+      
 
-        <strong>Prices:</strong>
-        <table id="brandPricesTable" style="width:100%; border-collapse: collapse;">
-          <thead>
-            <tr>
-              <th style="text-align:left; padding:6px; border-bottom:1px solid #ccc;">Description</th>
-              <th style="text-align:left; padding:6px; border-bottom:1px solid #ccc;">Price</th>
-            </tr>
-          </thead>
-          <tbody></tbody>
-        </table>
-      </div>
-    </div>
-
-    <!-- Final Description Box -->
-    <div class="mt-4">
-      <label for="finalDescription" class="final-description-label">Final Description:</label>
-      <textarea id="finalDescription" name="final_description" class="final-description" rows="6"></textarea>
-    </div>
-
-    <!-- Submit button -->
-    <div class="mt-4">
-      <button type="submit" class="btn btn-primary">Save Optics</button>
+      <!-- Lens Results -->
+      <div id="groupResults" style="margin-top:12px; display:none;"></div>
     </div>
   </div>
-</form>
-
-<!-- Image modal -->
-<div id="imgModal" class="img-modal">
-  <span class="close">&times;</span>
-  <img class="modal-content" id="imgPreview">
 </div>
 
-<!-- Popup messages for Django messages -->
-<div id="f" class="popup-message" style="display:none;"></div>
 
+
+<!-- ======================  STYLES  ====================== -->
 <style>
 
-/* --- Optics Features --- */
-.features-list {
+  /* Fix oversized search bar */
+  #searchFreeText {
+    width: 100%;
+    max-width: 100%;
+    padding: 8px 12px;
+    border: 1px solid #ccc;
+    border-radius: 6px;
+    box-sizing: border-box;
+    margin-bottom: 10px;
+    display: block;
+  }
+  .gf-card h4 {
+  
+    width: 100px;
+    font-weight: bold;
+    color: #16a085;
+    flex-shrink: 0;
+  
+  }
+
+  #searchFreeText:focus {
+    border-color: #2980b9;
+    box-shadow: 0 0 5px rgba(41, 128, 185, 0.3);
+    outline: none;
+  }
+  .filter-buttons {
   display: flex;
-  flex-wrap: wrap;
-  gap: 6px ;
+  gap: 10px;
   margin-top: 8px;
 }
-
-.feature-checkbox {
+.btn-row {
   display: flex;
+  gap: 8px;   /* spacing between buttons */
   align-items: center;
-  gap: 12px 0px 0px 0px;
-  padding: 12px 16px;
-  border: 0px solid #3498db;
-  border-radius: 12px;
-  background: #cce7ff;
-  font-size: 1rem;
-  font-weight: 500;
-  color: #2c3e50;
-  cursor: pointer;
-  transition: all 0.2s ease;
-  user-select: none;
-  min-width: 140px;
 }
 
-.feature-checkbox:hover {
-  background: #e6f7ff;
-  border-color: #2c80b4;
-}
-.btn{
+.filter-btn {
+  flex: 1;
+  padding: 8px 12px;
   background: #2980b9;
   color: white;
   border: none;
   border-radius: 6px;
-  padding: 8px 14px;
   cursor: pointer;
-  transition: background 0.2s ease;
+  font-size: 14px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: 5px; /* space between emoji and text */
+  transition: 0.2s;
 }
 
-.feature-checkbox input[type="checkbox"] {
-  width: 15px;
-  height: 15px;
-  accent-color: #3498db;
-  cursor: pointer;
+.filter-btn:hover {
+  background: #1f6c96;
 }
 
-.feature-text {
-  flex: 1;
-  line-height: 1.3;
+.filter-btn.danger {
+  background: #e74c3c;
 }
 
-/* --- Select & Dropdown --- */
-.custom-select-wrapper { position: relative; width: 420px; font-family: 'Segoe UI', sans-serif; }
-.custom-select-box { display: flex; justify-content: space-between; align-items: center; padding: 12px 16px; border-radius: 12px; cursor: pointer; background: white; border: 2px solid #3498db; box-shadow: 0 4px 10px rgba(0,0,0,0.1); transition: all 0.3s ease; }
-.custom-select-box:hover { transform: translateY(-2px); box-shadow: 0 8px 20px rgba(0,0,0,0.15); }
-.placeholder { color: #888; }
-.selected-item { display: flex; align-items: center; gap: 12px; font-weight: 500; color: #2c3e50; background: transparent; border: none; font-size: 18px; }
-.selected-img { width: 38px; height: 38px; object-fit: cover; border-radius: 8px; border: 1.5px solid #3498db; }
+.filter-btn.danger:hover {
+  background: #c0392b;
+} 
+  /* Record box */
+  .records-header {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    cursor: pointer;
+    background: #f3f4f6;
+    padding: 10px 14px;
+    border-radius: 10px;
+  }
 
-.brand-options { position: absolute; top: 100%; left: 0; width: 100%; max-height: 340px; overflow-y: auto; border-radius: 12px; border: 3px solid #2ecc71; background: linear-gradient(to bottom, #2ecc71, #ffffff); box-shadow: 0 6px 18px rgba(0,0,0,0.15); display: none; z-index: 9999; }
-.search-box { padding: 8px; border-bottom: 1px solid #eee; background: #f9f9f9; }
-.search-box input { width: 100%; padding: 6px 10px; border-radius: 6px; border: 1px solid #ccc; }
-.brand-option { display: flex; align-items: center; gap: 12px; padding: 10px; margin: 0; border-radius: 6px; background: #ffffffaa; transition: all 0.2s ease; cursor: pointer; }
-.brand-option:hover { transform: translateX(2px); background: #e6f7ff; box-shadow: 0 4px 12px rgba(0,0,0,0.1); }
-.option-img { width: 50px; height: 50px; border-radius: 10px; border: 2px solid #3498db; object-fit: cover; box-shadow: 0 2px 6px rgba(0,0,0,0.2); }
-.option-info .option-title { font-weight: 600; font-size: 1rem; }
-.option-info .option-sub { font-size: 0.88rem; color: #555; }
+  /* Table styles */
+  table {
+    width: 100%;
+    border-collapse: collapse;
+    margin-top: 10px;
+  }
 
-/* --- Details card --- */
-.optics-card { margin-top: 20px; display: flex; gap: 16px; padding: 16px; border-radius: 16px; background: rgba(255,255,255,0.85); backdrop-filter: blur(10px); box-shadow: 0 8px 24px rgba(0,0,0,0.1); transition: all 0.3s ease; }
-.image-wrapper img { width: 260px; height: 160px; border-radius: 16px; border: 2px solid #3498db; object-fit: cover; box-shadow: 0 6px 16px rgba(0,0,0,0.2); transition: transform 0.3s, box-shadow 0.3s; }
-.image-wrapper img:hover { transform: scale(1.05); box-shadow: 0 10px 24px rgba(0,0,0,0.3); }
-.details-text { flex: 1; background: #f0f8ff; border-radius: 12px; padding: 16px; box-shadow: inset 0 2px 6px rgba(0,0,0,0.05); }
-.details-text p { margin: 8px 0; font-size: 0.95rem; color: #333; }
-.details-text strong { display: inline-block; width: 80px; color: #2c3e50; }
-.details-text table { width: 100%; border-collapse: collapse; margin-top: 8px; }
-.details-text th, .details-text td { text-align: left; padding: 6px; border-bottom: 1px solid #ccc; }
+  th, td {
+    padding: 8px 12px;
+    border: 1px solid #ccc;
+  }
 
-/* --- Final Description Textarea --- */
-.final-description-label {
-  font-weight: bold;
-  font-size: 1.1rem;
-  margin-bottom: 8px;
-  align-self: flex-start;
+  /* Selected refraction */
+  .ref-selected {
+    background:#e6f7ff !important;
+  }
+
+  /* Group items */
+  .group-item {
+    padding: 10px;
+    border-radius: 8px;
+    background: white;
+    border: 1px solid #eaeaea;
+    margin-bottom: 10px;
+  }
+
+  .small-muted {
+    color:#666;
+    font-size:.9rem;
+  }
+
+
+  /* Lens row under refraction */
+
+/* Lens row under refraction */
+.lens-row td {
+    direction: ltr;                  /* LTR text */
+    text-align: left !important;     /* Left-align content */
+    vertical-align: top !important;  /* Align to top of row */
+    
+    border-left: 3px solid #2980b9;  /* Vertical accent */
+    padding: 8px 12px;               /* Compact padding */
+    font-size: 0.95rem;              /* Smaller font */
+    line-height: 1.3;                /* Tighter spacing */
 }
 
-.final-description {
-  width: 80%;
-  min-width: 320px;    
-  padding: 14px 16px;
-  border-radius: 14px;
-  border: 2px solid #3498db;
-  background: linear-gradient(to bottom, #f9fcff, #eef7ff);
-  font-size: 1rem;
-  font-family: "Segoe UI", sans-serif;
-  line-height: 1.6;
-  color: #2c3e50;
-  resize: none;
-  box-shadow: inset 0 2px 6px rgba(0,0,0,0.08), 0 4px 12px rgba(0,0,0,0.08);
-  transition: all 0.3s ease;
-  white-space: pre-line;
+/* Make all child elements inside td left-aligned too */
+.lens-row td > * {
+    display: block;                  /* Force block layout */
+    text-align: left;                /* Ensure text is left-aligned */
 }
 
-.final-description:focus {
-  outline: none;
-  border-color: #2ecc71;
-  box-shadow: 0 0 0 4px rgba(46,204,113,0.2);
+/* Transition for lens blocks */
+.group-item {
+  transition: opacity 0.3s ease, transform 0.3s ease, height 0.3s ease;
+  overflow: hidden;
+  height: auto; /* default visible height */
 }
 
-/* --- Modal --- */
-.img-modal { display: none; position: fixed; z-index: 2000; padding-top: 60px; left: 0; top: 0; width: 100%; height: 100%; background-color: rgba(0,0,0,0.85); overflow: auto; }
-.img-modal .modal-content { display: block; margin: auto; max-width: 90%; max-height: 85%; border-radius: 12px; box-shadow: 0 6px 20px rgba(0,0,0,0.5); }
-.img-modal .close { position: absolute; top: 20px; right: 35px; color: white; font-size: 40px; font-weight: bold; cursor: pointer; }
-
-/* ✅ Toast Styles with smooth slide animation */
-.popup-message {
-  position: fixed;
-  top: 30px;
-  right: -400px; 
-  padding: 16px 22px;
-  border-radius: 12px;
-  font-size: 1rem;
-  font-weight: 500;
-  color: #fff;
-  box-shadow: 0 6px 20px rgba(0,0,0,0.2);
-  z-index: 5000;
+.group-item.hidden {
   opacity: 0;
-  transform: translateX(0);
-  transition: right 0.5s ease, opacity 0.5s ease, transform 0.5s ease;
+  height: 0; /* collapse */
+  pointer-events: none;
+  transform: translateY(10px);
+  margin: 0; /* remove spacing when collapsed */
+  padding: 0; /* optional if padding should collapse too */
+}
+#groupResults {
+  display: flex;
+  flex-direction: column;
+  gap: 6px;
+}
+.eye-group {
+    opacity: 1;
+    transition: opacity 0.4s ease, height 0.4s ease;
+    overflow: hidden;
 }
 
-.popup-message.show {
-  right: 30px;
-  opacity: 1;
-  transform: translateX(0);
+.eye-group.hidden {
+    opacity: 0;
+    height: 0;
+    pointer-events: none; /* prevent clicks when hidden */
 }
 
-.popup-message.hide {
-  right: -400px;
-  opacity: 0;
-  transform: translateX(50px);
-}
-
-.popup-message.success {
-  background: linear-gradient(135deg, #2ecc71, #27ae60);
-}
-
-.popup-message.error {
-  background: linear-gradient(135deg, #e74c3c, #c0392b);
-}
 </style>
 
-
-
-
+<!-- ======================  SCRIPT  ====================== -->
 <script>
-const selectedBox = document.getElementById("selectedBrand");
-const optionsBox = document.getElementById("brandOptions");
-const searchInput = document.getElementById("brandSearch");
-const detailCard = document.getElementById("brandDetails");
-const finalDescBox = document.getElementById("finalDescription");
-
-// Dropdown toggle
-selectedBox.addEventListener("click", e => {
-    e.stopPropagation();
-    optionsBox.style.display = optionsBox.style.display === "block" ? "none" : "block";
-});
-
-// Update final description
-function updateFinalDescription() {
-    const features = [...document.querySelectorAll('input[name="optics_features"]:checked')].map(cb => cb.value);
-    const selectedBrandEl = selectedBox.querySelector(".selected-item span:not(.selected-img)");
-    const brandName = selectedBrandEl ? selectedBrandEl.textContent : "";
-    const material = document.getElementById("brandMaterial").textContent;
-    const color = document.getElementById("brandColor").textContent;
-    const coating = document.getElementById("brandCoating").textContent;
-
-    let desc = "";
-    if (features.length > 0) desc += `Features: ${features.join(", ")}.\n`;
-    if (brandName) desc += `Brand: ${brandName}, Material: ${material}, Color: ${color}, Coating: ${coating}.`;
-
-    finalDescBox.value = desc.trim();
+let refArrayOptics = [];
+let selectedIndexOptics = null;
+let savedGroups = { od: [], os: [] };
+let odSelectedPerRef = {};
+let lensesPerRef = {};
+let selectedIndexFrame = null;
+// Try to get refs from Django context
+try {
+    refArrayOptics = {{ existing_refs_json|safe }};
+    if (!Array.isArray(refArrayOptics)) throw "invalid";
+} catch {
+    refArrayOptics = [];
 }
 
-document.querySelectorAll('input[name="optics_features"]').forEach(cb => cb.addEventListener("change", updateFinalDescription));
+/* ------------------- Parse refraction ------------------- */
+function parseRefractionValue(val) {
+    if (!val) return { sphere: null, cylinder: null, axis: null };
+    val = String(val).trim().replace(/\s+/g, "");
+    if (!val.includes("/")) return { sphere: parseFloat(val), cylinder:null, axis:null };
+    const [sp, rest] = val.split("/");
+    let cyl = null, ax = null;
+    if (rest.includes("x")) {
+        [cyl, ax] = rest.split("x");
+        return { sphere: parseFloat(sp), cylinder: parseFloat(cyl), axis: parseInt(ax) };
+    }
+    return { sphere: parseFloat(sp), cylinder: parseFloat(rest), axis: null };
+}
 
-// Select brand
-document.querySelectorAll(".brand-option").forEach(option => {
-    option.addEventListener("click", e => {
-        e.stopPropagation();
-        const img = option.dataset.img;
-        const material = option.dataset.material;
-        const color = option.dataset.color;
-        const coating = option.dataset.coating;
-        let prices = [];
-        try { prices = JSON.parse(option.dataset.prices); } catch { prices = []; }
+/* ------------------- Render Refraction Table ------------------- */
+function renderRefractionTableOptics() {
+    const tbody = document.querySelector("#refractionTableOptics tbody");
+    tbody.innerHTML = "";
+    refArrayOptics.forEach((r, i) => {
+        const tr = document.createElement("tr");
+        tr.innerHTML = `
+            <td>${i+1}</td>
+            <td>${r.ref_subj || ""}</td>
+            <td>${r.ref_od || ""}</td>
+            <td>${r.ref_os || ""}</td>
+            <td>${r.ref_pd || 0}</td>
+            <td>${r.ref_addition ?? 0}</td>
+<td style="text-align:center;">
+  <input type="radio" name="singleSelection" class="refSelectSingle"
+         data-index="${i}" data-refraction_id="${r.ref_id}">
+</td>
 
-        selectedBox.innerHTML = `<span class="selected-item"><img src="${img}" class="selected-img"><span>${option.dataset.name}</span></span><i class="arrow">&#9662;</i>`;
-        document.getElementById("brandImg").src = img;
-        document.getElementById("brandMaterial").textContent = material;
-        document.getElementById("brandColor").textContent = color;
-        document.getElementById("brandCoating").textContent = coating;
+<td style="text-align:center;">
+  <input type="radio" name="singleSelection" class="refSelectFrame"
+         data-index="${i}" data-refraction_id="${r.ref_id}">
+</td>
 
-        const tbody = document.querySelector("#brandPricesTable tbody");
-        tbody.innerHTML = "";
+<td style="text-align:center;">
+  <input type="radio" name="singleSelection" class="refSelectCalc"
+         data-index="${i}" data-refraction_id="${r.ref_id}">
+</td>
+                            
+                
+            
+        `;
+        tbody.appendChild(tr);
 
-        prices.forEach(p => {
-            const tr = document.createElement("tr");
-            // Format price with commas: 2000000 => 2,000,000
-            const formattedPrice = Number(p.price).toLocaleString('en-US');
-            tr.innerHTML = `<td>${p.description}</td><td>${formattedPrice}</td>`;
-            tbody.appendChild(tr);
+        // Hidden lens row
+        const lensRow = document.createElement("tr");
+        lensRow.classList.add("lens-row");
+        lensRow.style.display = "none";
+        lensRow.dataset.index = i;
+        lensRow.innerHTML = `<td colspan="9" class="lens-info-cell"></td>`;
+        tbody.appendChild(lensRow);
+    });
+    
+
+
+// Radio selection logic
+// Radio selection logic for main refraction rows
+// Radio selection logic for main refraction rows
+document.querySelectorAll(".refSelectSingle, .refSelectFrame, .refSelectCalc").forEach(radio => {
+    radio.addEventListener("change", function() {
+        const tbody = document.querySelector("#refractionTableOptics tbody");
+        const rows = Array.from(tbody.querySelectorAll("tr"));
+
+        // Remove previous highlights
+        rows.forEach(row => row.classList.remove("ref-selected"));
+
+        // Highlight the main refraction row only
+        const mainRowIndex = parseInt(this.dataset.index) * 2;
+        const mainRow = rows[mainRowIndex];
+        if (mainRow) mainRow.classList.add("ref-selected");
+
+        // Only call findGroupsOptics() if the refraction radio is selected
+        if (this.classList.contains("refSelectSingle") && this.checked) {
+            selectedIndexOptics = parseInt(this.dataset.index);
+            findGroupsOptics();
+        }
+    });
+});
+
+        // Attach behavior to frame selection checkboxes
+document.querySelectorAll(".refSelectFrame").forEach(radio => {
+    radio.addEventListener("change", function() {
+        selectedIndexFrame = this.checked ? parseInt(this.dataset.index) : null;
+        if (selectedIndexFrame !== null) showSpectacleResultGroup();
+        else document.getElementById("groupResults").style.display = "none";
+    });
+});
+
+}
+function showSpectacleResultGroup(index = null) {
+    const div = document.getElementById("groupResults");
+    if (!div) return;
+
+    div.style.display = "block";
+
+    div.innerHTML = `
+    <div class="info-card card-body">
+
+        <h2 style="
+            margin:0 0 22px 0;
+            font-size:22px;
+            font-weight:600;
+            color:#222;
+        ">Frame Selection</h2>
+
+        <div style="display:flex; flex-direction:column; gap:16px;">
+
+            <div class="form-row">
+                <label class="frame-label">Frame Type</label>
+                <select id="frame_type" class="frame-input">
+                    <option value="">Select type</option>
+                    <option>Full Rim</option>
+                    <option>Half Rim</option>
+                    <option>Rimless</option>
+                </select>
+            </div>
+
+            <div class="form-row">
+                <label class="frame-label">Color</label>
+                <input id="frame_color" class="frame-input" placeholder="Black / Gold">
+            </div>
+
+            <div class="form-row">
+                <label class="frame-label">Eye Size</label>
+                <input id="frame_eye_size" class="frame-input" type="number" placeholder="52">
+            </div>
+
+            <div class="form-row">
+                <label class="frame-label">Bridge</label>
+                <input id="frame_bridge" class="frame-input" type="number" placeholder="17">
+            </div>
+
+            <div class="form-row">
+                <label class="frame-label">Temple Length</label>
+                <input id="frame_temple" class="frame-input" type="number" placeholder="140">
+            </div>
+
+            <div class="form-row">
+                <label class="frame-label">PD</label>
+                <input id="frame_pd" class="frame-input" type="number" placeholder="63">
+            </div>
+
+            <div class="form-row">
+                <label class="frame-label">Notes</label>
+                <textarea id="frame_notes" class="frame-input" rows="3" placeholder="Optional notes"></textarea>
+            </div>
+
+        </div>
+
+        <div class="form-row" style="margin-top:22px; text-align:left;" >
+            <button id="frameConfirmBtn" class="add_order_btn" data-ref-index="${index}">
+               💾 Confirm Frame
+            </button>
+        </div>
+    </div>
+
+    <style>
+        .frame-label {
+            display:block;
+            margin-bottom:6px;
+            font-size:15px;
+            font-weight:500;
+            color:#444;
+        }
+
+        .frame-input {
+
+            height:44px;
+            padding:10px 12px;
+            font-size:15px;
+            border:1px solid #d7d7d7;
+            border-radius:8px;
+            outline:none;
+            transition:0.2s;
+            box-sizing:border-box;
+        }
+
+        .frame-input:focus {
+            border-color:#5b8aff;
+            box-shadow:0 0 0 3px rgba(91,138,255,0.25);
+        }
+
+        textarea.frame-input {
+            height:auto;
+        }
+
+
+    </style>
+    `;
+
+    // SAVE HANDLER
+    document.getElementById("frameConfirmBtn").addEventListener("click", () => {
+        const frame = {
+            type: document.getElementById("frame_type").value,
+            color: document.getElementById("frame_color").value,
+            eye: document.getElementById("frame_eye_size").value,
+            bridge: document.getElementById("frame_bridge").value,
+            temple: document.getElementById("frame_temple").value,
+            pd: document.getElementById("frame_pd").value,
+            notes: document.getElementById("frame_notes").value
+        };
+
+        console.log("FRAME SELECTED:", frame);
+    });
+}
+
+
+/* ------------------- Collapse Records ------------------- */
+document.getElementById("recordsHeaderOptics").addEventListener("click", () => {
+    const box = document.getElementById("recordsContainerOptics");
+    const chev = document.getElementById("recordsChevronOptics");
+    const open = box.style.display === "block";
+    box.style.display = open ? "none" : "block";
+    chev.classList.toggle("rotate", open);
+});
+
+/* ------------------- Load previously selected lenses ------------------- */
+function loadPreviouslySelectedLenses() {
+    fetch("{% url 'doctor:load_selected_lenses' patient.patient_id %}", { headers: { "X-Requested-With": "XMLHttpRequest" } })
+    .then(r => r.json())
+    .then(data => {
+        if (!data.lenses) return;
+        data.lenses.forEach(lens => {
+            const index = refArrayOptics.findIndex(r => String(r.ref_id) === String(lens.refraction_id));
+            if (index === -1) return;
+            if (!lensesPerRef[index]) lensesPerRef[index] = [];
+
+            if (String(lens.eye).toUpperCase() === "OD") odSelectedPerRef[index] = true;
+
+            lensesPerRef[index].push({
+                title: lens.title,
+                eye: lens.eye,
+                unique_slens_id: lens.unique_slens_id,
+                brand: lens.brand,
+                lens_model: lens.lens_model,
+                ri: lens.ri,
+                antireflex: lens.antireflex,
+                polarized: lens.polarized,
+                photochromic: lens.photochromic,
+                price: lens.price,
+            });
+            renderLensesUnderRefraction(index);
         });
-
-        detailCard.style.display = "flex";
-        optionsBox.style.display = "none";
-        updateFinalDescription();
-    });
-});
-
-// Search brands
-searchInput.addEventListener("keyup", () => {
-    const filter = searchInput.value.toLowerCase();
-    document.querySelectorAll(".brand-option").forEach(option => {
-        const text = (option.dataset.name + " " + option.dataset.material + " " + option.dataset.color + " " + option.dataset.coating).toLowerCase();
-        option.style.display = text.includes(filter) ? "flex" : "none";
-    });
-});
-
-// Close dropdown when clicking outside
-document.addEventListener("click", () => { optionsBox.style.display = "none"; });
-
-// Modal
-const modal = document.getElementById("imgModal");
-const modalImg = document.getElementById("imgPreview");
-const closeBtn = modal.querySelector(".close");
-
-document.querySelectorAll(".clickable").forEach(img => {
-    img.addEventListener("click", () => {
-        modal.style.display = "block";
-        modalImg.src = img.src;
-    });
-});
-
-closeBtn.onclick = () => { modal.style.display = "none"; };
-modal.onclick = e => { if (e.target === modal) modal.style.display = "none"; };
-
-// ✅ Django Messages Popup
-function showMessage(msg, type="success") {
-    const box = document.createElement("div");
-    box.className = `popup-message ${type}`;
-    box.textContent = msg;
-    document.body.appendChild(box);
-    setTimeout(() => box.classList.add("show"), 100);
-    setTimeout(() => { box.classList.remove("show"); setTimeout(() => box.remove(), 500); }, 3000);
+    }).catch(err => console.warn("Could not load previously selected lenses:", err));
 }
 
-// Read Django messages
-{% if messages %}
-  {% for message in messages %}
-    showMessage("{{ message }}", "{% if message.tags %}{{ message.tags }}{% else %}success{% endif %}");
-  {% endfor %}
-{% endif %}
-</script>
+/* ------------------- Fetch Lens Groups ------------------- */
+function findGroupsOptics() {
+    const resultsDiv = document.getElementById("groupResults");
+    resultsDiv.style.display = "block";
+    resultsDiv.innerHTML = "";
+
+    if (selectedIndexOptics === null) { resultsDiv.innerHTML = `<div class="small-muted">Select a refraction first.</div>`; return; }
+
+    const rx = refArrayOptics[selectedIndexOptics];
+    const od = parseRefractionValue(rx.ref_od);
+    const os = parseRefractionValue(rx.ref_os);
+    const params = new URLSearchParams({
+        od_sph: od.sphere ?? 0,
+        od_cyl: od.cylinder ?? 0,
+        os_sph: os.sphere ?? 0,
+        os_cyl: os.cylinder ?? 0
+    });
+
+    fetch(`{% url 'doctor:find_lens_group' %}?${params}`, { headers: { 'X-Requested-With': 'XMLHttpRequest' } })
+    .then(r => r.json())
+    .then(data => {
+        savedGroups.od = data.od_matches || [];
+        savedGroups.os = data.os_matches || [];
+        renderGroupResults(savedGroups.od, savedGroups.os);
+    })
+    .catch(err => {
+        console.warn("Error fetching lens groups:", err);
+        resultsDiv.innerHTML = `<div class="small-muted">Unable to load lens groups.</div>`;
+    });
+}
+
+/* ------------------- Render Lens Groups with OD/OS Fade ------------------- */
+function renderGroupResults(odMatches, osMatches) {
+    const resultsDiv = document.getElementById("groupResults");
+    let html = "";
+
+    // OD visible initially, OS hidden
+    function block(arr, eye) {
+        if (!arr.length) return;
+        html+='<div class="info-card card-body">'
+        html += `<div>
+          <h2 style="
+              margin:0 0 22px 0;
+              font-size:22px;
+              font-weight:600;
+              color:#222;
+          ">Lens Selection</h2>
+        
+        
+        <strong style="font-size: 17px;">${eye} Matches (${arr.length}):</strong></div>`;
+        arr.forEach(m => {
+            const hiddenClass = (eye === "OS" && !odSelectedPerRef[selectedIndexOptics]) ? "hidden" : "";
+            html += `
+            <div class="group-item ${hiddenClass}" data-eye="${eye}"
+                data-brand="${m.brand || ""}"
+                data-lens="${m.lens_model || ""}"
+                data-ri="${m.ri || ""}"
+                data-occupational="${m.best_occupational_use || ""}"
+                data-antireflex="${m.antireflex || ""}"
+                data-polarized="${m.polarized || ""}"
+                data-photochromic="${m.photochromic || ""}"
+            >
+                <div>
+                    <strong style="font-size: 17px;">${m.brand}</strong><br>
+                    <strong style="font-size: 15px;">${(m.title || m.design || 'No Title')}</strong>
+                </div>
+                <div class="small-muted">
+                    Sphere: ${m.minus_sphere_group} → ${m.plus_sphere_group}<br>
+                    Cylinder: ${m.minus_cylinder_group} → ${m.plus_cylinder_group}<br>
+                    RI: ${m.ri}<br>
+                    ${m.antireflex ? "Antireflex: ✔️" : "Antireflex: ❌"}<br>
+                    ${m.polarized ? "Polarized: ✔️" : "Polarized: ❌"}<br>
+                    ${m.photochromic ? "Photochromic: ✔️" : "Photochromic: ❌"}<br>
+                    Occupational use: ${m.best_occupational_use}<br>
+                    Price: ${m.price}
+                </div>
+                <button class="add_order_btn submit-optic-btn" style="margin-top:10px"
+                    data-eye="${eye}"
+                    data-brand="${m.brand}"
+                    data-unique_slens_id="${m.unique_slens_id}"
+                    data-lens="${m.lens_model}"
+                    data-ri="${m.ri}"
+                    data-occupational="${m.occupational_lens}"
+                    data-antireflex="${m.antireflex}"
+                    data-polarized="${m.polarized}"
+                    data-photochromic="${m.photochromic}"
+                    data-price="${m.price}"
+                >
+                    💾 Submit This Lens
+                </button>
+            </div>`;
+        });
+        html += `<hr>`;
+        html+='</div>'
+    }
+
+    block(odMatches, "OD");
+    block(osMatches, "OS");
+
+    resultsDiv.innerHTML = html;
+    activateOpticSubmitButtons();
+}
+
+
+
+
+/* ------------------- OD/OS Transition ------------------- */
+function toggleLensVisibility(eye) {
+    const odItems = document.querySelectorAll(".group-item[data-eye='OD']");
+    const osItems = document.querySelectorAll(".group-item[data-eye='OS']");
+
+    if (eye === "OD") { odItems.forEach(i => i.classList.add("hidden")); osItems.forEach(i => i.classList.remove("hidden")); }
+    else if (eye === "OS") { osItems.forEach(i => i.classList.add("hidden")); odItems.forEach(i => i.classList.remove("hidden")); }
+}
+
+/* ------------------- Submit Lens ------------------- */
+function activateOpticSubmitButtons() {
+    document.querySelectorAll(".submit-optic-btn").forEach(btn => {
+        btn.addEventListener("click", function () {
+            if (selectedIndexOptics === null) return alert("Select a refraction first!");
+            let title = prompt("این عدسی با چه عنوانی ذخیره شود؟", "");
+            if (!title) return alert("عنوان وارد نشده و ثبت انجام نشد");
+            const jalaliDate = new Intl.DateTimeFormat("fa-IR",{ year:"numeric", month:"2-digit", day:"2-digit"}).format(new Date());
+            title = `${title} - ${jalaliDate}`;
+
+            const lens = {
+                title: title,
+                eye: this.dataset.eye,
+                brand: this.dataset.brand,
+                lens_model: this.dataset.lens,
+                ri: this.dataset.ri,
+                antireflex: this.dataset.antireflex,
+                polarized: this.dataset.polarized,
+                photochromic: this.dataset.photochromic,
+                price: this.dataset.price,
+                unique_slens_id: this.dataset.unique_slens_id,
+            };
+
+            if (!lensesPerRef[selectedIndexOptics]) lensesPerRef[selectedIndexOptics] = [];
+            lensesPerRef[selectedIndexOptics].push(lens);
+
+            if (lens.eye.toUpperCase() === "OD") {
+                odSelectedPerRef[selectedIndexOptics] = true;
+                toggleLensVisibility("OD");
+            } else if (lens.eye.toUpperCase() === "OS") {
+                toggleLensVisibility("OS");
+                odSelectedPerRef[selectedIndexOptics] = false;
+            }
+
+            renderLensesUnderRefraction(selectedIndexOptics);
+
+            // AJAX POST to Django
+            const selectedRow = document.querySelector(`.refSelectSingle[data-index="${selectedIndexOptics}"]`);
+            const refraction_id = selectedRow.dataset.refraction_id;
+            const dbval_lens = { selected_slens_title:title, patient_id:"{{ patient.patient_id }}", unique_slens_id:this.dataset.unique_slens_id, refraction_id:refraction_id, eye:this.dataset.eye };
+
+            fetch("{% url 'doctor:submit_lens' %}", {
+                method: "POST",
+                headers: { "Content-Type": "application/json", "X-CSRFToken": "{{ csrf_token }}", "X-Requested-With": "XMLHttpRequest" },
+                body: JSON.stringify(dbval_lens)
+            }).then(res => res.json()).then(data => {
+                if (!data.success) console.warn("Submit failed:", data.error);
+            }).catch(err => console.warn("Submit request failed:", err));
+        });
+    });
+}
+
+/* ------------------- Render Lenses Under Refraction ------------------- */
+function renderLensesUnderRefraction(refIndex) {
+    const lensRow = document.querySelector(`.lens-row[data-index="${refIndex}"]`);
+    const cell = lensRow.querySelector(".lens-info-cell");
+    lensRow.style.display = "table-row";
+    const lenses = lensesPerRef[refIndex] || [];
+    cell.innerHTML = "";
+    if (!lenses.length) return;
+
+    const toggleBtn = document.createElement("button");
+    toggleBtn.textContent = "▲";
+    toggleBtn.style.marginBottom = "6px"; 
+    toggleBtn.style.padding="4px 8px"; 
+    toggleBtn.style.cursor="pointer"; 
+    toggleBtn.style.fontSize="0.85rem";
+    toggleBtn.style.borderRadius="4px";
+     toggleBtn.style.background="transparent"; 
+     toggleBtn.style.border="none"; 
+     toggleBtn.style.color="#2980b9";
+
+    const lensContainer = document.createElement("div"); 
+    lensContainer.style.display = "block";
+
+    toggleBtn.addEventListener("click", () => {
+        if (lensContainer.style.display === "none") { 
+        lensContainer.style.display = "block";
+         toggleBtn.textContent="▲"; }
+        else { lensContainer.style.display="none";
+         toggleBtn.textContent="▼"; }
+    });
+
+    cell.appendChild(toggleBtn); 
+    cell.appendChild(lensContainer);
+
+    lenses.forEach((lens,i)=>{
+        const div=document.createElement("div");
+        div.style.position="relative";
+         div.style.border="1px solid #ccc"; 
+         div.style.borderRadius="6px";
+        div.style.padding="10px 12px";
+         div.style.marginBottom="8px";
+          div.style.background="#fffde7"; 
+         div.style.lineHeight="1.3";
+
+        div.innerHTML=`
+            <strong>${lens.title} | ${lens.eye} | ${lens.unique_slens_id}</strong><br>
+            Brand: ${lens.brand} | Model: ${lens.lens_model} | RI: ${lens.ri} | 
+            Occupational:  ${lens.antireflex === true || lens.antireflex==="true"?"✔️":"❌"} | 
+            Antireflex: ${lens.antireflex === true || lens.antireflex==="true"?"✔️":"❌"} | 
+            Polarized: ${lens.polarized === true || lens.polarized==="true"?"✔️":"❌"} | 
+            Photochromic: ${lens.photochromic === true || lens.photochromic==="true"?"✔️":"❌"} | 
+            Price: ${lens.price}
+            <button class="remove-lens-btn" data-ref="${refIndex}" data-lens-index="${i}">❌</button>
+        `;
+
+        const btn=div.querySelector(".remove-lens-btn");
+        btn.style.position="absolute"; btn.style.top="4px"; btn.style.right="4px"; btn.style.border="none"; btn.style.background="transparent";
+        btn.style.cursor="pointer"; btn.style.fontSize="0.7rem"; btn.style.lineHeight="1"; btn.style.padding="0";
+
+        lensContainer.appendChild(div);
+    });
+
+    // Remove buttons
+    lensContainer.querySelectorAll(".remove-lens-btn").forEach(btn=>{
+        btn.addEventListener("click", function(){
+            const ref=parseInt(this.dataset.ref), lensIdx=parseInt(this.dataset.lensIndex);
+            const lens=lensesPerRef[ref][lensIdx];
+            fetch("{% url 'doctor:delete_lens' %}", {
+                method:"POST",
+                headers:{ "Content-Type":"application/json","X-CSRFToken":"{{ csrf_token }}","X-Requested-With":"XMLHttpRequest" },
+                body: JSON.stringify({title:lens.title,eye:lens.eye,unique_slens_id:lens.unique_slens_id,patient_id:"{{ patient.patient_id }}"})
+            }).then(res=>res.json()).then(data=>{
+                if(data.success){
+                    lensesPerRef[ref].splice(lensIdx,1);
+                    odSelectedPerRef[ref]=(lensesPerRef[ref]||[]).some(l=>String(l.eye).toUpperCase()==="OD");
+                    renderLensesUnderRefraction(ref);
+                    if(selectedIndexOptics===ref) renderGroupResults(savedGroups.od,savedGroups.os);
+                } else console.warn("Delete failed:",data.error);
+            });
+        });
+    });
+}
+
+/* ------------------- Filtering ------------------- */
+function parseRangeInput(val) {
+    val=(val||"").trim();
+    if(!val) return null;
+    const parts=val.split("-").map(p=>p.trim()).filter(Boolean);
+    if(parts.length===1){const v=parseFloat(parts[0].replace(",", ".")); return isNaN(v)?null:{min:v,max:v};}
+    if(parts.length===2){const a=parseFloat(parts[0].replace(",", ".")), b=parseFloat(parts[1].replace(",", ".")); return isNaN(a)||isNaN(b)?null:{min:Math.min(a,b),max:Math.max(a,b)};}
+    return null;
+}
+
+function filterGroups() {
+    const q=(document.getElementById("searchFreeText").value||"").trim().toLowerCase();
+    const brandFilter=(document.getElementById("searchBrand").value||"").trim().toLowerCase();
+    const modelFilter=(document.getElementById("searchModel").value||"").trim().toLowerCase();
+    const coatingFilter=(document.getElementById("searchCoating").value||"").trim().toLowerCase();
+    const riFilterRaw=(document.getElementById("searchRI").value||"").trim();
+    const occupationalFilter=(document.getElementById("searchoccupationaluse").value||"").trim().toLowerCase();
+    const riRange=parseRangeInput(riFilterRaw);
+    const items=document.querySelectorAll(".group-item"); if(!items.length) return;
+
+    items.forEach(item=>{
+        const brand=(item.dataset.brand||"").toLowerCase();
+        const lens=(item.dataset.lens||"").toLowerCase();
+        const coating=(item.dataset.coating||"").toLowerCase();
+        const riAttr=(item.dataset.ri||"").toString().trim();
+        const occupational=(item.dataset.occupational||"").toLowerCase();
+
+        let show=true;
+        if(q&&![brand,lens,coating,occupational].some(s=>s.includes(q))) show=false;
+        if(brandFilter&&!brand.includes(brandFilter)) show=false;
+        if(modelFilter&&!lens.includes(modelFilter)) show=false;
+        if(coatingFilter&&coatingFilter!=="any"&&coating!==coatingFilter) show=false;
+        if(occupationalFilter&&occupational!==occupationalFilter) show=false;
+        if(riRange){const v=parseFloat(riAttr); if(isNaN(v)||v<riRange.min||v>riRange.max) show=false;}
+        item.style.display=show?"block":"none";
+    });
+}
+
+document.querySelectorAll("#searchFreeText,#searchBrand,#searchModel,#searchCoating,#searchRI,#searchoccupationaluse").forEach(el=>{
+    el.addEventListener("input", filterGroups);
+});
+
+/* ------------------- Init ------------------- */
+renderRefractionTableOptics();
+loadPreviouslySelectedLenses();
+</script> 
+
+
